@@ -65,7 +65,7 @@ __kernel void xorsphere   (__write_only image3d_t image,
   
   float d = fast_length((pos-cen)/dim);
   
-  float value = (float)( (x^y^z)*((d<r)?1:0) );
+  float value = (float)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
   
   write_imagef (image, (int4){x,y,z,0}, value);
 }
@@ -75,55 +75,63 @@ __kernel void compare(__read_only image3d_t image1,
 					  __write_only image3d_t result)
 {
 	const int width  = get_image_width(image1);
-  	const int height = get_image_height(image1);
-  	const int depth  = get_image_depth(image1);
-  
-  	float4 dim = (float4){width,height,depth,1};
-  
-  	int x = get_global_id(0); 
-  	int y = get_global_id(1);
-  	int z = get_global_id(2);
+	const int height = get_image_height(image1);
+	const int depth  = get_image_depth(image1);
+
+	int x = get_global_id(0); 
+	int y = get_global_id(1);
+	int z = get_global_id(2);
 
 	int4 pos = (int4){x,y,z,0};
 	
-	float4 val = read_imagef(image1, pos) - read_imagef(image2, pos);
-	float4 res = val*val;
+	float4 val1 = read_imagef(image1, pos);
+	float4 val2 = read_imagef(image2, pos);
+	float val = val1.x-val2.x;
+	float4 res = (float4){val*val,0,0,0};
 	
 	write_imagef(result, pos, res);
 }	
 
 __kernel
-void sumNroot3D (__read_only image3d_t info,
-                       float result) 
+void sumNroot3D (__read_only image3d_t image,
+                 __global    float*    result) 
 {
-  const int width   = get_image_width(info);
-  const int height  = get_image_height(info);
-  const int depth   = get_image_depth(info);
+  const int width   = get_image_width(image);
+  const int height  = get_image_height(image);
+  const int depth   = get_image_depth(image);
   
   const int x       = get_global_id(0);
   const int y       = get_global_id(1);
   const int z       = get_global_id(2);
   
-  const int stridex = get_global_size(0);
-  const int stridey = get_global_size(1);
-  const int stridez = get_global_size(2);
+  const int nblocksx = get_global_size(0);
+  const int nblocksy = get_global_size(1);
+  const int nblocksz = get_global_size(2);
+  
+  const int blockwidth   = width/nblocksx;
+  const int blockheight  = height/nblocksy;
+  const int blockdepth   = depth/nblocksz;
   
   float sum = 0;
   
-  for(int lz=z; lz<depth; lz+=stridez)
+  const int4 origin = (int4){x*blockwidth,y*blockheight,z*blockdepth,0};
+  
+  for(int lz=0; lz<blockwidth; lz++)
   {
-    for(int ly=y; ly<height; ly+=stridey)
+    for(int ly=0; ly<blockheight; ly++)
     {
-      for(int lx=x; lx<width; lx+=stridex)
+      for(int lx=0; lx<blockdepth; lx++)
       {
-        const int4 pos = {lx,ly,lz,0};
+        const int4 pos = origin + (int4){lx,ly,lz,0};
      
-        float value = (float)(read_imagef(info, pos)).x;
-        
-        sum = sum+value;
+        float value = read_imagef(image, pos).x;
+
+        sum = sum + value;
       }
     }
   }
   
-  result = sqrt(sum); 
+  const int index = x+nblocksx*y+nblocksx*nblocksy*z;
+  
+  result[index] = sum;
 }
