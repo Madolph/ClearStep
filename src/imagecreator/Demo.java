@@ -2,11 +2,8 @@ package imagecreator;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-
-import org.junit.Test;
 
 import clearcl.ClearCL;
 import clearcl.ClearCLBuffer;
@@ -25,7 +22,6 @@ import coremem.offheap.OffHeapMemory;
 public class Demo
 {
 
-  @Test
   public void demo() throws InterruptedException, IOException
   {
 
@@ -35,8 +31,6 @@ public class Demo
     {
       ClearCLDevice lFastestGPUDevice =
                                       lClearCL.getFastestGPUDeviceForImages();
-
-      assertTrue(lFastestGPUDevice != null);
 
       System.out.println(lFastestGPUDevice);
 
@@ -68,9 +62,15 @@ public class Demo
 
       ClearCLImage lResult =
                           lContext.createSingleChannelImage(ImageChannelDataType.Float,
-                                                            lSize,
-                                                            lSize,
-                                                            lSize);
+                                                             lSize,
+                                                             lSize,
+                                                             lSize);
+      
+      ClearCLImage lNoiseGrid =
+              			  lContext.createSingleChannelImage(ImageChannelDataType.Float,
+                                                			 lSize,
+                                                			 lSize,
+                                                			 lSize);
 
       int lReductionFactor = 16;
 
@@ -114,12 +114,27 @@ public class Demo
       System.out.println("second image done");
 
       // calculate pixel-difference and save it to another image
+      float lthres=0;
       ClearCLKernel lKernel2 = lprogram.createKernel("compare");
       lKernel2.setArgument("image1", lImage1);
       lKernel2.setArgument("image2", lImage2);
       lKernel2.setArgument("result", lResult);
+      lKernel2.setArgument("threshold", lthres);
       lKernel2.setGlobalSizes(lImage1);
       lKernel2.run(true);
+      
+      ClearCLKernel lKernel3 = lprogram.createKernel("registerNoise");
+      lKernel3.setArgument("image", lResult);
+      lKernel3.setArgument("grid", lNoiseGrid);
+      lKernel3.setArgument("threshold", lthres);
+      lKernel3.setGlobalSizes(lResult);
+      lKernel3.run(true);
+      
+      ClearCLKernel lKernel4 = lprogram.createKernel("cleanNoise");
+      lKernel4.setArgument("image", lResult);
+      lKernel4.setArgument("grid", lNoiseGrid);
+      lKernel4.setGlobalSizes(lResult);
+      lKernel4.run(true);
 
       ClearCLImageViewer lViewImageResult =
                                           ClearCLImageViewer.view(lResult);
@@ -130,13 +145,13 @@ public class Demo
       // }
 
       // take the difference-map and calculate the root of the sum
-      ClearCLKernel lKernel3 = lprogram.createKernel("sumNroot3D");
-      lKernel3.setArgument("image", lResult);
-      lKernel3.setArgument("result", lEnd);
-      lKernel3.setGlobalSizes(lReductionFactor,
+      ClearCLKernel lKernel5 = lprogram.createKernel("Sum3D");
+      lKernel5.setArgument("image", lResult);
+      lKernel5.setArgument("result", lEnd);
+      lKernel5.setGlobalSizes(lReductionFactor,
                               lReductionFactor,
                               lReductionFactor);
-      lKernel3.run(true);
+      lKernel5.run(true);
 
       OffHeapMemory lBuffer =
                             OffHeapMemory.allocateFloats(lEnd.getLength());

@@ -72,7 +72,8 @@ __kernel void xorsphere   (__write_only image3d_t image,
 
 __kernel void compare(__read_only image3d_t image1, 
 					  __read_only image3d_t image2, 
-					  __write_only image3d_t result)
+					  __write_only image3d_t result,
+					  float threshold)
 {
 	const int width  = get_image_width(image1);
 	const int height = get_image_height(image1);
@@ -86,14 +87,200 @@ __kernel void compare(__read_only image3d_t image1,
 	
 	float4 val1 = read_imagef(image1, pos);
 	float4 val2 = read_imagef(image2, pos);
-	float val = val1.x-val2.x;
-	float4 res = (float4){val*val,0,0,0};
+	
+	float min = 1/0;
+	float max = 0;
+	
+	//assign positive difference to the grid
+	if (val1.x>val2.c)
+		float val = val1.x-val2.x;
+	else
+		float val = val2.x-val1.x;
+	
+	if (val>max)
+		max = val;
+	if (val<min)
+		min = val;
+		
+	float4 res = (float4){val,0,0,0};
+	
+	threshold = min+((max-min)/10);
 	
 	write_imagef(result, pos, res);
 }	
 
+__kernel void cleanNoise (__read_only image3d_t grid,
+						  __write_only image3d_t image)
+{
+  const int width   = get_image_width(grid);
+  const int height  = get_image_height(grid);
+  const int depth   = get_image_depth(grid);
+  
+  const int x       = get_global_id(0);
+  const int y       = get_global_id(1);
+  const int z       = get_global_id(2);
+  
+  const int nblocksx = get_global_size(0);
+  const int nblocksy = get_global_size(1);
+  const int nblocksz = get_global_size(2);
+  
+  const int blockwidth   = width/nblocksx;
+  const int blockheight  = height/nblocksy;
+  const int blockdepth   = depth/nblocksz;
+  
+  float4 val = (float4){0,0,0,0};
+  
+  for(int lz=0; lz<blockwidth; lz++)
+  {
+    for(int ly=0; ly<blockheight; ly++)
+    {
+      for(int lx=0; lx<blockdepth; lx++)
+      {
+      	const int4 pos = origin + (int4){lx,ly,lz,0};
+      	float4 check = read_imagef(grid, pos);
+      	
+      	// look at existing neighbors and add 1 for every non-zero neighbor
+      	int link = 0;
+      	
+      	if (origin.x+lx<width)
+      	{
+      		int4 shiftpos = origin + (int4){lx+1,ly,lz,0};
+      		float4 data = read_imagef(grid, plusx);
+      		if (data > 0)
+      			link = link+1;
+      	}
+      	if (origin.x+lx>0)
+      	{
+      		int4 shiftpos = origin + (int4){lx-1,ly,lz,0};
+      		float4 data = read_imagef(grid, shiftpos);
+      		if (data > 0)
+      			link = link+1;
+      	}
+      	if (origin.y+ly<height)
+      	{
+      		int4 shiftpos = origin + (int4){lx,ly+1,lz,0};
+      		float4 data = read_imagef(grid, shiftpos);
+      		if (data > 0)
+      			link = link+1;
+      	}
+      	if (origin.y+ly>0)
+      	{
+      		int4 shiftpos = origin + (int4){lx,ly-1,lz,0};
+      		float4 data = read_imagef(grid, shiftpos);
+      		if (data > 0)
+      			link = link+1;
+      	}
+      	if (origin.z+lz<depth)
+      	{
+      		int4 shiftpos = origin + (int4){lx,ly,lz+1,0};
+      		float4 data = read_imagef(grid, shiftpos);
+      		if (data > 0)
+      			link = link+1;
+      	}
+      	if (origin.z+lz>0)
+      	{
+      		int4 shiftpos = origin + (int4){lx,ly,lz-1,0};
+      		float4 data = read_imagef(grid, shiftpos);
+      		if (data > 0)
+      			link = link+1;
+      	}
+      	
+      	if (check.x=0) or if (link<2)
+      		writeimagef(image, pos, val);
+      		
+      	
+      }
+    }
+  }
+  
+}
+
+
+__kernel void registerNoise (__read_only image3d_t image,
+						  __write_only image1d_t grid,
+						   float threshold)
+{
+  const int width   = get_image_width(image);
+  const int height  = get_image_height(image);
+  const int depth   = get_image_depth(image);
+  
+  const int x       = get_global_id(0);
+  const int y       = get_global_id(1);
+  const int z       = get_global_id(2);
+  
+  const int nblocksx = get_global_size(0);
+  const int nblocksy = get_global_size(1);
+  const int nblocksz = get_global_size(2);
+  
+  const int blockwidth   = width/nblocksx;
+  const int blockheight  = height/nblocksy;
+  const int blockdepth   = depth/nblocksz;
+  
+  float4 check = (float4){1,0,0,0};
+  
+  for(int lz=0; lz<blockwidth; lz++)
+  {
+    for(int ly=0; ly<blockheight; ly++)
+    {
+      for(int lx=0; lx<blockdepth; lx++)
+      {
+      	const int4 pos = origin + (int4){lx,ly,lz,0};
+      	float4 val = read_imagef(image, pos);
+      	
+      	if (val.x<threshold)
+      		writeimagef(grid, pos, check);
+      }
+    }
+  }
+  
+}
+
 __kernel
-void sumNroot3D (__read_only image3d_t image,
+void SumSquareRoot3D (__read_only image3d_t image,
+                 __global    float*    result) 
+{
+  const int width   = get_image_width(image);
+  const int height  = get_image_height(image);
+  const int depth   = get_image_depth(image);
+  
+  const int x       = get_global_id(0);
+  const int y       = get_global_id(1);
+  const int z       = get_global_id(2);
+  
+  const int nblocksx = get_global_size(0);
+  const int nblocksy = get_global_size(1);
+  const int nblocksz = get_global_size(2);
+  
+  const int blockwidth   = width/nblocksx;
+  const int blockheight  = height/nblocksy;
+  const int blockdepth   = depth/nblocksz;
+  
+  float sum = 0;
+  
+  const int4 origin = (int4){x*blockwidth,y*blockheight,z*blockdepth,0};
+  
+  for(int lz=0; lz<blockwidth; lz++)
+  {
+    for(int ly=0; ly<blockheight; ly++)
+    {
+      for(int lx=0; lx<blockdepth; lx++)
+      {
+        const int4 pos = origin + (int4){lx,ly,lz,0};
+     
+        float value = read_imagef(image, pos).x;
+
+        sum = sum + value;
+      }
+    }
+  }
+  
+  const int index = x+nblocksx*y+nblocksx*nblocksy*z;
+  
+  result[index] = sum;
+}
+
+__kernel
+void Sum3D (__read_only image3d_t image,
                  __global    float*    result) 
 {
   const int width   = get_image_width(image);
