@@ -22,7 +22,38 @@ import coremem.offheap.OffHeapMemory;
 public class Demo
 {
 
-  public void demo() throws InterruptedException, IOException
+  public float[] CompareDemoImages() throws InterruptedException, IOException
+  {
+	 float[] changes = new float[10];
+	 float threshold = 0;
+	 int shiftx = 2;
+	 int shifty = 0;
+	 int shiftz = 0;
+	 changes[0] = createDummyPics(0, 0, 0,
+			 					  shiftx, shifty, shiftz,
+			 					  threshold, true);
+	 int posx = shiftx;
+	 int posy = shifty;
+	 int posz = shiftz;
+	 
+	 for (int i=1;i<changes.length;i++)
+	 {
+		 changes[i] = createDummyPics(posx, posy, posz,
+			 					  	  shiftx, shifty, shiftz,
+			 					  	  threshold, false);
+		 posx = posx + shiftx;
+		 posy = posy + shifty;
+		 posz = posz + shiftz;
+	 }
+	 return changes;
+	 
+  }
+	
+	
+  public float createDummyPics(int initialshiftx, int initialshifty, int initialshiftz, 
+		  					  int movementx, int movementy, int movementz,
+		  					  float extthreshold, boolean first) 
+		  							  throws InterruptedException, IOException
   {
 
     ClearCLBackendInterface lClearCLBackendInterface =
@@ -88,9 +119,9 @@ public class Demo
 
       // set all the constants
       lKernel.setOptionalArgument("r", 0.25f);
-      lKernel.setOptionalArgument("cx", lSize / 2);
-      lKernel.setOptionalArgument("cy", lSize / 2);
-      lKernel.setOptionalArgument("cz", lSize / 2);
+      lKernel.setOptionalArgument("cx", lSize / 2 + initialshiftx);
+      lKernel.setOptionalArgument("cy", lSize / 2 + initialshifty);
+      lKernel.setOptionalArgument("cz", lSize / 2 + initialshiftz);
 
       lKernel.setOptionalArgument("a", 1);
       lKernel.setOptionalArgument("b", 1);
@@ -107,14 +138,16 @@ public class Demo
 
       // give the second image to the kernel but leave everything as is
       lKernel.setArgument("image", lImage2);
-      lKernel.setOptionalArgument("cx", lSize / 2 + 6);
+      lKernel.setOptionalArgument("cx", lSize / 2 + initialshiftx + movementx);
+      lKernel.setOptionalArgument("cy", lSize / 2 + initialshifty + movementy);
+      lKernel.setOptionalArgument("cz", lSize / 2 + initialshiftz + movementz);
       lKernel.setGlobalSizes(lImage2);
       lKernel.run(true);
 
       System.out.println("second image done");
 
       // calculate pixel-difference and save it to another image
-      float lthres=0;
+      float lthres = 0;
       ClearCLKernel lKernel2 = lprogram.createKernel("compare");
       lKernel2.setArgument("image1", lImage1);
       lKernel2.setArgument("image2", lImage2);
@@ -126,7 +159,10 @@ public class Demo
       ClearCLKernel lKernel3 = lprogram.createKernel("registerNoise");
       lKernel3.setArgument("image", lResult);
       lKernel3.setArgument("grid", lNoiseGrid);
-      lKernel3.setArgument("threshold", lthres);
+      if (first = true)
+    	  lKernel3.setArgument("threshold", lthres);
+      else 
+    	  lKernel3.setArgument("threshold", extthreshold);
       lKernel3.setGlobalSizes(lResult);
       lKernel3.run(true);
       
@@ -171,6 +207,8 @@ public class Demo
 
       // print out the end-result (in this case should be 0)
       System.out.println("result is " + lSum);
+      
+      return lSum;
     }
 
   }
