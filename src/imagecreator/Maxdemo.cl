@@ -88,14 +88,15 @@ __kernel void compare(__read_only image3d_t image1,
 	float4 val1 = read_imagef(image1, pos);
 	float4 val2 = read_imagef(image2, pos);
 	
-	float min = 1/0;
+	float min = 999999;
 	float max = 0;
 	
+	float val;
 	//assign positive difference to the grid
-	if (val1.x>val2.c)
-		float val = val1.x-val2.x;
+	if (val1.x>val2.x)
+		val = val1.x-val2.x;
 	else
-		float val = val2.x-val1.x;
+		val = val2.x-val1.x;
 	
 	if (val>max)
 		max = val;
@@ -128,6 +129,7 @@ __kernel void cleanNoise (__read_only image3d_t grid,
   const int blockheight  = height/nblocksy;
   const int blockdepth   = depth/nblocksz;
   
+  const int4 origin = (int4){x*blockwidth,y*blockheight,z*blockdepth,0};
   float4 val = (float4){0,0,0,0};
   
   for(int lz=0; lz<blockwidth; lz++)
@@ -145,47 +147,47 @@ __kernel void cleanNoise (__read_only image3d_t grid,
       	if (origin.x+lx<width)
       	{
       		int4 shiftpos = origin + (int4){lx+1,ly,lz,0};
-      		float4 data = read_imagef(grid, plusx);
-      		if (data > 0)
+      		float4 data = read_imagef(grid, shiftpos);
+      		if (data.x > 0)
       			link = link+1;
       	}
       	if (origin.x+lx>0)
       	{
       		int4 shiftpos = origin + (int4){lx-1,ly,lz,0};
       		float4 data = read_imagef(grid, shiftpos);
-      		if (data > 0)
+      		if (data.x > 0)
       			link = link+1;
       	}
       	if (origin.y+ly<height)
       	{
       		int4 shiftpos = origin + (int4){lx,ly+1,lz,0};
       		float4 data = read_imagef(grid, shiftpos);
-      		if (data > 0)
+      		if (data.x > 0)
       			link = link+1;
       	}
       	if (origin.y+ly>0)
       	{
       		int4 shiftpos = origin + (int4){lx,ly-1,lz,0};
       		float4 data = read_imagef(grid, shiftpos);
-      		if (data > 0)
+      		if (data.x > 0)
       			link = link+1;
       	}
       	if (origin.z+lz<depth)
       	{
       		int4 shiftpos = origin + (int4){lx,ly,lz+1,0};
       		float4 data = read_imagef(grid, shiftpos);
-      		if (data > 0)
+      		if (data.x > 0)
       			link = link+1;
       	}
       	if (origin.z+lz>0)
       	{
       		int4 shiftpos = origin + (int4){lx,ly,lz-1,0};
       		float4 data = read_imagef(grid, shiftpos);
-      		if (data > 0)
+      		if (data.x > 0)
       			link = link+1;
       	}
       	
-      	if (check.x=0) or if (link<2)
+      	if (check.x=0 || link<2)
       		writeimagef(image, pos, val);
       		
       	
@@ -216,7 +218,9 @@ __kernel void registerNoise (__read_only image3d_t image,
   const int blockheight  = height/nblocksy;
   const int blockdepth   = depth/nblocksz;
   
-  float4 check = (float4){1,0,0,0};
+  const int4 origin = (int4){x*blockwidth,y*blockheight,z*blockdepth,0};
+  
+  float4 check= (float4){0,0,0,0};
   
   for(int lz=0; lz<blockwidth; lz++)
   {
@@ -227,8 +231,12 @@ __kernel void registerNoise (__read_only image3d_t image,
       	const int4 pos = origin + (int4){lx,ly,lz,0};
       	float4 val = read_imagef(image, pos);
       	
-      	if (val.x<threshold)
-      		writeimagef(grid, pos, check);
+      	if (val.x<=threshold)
+      		check.x=1;
+      	else
+      		check.x=0;
+      		
+      	writeimagef(grid, pos, check);
       }
     }
   }

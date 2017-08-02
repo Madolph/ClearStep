@@ -21,10 +21,11 @@ import coremem.offheap.OffHeapMemory;
 
 public class Demo
 {
+	float[] changes = new float[10];
 
-  public float[] CompareDemoImages() throws InterruptedException, IOException
+  public void CompareDemoImages() throws InterruptedException, IOException
   {
-	 float[] changes = new float[10];
+	 System.out.println("doing stuff");
 	 float threshold = 0;
 	 int shiftx = 2;
 	 int shifty = 0;
@@ -45,7 +46,6 @@ public class Demo
 		 posy = posy + shifty;
 		 posz = posz + shiftz;
 	 }
-	 return changes;
 	 
   }
 	

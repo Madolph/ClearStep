@@ -5,7 +5,7 @@ import java.io.IOException;
 public class TimeStepper {
 
 	public Stackholder Stacks = new Stackholder();
-	public static Demo lApp;
+	public Demo lApp = new Demo();
 	public float globMin;
 	public float locMax;
 	public float lowStep;
@@ -15,7 +15,7 @@ public class TimeStepper {
 	{
 		lowStep=minStep;
 		StepVari=StepSpan;
-		globMin=1/0;
+		globMin=999999;
 	}
 	
 	public void scanstacks()
@@ -45,7 +45,7 @@ public class TimeStepper {
 	}
 	
 	public void assignCache() throws InterruptedException, IOException{
-		for (int i=0;i<Stacks.Cache.length;i++)
-		Stacks.Cache = lApp.CompareDemoImages();
+		lApp.CompareDemoImages();
+		Stacks.Cache = lApp.changes;
 	}
 }
