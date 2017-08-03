@@ -199,8 +199,8 @@ __kernel void cleanNoise (__read_only image3d_t grid,
 
 
 __kernel void registerNoise (__read_only image3d_t image,
-						  __write_only image1d_t grid,
-						   float threshold)
+						     __write_only image1d_t grid,
+						   	 float threshold)
 {
   const int width   = get_image_width(image);
   const int height  = get_image_height(image);
@@ -245,7 +245,7 @@ __kernel void registerNoise (__read_only image3d_t image,
 
 __kernel
 void SumSquareRoot3D (__read_only image3d_t image,
-                 __global    float*    result) 
+                 	  __global    float*    result) 
 {
   const int width   = get_image_width(image);
   const int height  = get_image_height(image);
@@ -289,7 +289,7 @@ void SumSquareRoot3D (__read_only image3d_t image,
 
 __kernel
 void Sum3D (__read_only image3d_t image,
-                 __global    float*    result) 
+            __global    float*    result) 
 {
   const int width   = get_image_width(image);
   const int height  = get_image_height(image);

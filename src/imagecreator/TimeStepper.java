@@ -46,6 +46,9 @@ public class TimeStepper {
 	
 	public void assignCache() throws InterruptedException, IOException{
 		lApp.CompareDemoImages();
-		Stacks.Cache = lApp.changes;
+		for (int i=0;i<lApp.changes.length;i++)
+		{
+			Stacks.register(lApp.changes[i]);
+		}
 	}
 }

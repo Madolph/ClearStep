@@ -25,6 +25,4 @@ public class Stackholder {
 			}
 		Cache[1]=temp;	
 	}
-	
-	
 }
