@@ -76,6 +76,8 @@ public class Demo
       lprogram.buildAndLog();
 
       System.out.println("created program");
+      
+      cl_sampler lSampler = createSampler(lContext, false, CL_ADDRESS_NONE, CLK_FILTER_LINEAR, );
 
       int lSize = 128;
 
@@ -97,7 +99,7 @@ public class Demo
                                                              lSize,
                                                              lSize);
       
-      ClearCLImage lNoiseGrid =
+      ClearCLImage lDenoisedResult =
               			  lContext.createSingleChannelImage(ImageChannelDataType.Float,
                                                 			 lSize,
                                                 			 lSize,
@@ -156,21 +158,16 @@ public class Demo
       lKernel2.setGlobalSizes(lImage1);
       lKernel2.run(true);
       
-      ClearCLKernel lKernel3 = lprogram.createKernel("registerNoise");
+      ClearCLKernel lKernel3 = lprogram.createKernel("cleanNoise");
       lKernel3.setArgument("image", lResult);
-      lKernel3.setArgument("grid", lNoiseGrid);
+      lKernel3.setArgument("clean", lDenoisedResult);
+      lKernel3.setArgument("sampler", lSampler);
       if (first = true)
-    	  lKernel3.setArgument("threshold", lthres);
+    	  lKernel3.setArgument("thresh", lthres);
       else 
-    	  lKernel3.setArgument("threshold", extthreshold);
+    	  lKernel3.setArgument("thresh", extthreshold);
       lKernel3.setGlobalSizes(lResult);
       lKernel3.run(true);
-      
-      ClearCLKernel lKernel4 = lprogram.createKernel("cleanNoise");
-      lKernel4.setArgument("image", lResult);
-      lKernel4.setArgument("grid", lNoiseGrid);
-      lKernel4.setGlobalSizes(lResult);
-      lKernel4.run(true);
 
       ClearCLImageViewer lViewImageResult =
                                           ClearCLImageViewer.view(lResult);

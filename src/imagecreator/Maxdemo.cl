@@ -197,6 +197,64 @@ __kernel void cleanNoise (__read_only image3d_t grid,
   
 }
 
+__kernel void handleNoise (__read_only image3d_t image,
+							__write_only image3d_t clean,
+							float thresh,
+							sampler_t sampler)
+{
+  const int width   = get_image_width(image);
+  const int height  = get_image_height(image);
+  const int depth   = get_image_depth(image);
+  
+  const int x       = get_global_id(0);
+  const int y       = get_global_id(1);
+  const int z       = get_global_id(2);
+  
+  const int nblocksx = get_global_size(0);
+  const int nblocksy = get_global_size(1);
+  const int nblocksz = get_global_size(2);
+  
+  const int blockwidth   = width/nblocksx;
+  const int blockheight  = height/nblocksy;
+  const int blockdepth   = depth/nblocksz;
+  
+  const int4 origin = (int4){x*blockwidth,y*blockheight,z*blockdepth,0};
+  
+  float4 noise = (float4){0,0,0,0};
+  
+  for(int lz=0; lz<blockwidth; lz++)
+  {
+    for(int ly=0; ly<blockheight; ly++)
+    {
+      for(int lx=0; lx<blockdepth; lx++)
+      {
+      	const int4 pos = origin + (int4){lx,ly,lz,0};
+      	
+      	for(int q=0;q<3;q++)
+      	{
+      		for(int w=0;w<3;w++)
+      		{
+      			for(int e=0;e<3;e++)
+      			{
+      				int4 shiftpos = origin + (int4){lx-1+e,ly-1+w,lz-1+q})
+      				float 4 linkval = read_imagef(image, sampler, shiftpos);
+      				(linkval>thresh)?
+      					link=link+1:
+      					;
+      			}
+      		}
+      	}
+      	
+      	float4 val = read_imagef(image, pos);
+      	
+      	(val>thresh && link>9)?
+      		write_imagef(clean, pos, val:
+      		write_imagef(clean, pos, noise);
+      		
+      }
+    }
+  }
+  
 
 __kernel void registerNoise (__read_only image3d_t image,
 						     __write_only image1d_t grid,
