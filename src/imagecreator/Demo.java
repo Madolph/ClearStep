@@ -76,8 +76,6 @@ public class Demo
       lprogram.buildAndLog();
 
       System.out.println("created program");
-      
-      cl_sampler lSampler = createSampler(lContext, false, CL_ADDRESS_NONE, CLK_FILTER_LINEAR, );
 
       int lSize = 128;
 
@@ -158,10 +156,9 @@ public class Demo
       lKernel2.setGlobalSizes(lImage1);
       lKernel2.run(true);
       
-      ClearCLKernel lKernel3 = lprogram.createKernel("cleanNoise");
+      ClearCLKernel lKernel3 = lprogram.createKernel("handleNoise");
       lKernel3.setArgument("image", lResult);
       lKernel3.setArgument("clean", lDenoisedResult);
-      lKernel3.setArgument("sampler", lSampler);
       if (first = true)
     	  lKernel3.setArgument("thresh", lthres);
       else 
@@ -179,7 +176,7 @@ public class Demo
 
       // take the difference-map and calculate the root of the sum
       ClearCLKernel lKernel5 = lprogram.createKernel("Sum3D");
-      lKernel5.setArgument("image", lResult);
+      lKernel5.setArgument("image", lDenoisedResult);
       lKernel5.setArgument("result", lEnd);
       lKernel5.setGlobalSizes(lReductionFactor,
                               lReductionFactor,
