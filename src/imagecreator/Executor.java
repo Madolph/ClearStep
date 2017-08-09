@@ -11,6 +11,8 @@ public class Executor {
 		Stepper.assignCache();
 		Stepper.scanstacks();
 		float step = Stepper.computeStep();
-		System.out.println(step);
+		for (int i=1;i<Stepper.Stacks.Cache.length+1;i++)
+			{ System.out.println("Change"+ i +" is calculated as: " + Stepper.Stacks.Cache[i-1]); }
+		System.out.println("resulting timestep is: " + step);
 	}
 }

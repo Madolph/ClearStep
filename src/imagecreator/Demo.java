@@ -130,10 +130,6 @@ public class Demo
 
       lKernel.run(true);
 
-      ClearCLImageViewer lViewImage =
-                                    ClearCLImageViewer.view(lImage1);
-
-
       System.out.println("first image done");
 
       // give the second image to the kernel but leave everything as is
@@ -165,9 +161,6 @@ public class Demo
     	  lKernel3.setArgument("thresh", extthreshold);
       lKernel3.setGlobalSizes(lResult);
       lKernel3.run(true);
-
-      ClearCLImageViewer lViewImageResult =
-                                          ClearCLImageViewer.view(lResult);
 
       // while (lViewImageResult.isShowing())
       // {
