@@ -15,4 +15,13 @@ public class Executor {
 			{ System.out.println("Change"+ i +" is calculated as: " + Stepper.Stacks.Cache[i-1]); }
 		System.out.println("resulting timestep is: " + step);
 	}
+	
+	@Test
+	public void Test1() throws InterruptedException, IOException
+	{
+		TimeStepper Stepper = new TimeStepper(1,6);
+		Stepper.lApp.createContinuousPics(0, 0, 0, 0, 0, 0, 0, true);
+	}
 }
+
+
