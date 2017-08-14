@@ -12,18 +12,18 @@ import clearcl.ClearCLProgram;
 import clearcl.backend.ClearCLBackendInterface;
 import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
-import imagecreator.Demo;
 
 public class Overlord {
 	
-	static public Simulator Sim;
-	static public Calculator Calc;
-	static public TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.2);
+	public static Simulator Sim;
+	public static Calculator Calc;
+	public static TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.2);
 	public float startStep;
 	public float span;
 	//duration in seconds
 	public static float duration = 600;
 	
+	@Test
 	public static void main(String[] args) throws InterruptedException, IOException
 	{
 	// create the Overhead for the actual Test
@@ -57,7 +57,7 @@ public class Overlord {
 			  
 			  System.out.println(oldStep);
 			  
-			  Sim.generatePics(lContext, lProgram, time, lImage1, lImage2, lSize, oldStep);
+			  Sim.generatePics(lContext, lProgram, time, lImage1, lImage2, lSize, Stepper.step);
 			  // computes the difference between the two pictures
 			  float diff = Calc.compareImages(lContext, lProgram, lImage1, lImage2, lSize);
 			  // computed the step out of the saved difference
