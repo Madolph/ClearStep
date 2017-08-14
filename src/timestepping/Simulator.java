@@ -7,6 +7,17 @@ import clearcl.ClearCLProgram;
 
 public class Simulator {
 
+	/**
+	 * creates two pictures that depend on the time
+	 * 
+	 * @param lContext The OpenCL-Context
+	 * @param lProgram The OpenCL-Program
+	 * @param time The current time
+	 * @param lImage1 Storage for the first image
+	 * @param lImage2 Storage for the second image
+	 * @param lSize The size of the images
+	 * @param step The current timestep
+	 */
 	public void generatePics(ClearCLContext lContext, ClearCLProgram lProgram, 
 			float time, ClearCLImage lImage1, ClearCLImage lImage2, int lSize, float step)
 	{ 
@@ -38,6 +49,12 @@ public class Simulator {
 	    System.out.println("image2 done");	      
 	}
 	
+	/**
+	 * returns the middle of the generates spheres that appear in the picture
+	 * 
+	 * @param time The current timepoint
+	 * @return The positions of the sphere in every dimension
+	 */
 	public float[] computePosition(float time)
 	{
 		float timespan = 10000;
@@ -54,6 +71,14 @@ public class Simulator {
 		return Position;
 	}
 	
+	/**
+	 * Parses the Alpha, that changes periodically
+	 * 
+	 * @param time The current time
+	 * @param timespan The length of a period
+	 * @param increment The amount of spatial change
+	 * @return The Alpha for every dimension
+	 */
 	public float[] getAlpha(float time, float timespan, float increment)
 	{
 		float[] Alpha=new float[3];

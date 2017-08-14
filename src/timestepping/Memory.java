@@ -14,6 +14,15 @@ public class Memory {
 		FirstRun = true;
 	}
 	
+	/**
+	 * saves the supplied difference to the array, after shifting all the values, so
+	 * that only the 10 newest ones are stored. Also checks if the array has been initialized
+	 * yet and if not, does so. Then is calculates some metrics and answers, if it is necessary
+	 * to compute a new step
+	 * 
+	 * @param diff
+	 * @return true if a new step needs to be calculated
+	 */
 	public boolean saveAndCheckDiff(float diff)
 	{
 		// if this is the first run, every value is set to the current difference
@@ -42,12 +51,18 @@ public class Memory {
 		}
 	}
 	
+	/**
+	 * just shifts the values of the array
+	 */
 	private void rearrangeDiff()
 	{
 		for (int i=0;i<dev.length-1;i++)
 			dev[i+1]=dev[i];
 	}
 	
+	/**
+	 * calculates the standard-deviation
+	 */
 	private void calcStDev()
 	{
 		mean=0;

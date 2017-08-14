@@ -9,6 +9,12 @@ public class TimeStepper {
 	public float stiff = (float) 0.9;
 	public float step;
 	
+	/**
+	 * initializes some necessary values of the TimeStepper
+	 * 
+	 * @param start the chosen average timestep at the beginning
+	 * @param width the span of timesteps possible
+	 */
 	public TimeStepper(float start, float width)
 	{
 		neutralStep = start*1000;
@@ -16,6 +22,12 @@ public class TimeStepper {
 		step = neutralStep;
 	}
 
+	/**
+	 * calculates the new Timestep
+	 * 
+	 * @param diff the metric of image-change
+	 * @return the newly computed timestep
+	 */
 	public float computeStep(float diff)
 	{
 		boolean calcStep = Info.saveAndCheckDiff(diff);

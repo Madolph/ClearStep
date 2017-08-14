@@ -13,11 +13,21 @@ import coremem.offheap.OffHeapMemory;
 
 public class Calculator {
 
+	/**
+	 * compares two images and responds with a metric that
+	 * relates to the change between the two
+	 * 
+	 * @param lContext the OpenCL-Context
+	 * @param lProgram the OpenCL-Program
+	 * @param lImage1 Image Number 1
+	 * @param lImage2 Image Number 2
+	 * @param lSize the Size of the images
+	 * @return the metric of change between the images
+	 */
 	public float compareImages(ClearCLContext lContext, ClearCLProgram lProgram, 
 			ClearCLImage lImage1, ClearCLImage lImage2, int lSize)
 	{
-		ClearCLImage lImage3 =
-                lContext.createSingleChannelImage(ImageChannelDataType.Float,
+		ClearCLImage lImage3 = lContext.createSingleChannelImage(ImageChannelDataType.Float,
                                                    lSize,
                                                    lSize,
                                                    lSize);
