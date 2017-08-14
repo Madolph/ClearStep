@@ -6,7 +6,7 @@ import org.junit.Test;
 public class Executor {
 
 	@Test
-	public static void main(String[] args) throws InterruptedException, IOException{
+	public void Test(String[] args) throws InterruptedException, IOException{
 		TimeStepper Stepper= new TimeStepper(1,6);
 		Stepper.assignCache();
 		Stepper.scanstacks();

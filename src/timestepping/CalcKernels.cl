@@ -95,16 +95,19 @@ void compare(__read_only image3d_t image1,
 	float min = 999999;
 	float max = 0;
 	
-	float val;
+	float val = val1.x-val2.x;
+	if (val<0)
+		val = -(val);
+		
 	//assign positive difference to the grid
-	(val1.x>val2.x)?
-		val = val1.x-val2.x:
-		val = val2.x-val1.x;
+	//(val1.x>val2.x)?
+	//	val = val1.x-val2.x:
+	//	val = val2.x-val1.x;
 	
-	(val>max)?
-		max = val:;
-	(val<min)?
-		min = val:;
+	if (val>max)
+		max = val;
+	if (val<min)
+		min = val;
 		
 	float4 res = (float4){val,0,0,0};
 	

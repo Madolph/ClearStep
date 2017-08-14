@@ -16,16 +16,15 @@ import imagecreator.Demo;
 
 public class Overlord {
 	
-	public Simulator Sim;
-	public Calculator Calc;
-	public TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.2);
+	static public Simulator Sim;
+	static public Calculator Calc;
+	static public TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.2);
 	public float startStep;
 	public float span;
 	//duration in seconds
-	public float duration = 600;
-
-	@Test
-	public void SimulateStepper() throws InterruptedException, IOException
+	public static float duration = 600;
+	
+	public static void main(String[] args) throws InterruptedException, IOException
 	{
 	// create the Overhead for the actual Test
 	  ClearCLBackendInterface lClearCLBackendInterface = ClearCLBackends.getBestBackend();
@@ -36,7 +35,7 @@ public class Overlord {
 
 		  ClearCLContext lContext = lFastestGPUDevice.createContext();
 
-		  ClearCLProgram lProgram = lContext.createProgram(Demo.class, "CalcKernels.cl");
+		  ClearCLProgram lProgram = lContext.createProgram(Simulator.class, "CalcKernels.cl");
 		  lProgram.addDefine("CONSTANT", "1");
 		  lProgram.buildAndLog();
 		  
@@ -55,6 +54,9 @@ public class Overlord {
 			  // we need the current step after the new one was set, so we cache it here
 			  float oldStep = Stepper.step;
 			  // generates two pictures that depend on the timepoint that is supplied
+			  
+			  System.out.println(oldStep);
+			  
 			  Sim.generatePics(lContext, lProgram, time, lImage1, lImage2, lSize, oldStep);
 			  // computes the difference between the two pictures
 			  float diff = Calc.compareImages(lContext, lProgram, lImage1, lImage2, lSize);
