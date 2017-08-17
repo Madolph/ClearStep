@@ -2,7 +2,7 @@ package timestepping;
 
 public class TimeStepper {
 	
-	public Memory Info;
+	public Memory Info= new Memory();
 	public float neutralStep;
 	public float span;
 	// sets the stiffness of the neutralStep

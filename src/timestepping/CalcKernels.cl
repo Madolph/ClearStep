@@ -141,7 +141,7 @@ void handleNoise (__read_only image3d_t image,
   
   const int4 origin = (int4){x*blockwidth,y*blockheight,z*blockdepth,0};
   
-  const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MIRROR | CLK_FILTER_NEAREST;
+  const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MIRRORED_REPEAT | CLK_FILTER_NEAREST;
   
   int link;
   

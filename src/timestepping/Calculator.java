@@ -12,7 +12,30 @@ import coremem.enums.NativeTypeEnum;
 import coremem.offheap.OffHeapMemory;
 
 public class Calculator {
+	
+	ClearCLImage image1=null;
+	ClearCLImage image2=null;
+	boolean uneven;
+	boolean filled;
 
+	public void CachePic(ClearCLImage image)
+	{
+		if (uneven)
+		{
+			image1=image;
+			uneven=false;
+			System.out.println("image1 set");
+		}
+		else 
+		{
+			image2=image;
+			uneven=true;
+			System.out.println("image2 set");
+		}
+		if (image1 != null && image2 !=null)
+			filled = true;
+	}
+	
 	/**
 	 * compares two images and responds with a metric that
 	 * relates to the change between the two
@@ -24,8 +47,7 @@ public class Calculator {
 	 * @param lSize the Size of the images
 	 * @return the metric of change between the images
 	 */
-	public float compareImages(ClearCLContext lContext, ClearCLProgram lProgram, 
-			ClearCLImage lImage1, ClearCLImage lImage2, int lSize)
+	public float compareImages(ClearCLContext lContext, ClearCLProgram lProgram, int lSize)
 	{
 		ClearCLImage lImage3 = lContext.createSingleChannelImage(ImageChannelDataType.Float,
                                                    lSize,
@@ -40,15 +62,15 @@ public class Calculator {
 		
 		float lthres = 0;
 	    ClearCLKernel lKernel = lProgram.createKernel("compare");
-	    lKernel.setArgument("image1", lImage1);
-	    lKernel.setArgument("image2", lImage2);
+	    lKernel.setArgument("image1", image1);
+	    lKernel.setArgument("image2", image2);
 	    lKernel.setArgument("result", lImage3);
 	    lKernel.setArgument("threshold", lthres);
-	    lKernel.setGlobalSizes(lImage1);
+	    lKernel.setGlobalSizes(image1);
 	    lKernel.run(true);
 		
 	    ClearCLKernel lKernel1 = lProgram.createKernel("Sum3D");
-	    lKernel1.setArgument("image", lImage1);
+	    lKernel1.setArgument("image", lImage3);
 	    lKernel1.setArgument("result", lEnd);
 	    lKernel1.setGlobalSizes(lReductionFactor,
 	                              lReductionFactor,
@@ -64,7 +86,7 @@ public class Calculator {
 	    	float lFloatAligned = lBuffer.getFloatAligned(i);
 	    	diff += lFloatAligned;
 	    }
-	    // print out the end-result (in this case should be 0)
+	    // print out the end-result
 	    System.out.println("result is " + diff);
 		
 		return diff;

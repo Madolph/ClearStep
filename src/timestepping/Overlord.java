@@ -15,8 +15,8 @@ import clearcl.enums.ImageChannelDataType;
 
 public class Overlord {
 	
-	public static Simulator Sim;
-	public static Calculator Calc;
+	public static Simulator Sim = new Simulator();
+	public static Calculator Calc = new Calculator();
 	public static TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.2);
 	public float startStep;
 	public float span;
@@ -44,29 +44,29 @@ public class Overlord {
 		  float time=0;
 		  
 		  int lSize = 128;
-
-		    ClearCLImage lImage1 = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
-		    ClearCLImage lImage2 = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
 		  
 		  // as long as we aren't above the time, we will now generate pictures and compute timesteps from them
 		  while (time<(duration*1000))  
 		  {
-			  // we need the current step after the new one was set, so we cache it here
-			  float oldStep = Stepper.step;
-			  // generates two pictures that depend on the timepoint that is supplied
+			  System.out.println("current time is: "+time);
+			  ClearCLImage lImage = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
 			  
-			  System.out.println(oldStep);
-			  
-			  Sim.generatePics(lContext, lProgram, time, lImage1, lImage2, lSize, Stepper.step);
-			  // computes the difference between the two pictures
-			  float diff = Calc.compareImages(lContext, lProgram, lImage1, lImage2, lSize);
-			  // computed the step out of the saved difference
-			  float step = Stepper.computeStep(diff);
+			  Sim.generatePic(lContext, lProgram, time, lImage, lSize);
+			  Thread.sleep((long) Stepper.step);
+			  time += Stepper.step;
+			  Calc.CachePic(lImage);
+			  if (Calc.filled)
+			  {			  
+				  // computes the difference between the two pictures
+				  float diff = Calc.compareImages(lContext, lProgram, lSize);
+				  System.out.println("diff is: "+diff);
+				  // computed the step out of the saved difference
+				  float step = Stepper.computeStep(diff);
 		  
-			  // put the Thread to sleep to simulate realtime... kinda... sorta
-			  Thread.sleep((long) oldStep); 
+				  // put the Thread to sleep to simulate realtime... kinda... sorta
 		  
-			  System.out.println(step);
+				  System.out.println("computed step is: "+step);
+			  }
 		  }
 	  }
 	}

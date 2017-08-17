@@ -18,35 +18,27 @@ public class Simulator {
 	 * @param lSize The size of the images
 	 * @param step The current timestep
 	 */
-	public void generatePics(ClearCLContext lContext, ClearCLProgram lProgram, 
-			float time, ClearCLImage lImage1, ClearCLImage lImage2, int lSize, float step)
+	public void generatePic(ClearCLContext lContext, ClearCLProgram lProgram, 
+			float time, ClearCLImage lImage1, int lSize)
 	{ 
-	    float[] Position = this.computePosition(time);
+	    float[] Position = computePosition(time);
 	    
 	    ClearCLKernel lKernel = lProgram.createKernel("xorsphere");
 	    lKernel.setArgument("image", lImage1);
 	    lKernel.setGlobalSizes(lImage1);
 	    lKernel.setOptionalArgument("r", 0.25f);
 	    lKernel.setOptionalArgument("cx", lSize / 2 + Position[0]);
+	    System.out.print("shift X is: "+Position[0]);
 	    lKernel.setOptionalArgument("cy", lSize / 2 + Position[1]);
+	    System.out.print("shift Y is: "+Position[1]);
 	    lKernel.setOptionalArgument("cz", lSize / 2 + Position[2]);
+	    System.out.print("shift Z is: "+Position[2]);
 	    lKernel.setOptionalArgument("a", 1);
 	    lKernel.setOptionalArgument("b", 1);
 	    lKernel.setOptionalArgument("c", 1);
 	    lKernel.setOptionalArgument("d", 1);
 	    lKernel.run(true);
-	    System.out.println("image1 done");
-	    
-	    time += step;
-	    Position = this.computePosition(time);
-	    
-	    lKernel.setArgument("image", lImage2);
-	    lKernel.setGlobalSizes(lImage2);
-	    lKernel.setOptionalArgument("cx", lSize / 2 + Position[0]);
-	    lKernel.setOptionalArgument("cy", lSize / 2 + Position[1]);
-	    lKernel.setOptionalArgument("cz", lSize / 2 + Position[2]);
-	    lKernel.run(true);
-	    System.out.println("image2 done");	      
+	    System.out.println("image generated");      
 	}
 	
 	/**
@@ -57,16 +49,14 @@ public class Simulator {
 	 */
 	public float[] computePosition(float time)
 	{
-		float timespan = 10000;
-		float increment = 12;
+		float timespan = 0;
+		float increment = 3;
 		float[] Position = new float[3];
-		float[] Alpha = this.getAlpha(time, timespan, increment);
+		float[] Alpha = getAlpha(time, timespan, increment);
+		System.out.print("AX: "+Alpha[0]+" / AY: "+Alpha[1]+" / AZ: "+Alpha[2]);
 		for (int i=0;i<Position.length;i++)
 		{
-			if ((time%(timespan*2))<timespan)
-				Position[i]=Alpha[i]*(time%timespan);
-			else
-				Position[i]=((increment*(timespan/2))-(Alpha[i]*(time%timespan)));
+			Position[i]=Alpha[i]*(time);
 		}
 		return Position;
 	}
@@ -84,14 +74,8 @@ public class Simulator {
 		float[] Alpha=new float[3];
 		for (int i=0;i<Alpha.length;i++)
 		{
-			if ((time%timespan)<(timespan/2))
-			{
-				Alpha[i]=1/4*increment;
-			}
-			else
-			{
-				Alpha[i]=3/4*increment;
-			}
+			Alpha[i]=increment;
+			System.out.print("Alpha is: "+Alpha[i]+"  increment is: "+increment);
 		}
 		return Alpha;
 	}
