@@ -4,6 +4,7 @@ import clearcl.ClearCLContext;
 import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
 import clearcl.ClearCLProgram;
+import clearcl.viewer.ClearCLImageViewer;
 
 public class Simulator {
 
@@ -23,21 +24,24 @@ public class Simulator {
 	{ 
 	    float[] Position = computePosition(time);
 	    
-	    ClearCLKernel lKernel = lProgram.createKernel("xorsphere");
+	    ClearCLKernel lKernel = lProgram.createKernel("sphere");
 	    lKernel.setArgument("image", lImage1);
 	    lKernel.setGlobalSizes(lImage1);
-	    lKernel.setOptionalArgument("r", 0.25f);
-	    lKernel.setOptionalArgument("cx", lSize / 2 + Position[0]);
-	    System.out.print("shift X is: "+Position[0]);
-	    lKernel.setOptionalArgument("cy", lSize / 2 + Position[1]);
-	    System.out.print("shift Y is: "+Position[1]);
-	    lKernel.setOptionalArgument("cz", lSize / 2 + Position[2]);
-	    System.out.print("shift Z is: "+Position[2]);
-	    lKernel.setOptionalArgument("a", 1);
-	    lKernel.setOptionalArgument("b", 1);
-	    lKernel.setOptionalArgument("c", 1);
-	    lKernel.setOptionalArgument("d", 1);
+	    lKernel.setArgument("r", 0.25f);
+	    
+	    lKernel.setArgument("cx", ((lSize/2)+Position[0]));
+	    System.out.println("shift X is: "+Position[0]);
+	    lKernel.setArgument("cy", ((lSize/2)+Position[1]));
+	    System.out.println("shift Y is: "+Position[1]);
+	    lKernel.setArgument("cz", ((lSize/2)+Position[2]));
+	    System.out.println("shift Z is: "+Position[2]);
+	    
+	    /**lKernel.setArgument("cx", lSize/2);
+		lKernel.setArgument("cy", lSize/2);
+		lKernel.setArgument("cz", lSize/2);**/
+	    
 	    lKernel.run(true);
+	    
 	    System.out.println("image generated");      
 	}
 	
@@ -50,13 +54,15 @@ public class Simulator {
 	public float[] computePosition(float time)
 	{
 		float timespan = 0;
-		float increment = 3;
+		float increment = 1;
 		float[] Position = new float[3];
 		float[] Alpha = getAlpha(time, timespan, increment);
 		System.out.print("AX: "+Alpha[0]+" / AY: "+Alpha[1]+" / AZ: "+Alpha[2]);
 		for (int i=0;i<Position.length;i++)
 		{
-			Position[i]=Alpha[i]*(time);
+			Position[i]=Alpha[i]*(time/150);
+			if (i>0)
+				Position[i]=0;
 		}
 		return Position;
 	}

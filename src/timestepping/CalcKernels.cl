@@ -46,10 +46,10 @@ void fillimagexor(__write_only image3d_t image, int dx, int dy, float u)
 }
 
 __kernel 
-void xorsphere   (__write_only image3d_t image,
-                                        int       cx,
-                                        int       cy,
-                                        int       cz,
+void sphere   (__write_only image3d_t image,
+                                        float       cx,
+                                        float       cy,
+                                        float       cz,
                                         float     r)
 {
   const int width  = get_image_width(image);
@@ -68,10 +68,56 @@ void xorsphere   (__write_only image3d_t image,
   
   float d = fast_length((pos-cen)/dim);
   
-  float value = (float)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
+  //float value = (float)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
+  float value = (float)(100.0f*((d<r)?1:0) );
   
   write_imagef (image, (int4){x,y,z,0}, value);
 }
+
+/**__kernel
+void ball (__write_only image3d_t image,
+                                        int       cx,
+                                        int       cy,
+                                        int       cz,
+                                        float     r)
+
+{
+  const int width   = get_image_width(image);
+  const int height  = get_image_height(image);
+  const int depth   = get_image_depth(image);
+  
+  const int x       = get_global_id(0);
+  const int y       = get_global_id(1);
+  const int z       = get_global_id(2);
+  
+  const int nblocksx = get_global_size(0);
+  const int nblocksy = get_global_size(1);
+  const int nblocksz = get_global_size(2);
+  
+  const int blockwidth   = width/nblocksx;
+  const int blockheight  = height/nblocksy;
+  const int blockdepth   = depth/nblocksz;
+  
+  const int4 origin = {x*blockwidth,y*blockheight,z*blockdepth,0};
+  
+  int4 dim = {width,height,depth,1};
+  int4 cen = {cx,cy,cz,0};
+  
+  for(int lz=0; lz<blockwidth; lz++)
+  {
+    for(int ly=0; ly<blockheight; ly++)
+    {
+      for(int lx=0; lx<blockdepth; lx++)
+      {
+        const int4 pos = origin + (int4){lx,ly,lz,0};
+		float d = fast_length((pos-cen)/dim);
+		float value = (float)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
+		float4 val = (float4){value,0,0,0};
+		write_imagef(image, pos, val);
+      }
+    }
+  }
+}**/
 
 __kernel 
 void compare(__read_only image3d_t image1, 

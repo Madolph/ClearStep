@@ -12,19 +12,20 @@ import clearcl.ClearCLProgram;
 import clearcl.backend.ClearCLBackendInterface;
 import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
+import clearcl.viewer.ClearCLImageViewer;
 
 public class Overlord {
 	
-	public static Simulator Sim = new Simulator();
-	public static Calculator Calc = new Calculator();
-	public static TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.2);
+	public Simulator Sim = new Simulator();
+	public Calculator Calc = new Calculator();
+	public TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.2);
 	public float startStep;
 	public float span;
 	//duration in seconds
-	public static float duration = 600;
+	public float duration = 600;
 	
 	@Test
-	public static void main(String[] args) throws InterruptedException, IOException
+	public void TestDiffCalc() throws InterruptedException, IOException
 	{
 	// create the Overhead for the actual Test
 	  ClearCLBackendInterface lClearCLBackendInterface = ClearCLBackends.getBestBackend();
@@ -52,6 +53,8 @@ public class Overlord {
 			  ClearCLImage lImage = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
 			  
 			  Sim.generatePic(lContext, lProgram, time, lImage, lSize);
+			  ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
+			  
 			  Thread.sleep((long) Stepper.step);
 			  time += Stepper.step;
 			  Calc.CachePic(lImage);

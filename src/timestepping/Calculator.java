@@ -8,6 +8,7 @@ import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
 import clearcl.ClearCLProgram;
 import clearcl.enums.ImageChannelDataType;
+import clearcl.viewer.ClearCLImageViewer;
 import coremem.enums.NativeTypeEnum;
 import coremem.offheap.OffHeapMemory;
 
@@ -15,7 +16,7 @@ public class Calculator {
 	
 	ClearCLImage image1=null;
 	ClearCLImage image2=null;
-	boolean uneven;
+	boolean uneven = true;
 	boolean filled;
 
 	public void CachePic(ClearCLImage image)
