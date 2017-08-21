@@ -5,6 +5,8 @@ public class TimeStepper {
 	public Memory Info= new Memory();
 	public float neutralStep;
 	public float span;
+	public float max;
+	public float min;
 	// sets the stiffness of the neutralStep
 	public float stiff = (float) 0.9;
 	public float step;
@@ -15,11 +17,13 @@ public class TimeStepper {
 	 * @param start the chosen average timestep at the beginning
 	 * @param width the span of timesteps possible
 	 */
-	public TimeStepper(float start, float width)
+	public TimeStepper(float start, float width, float maxStep, float minStep)
 	{
 		neutralStep = start*1000;
 		span = width*1000;
 		step = neutralStep;
+		max = maxStep*1000;
+		min = minStep*1000;
 	}
 
 	/**
@@ -33,11 +37,13 @@ public class TimeStepper {
 		boolean calcStep = Info.saveAndCheckDiff(diff);
 		if (!calcStep)
 		{
+			System.out.println("no need for new step");
 			// do nothing if the current change is within the current Area of error
 			;
 		}
 		else
 		{
+			System.out.println("new step neccessary");
 			// calculate new Step when necessary
 			// first, check, if the Sigma is at the limit
 			boolean stepSet=false;
@@ -59,6 +65,12 @@ public class TimeStepper {
 		
 		// adjust neutral Step
 		neutralStep = (float) ((neutralStep*stiff) + (step*(1-stiff)));
+		
+		if (step>max)
+			step = max;
+		if (step<min)
+			step = min;
+		
 		return step;
 	}
 }

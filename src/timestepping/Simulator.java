@@ -7,6 +7,8 @@ import clearcl.ClearCLProgram;
 import clearcl.viewer.ClearCLImageViewer;
 
 public class Simulator {
+	
+	float [] Position = new float[3];
 
 	/**
 	 * creates two pictures that depend on the time
@@ -22,7 +24,7 @@ public class Simulator {
 	public void generatePic(ClearCLContext lContext, ClearCLProgram lProgram, 
 			float time, ClearCLImage lImage1, int lSize)
 	{ 
-	    float[] Position = computePosition(time);
+	    computePosition(time);
 	    
 	    ClearCLKernel lKernel = lProgram.createKernel("sphere");
 	    lKernel.setArgument("image", lImage1);
@@ -51,20 +53,18 @@ public class Simulator {
 	 * @param time The current timepoint
 	 * @return The positions of the sphere in every dimension
 	 */
-	public float[] computePosition(float time)
+	public void computePosition(float time)
 	{
-		float timespan = 0;
+		float timespan = 10000;
 		float increment = 1;
-		float[] Position = new float[3];
 		float[] Alpha = getAlpha(time, timespan, increment);
-		System.out.print("AX: "+Alpha[0]+" / AY: "+Alpha[1]+" / AZ: "+Alpha[2]);
+		System.out.println("AX: "+Alpha[0]+" / AY: "+Alpha[1]+" / AZ: "+Alpha[2]);
 		for (int i=0;i<Position.length;i++)
 		{
-			Position[i]=Alpha[i]*(time/150);
+			Position[i]+=Alpha[i];
 			if (i>0)
 				Position[i]=0;
 		}
-		return Position;
 	}
 	
 	/**
@@ -80,7 +80,7 @@ public class Simulator {
 		float[] Alpha=new float[3];
 		for (int i=0;i<Alpha.length;i++)
 		{
-			Alpha[i]=increment;
+			Alpha[i]=increment*(time/150);
 			System.out.print("Alpha is: "+Alpha[i]+"  increment is: "+increment);
 		}
 		return Alpha;

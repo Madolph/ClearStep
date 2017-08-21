@@ -5,7 +5,7 @@ public class Memory {
 	public float[] dev= new float[10];
 	public float StDev;
 	public float mean;
-	public float sensitivity = (float) 1.5;
+	public float sensitivity = (float) 0.5;
 	public float currentSigma;
 	public boolean FirstRun;
 
@@ -28,10 +28,12 @@ public class Memory {
 		// if this is the first run, every value is set to the current difference
 		if (FirstRun)
 		{
+			//System.out.println("this is the first run");
 			for (int i=0;i<dev.length-1;i++)
 			{
 				dev[i]=diff;
 			}
+			FirstRun=false;
 		}
 		
 		this.rearrangeDiff();
@@ -56,8 +58,8 @@ public class Memory {
 	 */
 	private void rearrangeDiff()
 	{
-		for (int i=0;i<dev.length-1;i++)
-			dev[i+1]=dev[i];
+		for (int i=dev.length-1;i>1;i--)
+			dev[i]=dev[i-1];
 	}
 	
 	/**
@@ -68,7 +70,10 @@ public class Memory {
 		mean=0;
 		float gap=0;
 		for (int i=0;i<dev.length;i++)
+		{
 			mean += dev[i];
+		}
+		mean = mean/dev.length;
 		for (int i=0;i<dev.length;i++)
 		{
 			float lGap= (dev[i]-mean);

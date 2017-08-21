@@ -18,7 +18,7 @@ public class Overlord {
 	
 	public Simulator Sim = new Simulator();
 	public Calculator Calc = new Calculator();
-	public TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.2);
+	public TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.1, (float) 0.5, (float) 0.1);
 	public float startStep;
 	public float span;
 	//duration in seconds
