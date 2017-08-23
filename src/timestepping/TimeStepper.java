@@ -32,9 +32,9 @@ public class TimeStepper {
 	 * @param diff the metric of image-change
 	 * @return the newly computed timestep
 	 */
-	public float computeStep(float diff)
+	public float computeStep(float diff, float currStep)
 	{
-		boolean calcStep = Info.saveAndCheckDiff(diff);
+		boolean calcStep = Info.saveAndCheckDiff(diff, currStep);
 		if (!calcStep)
 		{
 			System.out.println("no need for new step");

@@ -45,32 +45,36 @@ public class Overlord {
 		  float time=0;
 		  
 		  int lSize = 128;
+		  ClearCLImage lImage = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
+		  
+		  ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
 		  
 		  // as long as we aren't above the time, we will now generate pictures and compute timesteps from them
 		  while (time<(duration*1000))  
 		  {
+			  float currStep = Stepper.step;
 			  System.out.println("current time is: "+time);
-			  ClearCLImage lImage = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
 			  
 			  Sim.generatePic(lContext, lProgram, time, lImage, lSize);
-			  ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
+			  lImage.notifyListenersOfChange(lContext.getDefaultQueue());
 			  
-			  Thread.sleep((long) Stepper.step);
-			  time += Stepper.step;
-			  Calc.CachePic(lImage);
+			  Thread.sleep((long) currStep);
+			  time += currStep;
+			  Calc.CachePic(lImage, lContext, lSize);
 			  if (Calc.filled)
 			  {			  
 				  // computes the difference between the two pictures
 				  float diff = Calc.compareImages(lContext, lProgram, lSize);
 				  System.out.println("diff is: "+diff);
 				  // computed the step out of the saved difference
-				  float step = Stepper.computeStep(diff);
+				  float step = Stepper.computeStep(diff, currStep);
 		  
 				  // put the Thread to sleep to simulate realtime... kinda... sorta
 		  
 				  System.out.println("computed step is: "+step);
 			  }
 		  }
+		  lViewImage.waitWhileShowing();
 	  }
 	}
 }

@@ -23,7 +23,7 @@ public class Memory {
 	 * @param diff
 	 * @return true if a new step needs to be calculated
 	 */
-	public boolean saveAndCheckDiff(float diff)
+	public boolean saveAndCheckDiff(float diff, float step)
 	{
 		// if this is the first run, every value is set to the current difference
 		if (FirstRun)
@@ -31,13 +31,13 @@ public class Memory {
 			//System.out.println("this is the first run");
 			for (int i=0;i<dev.length-1;i++)
 			{
-				dev[i]=diff;
+				dev[i]=diff/step;
 			}
 			FirstRun=false;
 		}
 		
 		this.rearrangeDiff();
-		dev[0]= diff;
+		dev[0]= diff/step;
 		this.calcStDev();
 		// Check if the new value is outside the Standard deviation
 		currentSigma=((dev[0]-mean)/StDev);

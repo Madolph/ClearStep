@@ -19,17 +19,23 @@ public class Calculator {
 	boolean uneven = true;
 	boolean filled;
 
-	public void CachePic(ClearCLImage image)
+	public void CachePic(ClearCLImage image, ClearCLContext lContext, int lSize)
 	{
 		if (uneven)
 		{
-			image1=image;
+			if (image1==null)
+				image1 = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
+					
+			image.copyTo(image1, false);
 			uneven=false;
 			System.out.println("image1 set");
 		}
 		else 
 		{
-			image2=image;
+			if (image2==null)
+				image2 = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
+			
+			image.copyTo(image2, false);
 			uneven=true;
 			System.out.println("image2 set");
 		}
