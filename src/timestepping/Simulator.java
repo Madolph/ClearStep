@@ -55,15 +55,12 @@ public class Simulator {
 	 */
 	public void computePosition(float time)
 	{
-		float timespan = 10000;
-		float increment = 1;
-		float[] Alpha = getAlpha(time, timespan, increment);
+		float timespan = 5000;
+		float[] Alpha = getAlpha(time, timespan);
 		System.out.println("AX: "+Alpha[0]+" / AY: "+Alpha[1]+" / AZ: "+Alpha[2]);
 		for (int i=0;i<Position.length;i++)
 		{
 			Position[i]+=Alpha[i];
-			if (i>0)
-				Position[i]=0;
 		}
 	}
 	
@@ -75,14 +72,22 @@ public class Simulator {
 	 * @param increment The amount of spatial change
 	 * @return The Alpha for every dimension
 	 */
-	public float[] getAlpha(float time, float timespan, float increment)
+	public float[] getAlpha(float time, float timespan)
 	{
 		float[] Alpha=new float[3];
+		float periodTime = time%(4*timespan);
 		for (int i=0;i<Alpha.length;i++)
 		{
-			Alpha[i]=increment*(time/150);
-			System.out.print("Alpha is: "+Alpha[i]+"  increment is: "+increment);
+			Alpha[i]=0;
 		}
+		if (periodTime<timespan)
+			;
+		if (periodTime>=timespan && periodTime<(timespan*2))
+			Alpha[0]=1;
+		if (periodTime>=(timespan*2) && periodTime <(timespan*3))
+			;
+		if (periodTime>=(timespan*3))
+			Alpha[0]=-1;
 		return Alpha;
 	}
 }

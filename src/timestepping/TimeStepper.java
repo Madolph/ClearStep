@@ -59,7 +59,7 @@ public class TimeStepper {
 			}
 			if (!stepSet)
 			{
-				step=neutralStep+(Info.currentSigma/3)*span;
+				step=neutralStep-(Info.currentSigma/3)*span;
 			}
 		}
 		
