@@ -10,6 +10,11 @@ public class Simulator {
 	
 	float [] Position = new float[3];
 
+	public Simulator(){
+		for (int i=0;i<Position.length;i++)
+			Position[i]=0;
+	}
+	
 	/**
 	 * creates two pictures that depend on the time
 	 * 
@@ -55,13 +60,20 @@ public class Simulator {
 	 */
 	public void computePosition(float time)
 	{
-		float timespan = 5000;
-		float[] Alpha = getAlpha(time, timespan);
-		System.out.println("AX: "+Alpha[0]+" / AY: "+Alpha[1]+" / AZ: "+Alpha[2]);
-		for (int i=0;i<Position.length;i++)
-		{
-			Position[i]+=Alpha[i];
-		}
+		float timespan = 20000;
+		float period = timespan/4;
+		//float[] Alpha = getAlpha(time, timespan);
+		//System.out.println("AX: "+Alpha[0]+" / AY: "+Alpha[1]+" / AZ: "+Alpha[2]);
+		float PeriodTime = time%period;
+		float Phase = time%timespan;
+		if (Phase<period)
+			Position[0]=0;
+		if (Phase>=period && Phase<(period*2))
+			Position[0]=32*((PeriodTime)/period);
+		if (Phase>=(period*2) && Phase<(period*3))
+			Position[0]=32;
+		if (Phase>=(period*3))
+			Position[0]=32-(32*((PeriodTime)/period));
 	}
 	
 	/**

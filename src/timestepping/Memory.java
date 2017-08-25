@@ -1,5 +1,7 @@
 package timestepping;
 
+import java.util.ArrayList;
+
 public class Memory {
 	
 	public float[] dev= new float[10];
@@ -8,6 +10,9 @@ public class Memory {
 	public float sensitivity = (float) 0.5;
 	public float currentSigma;
 	public boolean FirstRun;
+	public ArrayList<Float> devs = new ArrayList();
+	public ArrayList<Float> times = new ArrayList();
+	
 
 	public Memory()
 	{
@@ -23,7 +28,7 @@ public class Memory {
 	 * @param diff
 	 * @return true if a new step needs to be calculated
 	 */
-	public boolean saveAndCheckDiff(float diff, float step)
+	public boolean saveAndCheckDiff(float diff, float step, float time)
 	{
 		// if this is the first run, every value is set to the current difference
 		if (FirstRun)
@@ -38,12 +43,14 @@ public class Memory {
 		
 		this.rearrangeDiff();
 		dev[0]= diff/step;
+		devs.add(dev[0]);
+		times.add(time);
 		this.calcStDev();
 		// Check if the new value is outside the Standard deviation
 		currentSigma=((dev[0]-mean)/StDev);
 		
 		if (currentSigma>sensitivity || 
-			currentSigma<(sensitivity*-1))
+			currentSigma<-sensitivity)
 		{
 			return true;
 		}

@@ -67,7 +67,7 @@ public class Overlord {
 				  float diff = Calc.compareImages(lContext, lProgram, lSize);
 				  System.out.println("diff is: "+diff);
 				  // computed the step out of the saved difference
-				  float step = Stepper.computeStep(diff, currStep);
+				  float step = Stepper.computeStep(diff, currStep, time);
 		  
 				  // put the Thread to sleep to simulate realtime... kinda... sorta
 		  
