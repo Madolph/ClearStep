@@ -1,5 +1,11 @@
 package timestepping;
 
+import java.util.ArrayList;
+
+import javax.swing.JFrame;
+
+import org.math.plot.Plot2DPanel;
+
 public class TimeStepper {
 	
 	public Memory Info= new Memory();

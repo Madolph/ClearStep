@@ -2,7 +2,10 @@ package timestepping;
 
 import java.io.IOException;
 
+import javax.swing.JFrame;
+
 import org.junit.Test;
+import org.math.plot.Plot2DPanel;
 
 import clearcl.ClearCL;
 import clearcl.ClearCLContext;
@@ -22,7 +25,7 @@ public class Overlord {
 	public float startStep;
 	public float span;
 	//duration in seconds
-	public float duration = 600;
+	public float duration = 20;
 	
 	@Test
 	public void TestDiffCalc() throws InterruptedException, IOException
@@ -74,6 +77,32 @@ public class Overlord {
 				  System.out.println("computed step is: "+step);
 			  }
 		  }
+		  int Lx = Stepper.Info.devs.size();
+		  int Ly = Stepper.Info.times.size();
+			
+		  double[] x = new double [Lx];
+		  double[] y = new double [Ly];
+			
+		  for (int i=0;i<Lx;i++)
+		  {
+			  x[i]=(double)Stepper.Info.devs.get(i);
+		  }
+		  for (int i=0;i<Ly;i++)
+		  {
+			  y[i]=(double)Stepper.Info.times.get(i);
+		  }
+					 
+		  // create your PlotPanel (you can use it as a JPanel)
+		  Plot2DPanel plot = new Plot2DPanel();
+					 
+		  // add a line plot to the PlotPanel
+		  plot.addLinePlot("my plot", x, y);
+					 
+		  // put the PlotPanel in a JFrame, as a JPanel
+		  JFrame frame = new JFrame("a plot panel");
+		  frame.setContentPane(plot);
+		  frame.setVisible(true);
+		  
 		  lViewImage.waitWhileShowing();
 	  }
 	}
