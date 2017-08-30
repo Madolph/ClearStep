@@ -7,9 +7,10 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
+
 public class Plotter extends Application implements Runnable{
 	
-	XYChart.Series series;
+  XYChart.Series<Number, Number> series;
 	float check = 4;
 	
 	@Override 
@@ -30,7 +31,7 @@ public class Plotter extends Application implements Runnable{
 	                
 	    lineChart.setTitle("Deviation over Time");
 	    //defining a series
-		series = new XYChart.Series();
+    series = new XYChart.Series<Number, Number>();
 	    series.setName("Deviations");
 	    //populating the series with data
 	    

@@ -2,10 +2,7 @@ package timestepping;
 
 import java.io.IOException;
 
-import javax.swing.JFrame;
-
 import org.junit.Test;
-import org.math.plot.Plot2DPanel;
 
 import clearcl.ClearCL;
 import clearcl.ClearCLContext;
@@ -17,13 +14,12 @@ import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
 import javafx.scene.chart.XYChart;
-import javafx.stage.Stage;
 
 public class Overlord {
 	
 	public Simulator Sim = new Simulator();
 	public Calculator Calc = new Calculator();
-	public TimeStepper Stepper = new TimeStepper((float) 0.3, (float) 0.1, (float) 0.5, (float) 0.1);
+	public TimeStepper mTimeStepper = new TimeStepper((float) 0.3, (float) 0.1, (float) 0.5, (float) 0.1);
 	public float startStep;
 	public float span;
 	//duration in seconds
@@ -60,7 +56,7 @@ public class Overlord {
 		  // as long as we aren't above the time, we will now generate pictures and compute timesteps from them
 		  while (time<(duration*1000))  
 		  {
-			  float currStep = Stepper.step;
+			  float currStep = mTimeStepper.step;
 			  System.out.println("current time is: "+time);
 			  
 			  Sim.generatePic(lContext, lProgram, time, lImage, lSize);
@@ -75,7 +71,7 @@ public class Overlord {
 				  float diff = Calc.compareImages(lContext, lProgram, lSize);
 				  System.out.println("diff is: "+diff);
 				  // computed the step out of the saved difference
-				  float step = Stepper.computeStep(diff, currStep, time);
+				  float step = mTimeStepper.computeStep(diff, currStep, time);
 		  
 				  // put the Thread to sleep to simulate realtime... kinda... sorta
 		  

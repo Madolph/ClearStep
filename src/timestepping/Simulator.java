@@ -4,7 +4,6 @@ import clearcl.ClearCLContext;
 import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
 import clearcl.ClearCLProgram;
-import clearcl.viewer.ClearCLImageViewer;
 
 public class Simulator {
 	

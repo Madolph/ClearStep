@@ -1,4 +1,4 @@
-package graph;
+package sandbox;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
