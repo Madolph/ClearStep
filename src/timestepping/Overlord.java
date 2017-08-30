@@ -16,6 +16,8 @@ import clearcl.backend.ClearCLBackendInterface;
 import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
+import javafx.scene.chart.XYChart;
+import javafx.stage.Stage;
 
 public class Overlord {
 	
@@ -52,6 +54,9 @@ public class Overlord {
 		  
 		  ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
 		  
+		  Plotter Graph = new Plotter();
+		  Graph.plot();
+		  
 		  // as long as we aren't above the time, we will now generate pictures and compute timesteps from them
 		  while (time<(duration*1000))  
 		  {
@@ -75,33 +80,23 @@ public class Overlord {
 				  // put the Thread to sleep to simulate realtime... kinda... sorta
 		  
 				  System.out.println("computed step is: "+step);
+				  Graph.series.getData().add(new XYChart.Data(time, diff));
 			  }
 		  }
-		  int Lx = Stepper.Info.devs.size();
+		  /**int Lx = Stepper.Info.devs.size();
 		  int Ly = Stepper.Info.times.size();
 			
-		  double[] x = new double [Lx];
-		  double[] y = new double [Ly];
+		  float[] x = new float [Lx];
+		  float[] y = new float [Ly];
 			
 		  for (int i=0;i<Lx;i++)
 		  {
-			  x[i]=(double)Stepper.Info.devs.get(i);
+			  x[i]=Stepper.Info.devs.get(i);
 		  }
 		  for (int i=0;i<Ly;i++)
 		  {
-			  y[i]=(double)Stepper.Info.times.get(i);
-		  }
-					 
-		  // create your PlotPanel (you can use it as a JPanel)
-		  Plot2DPanel plot = new Plot2DPanel();
-					 
-		  // add a line plot to the PlotPanel
-		  plot.addLinePlot("my plot", x, y);
-					 
-		  // put the PlotPanel in a JFrame, as a JPanel
-		  JFrame frame = new JFrame("a plot panel");
-		  frame.setContentPane(plot);
-		  frame.setVisible(true);
+			  y[i]=Stepper.Info.times.get(i);
+		  }**/
 		  
 		  lViewImage.waitWhileShowing();
 	  }
