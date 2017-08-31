@@ -10,7 +10,6 @@ public class Memory {
   float currentSigma;
   boolean FirstRun;
 
-
 	public Memory()
 	{
 		FirstRun = true;
@@ -27,7 +26,7 @@ public class Memory {
    * @param time
    * @return true if a new step needs to be calculated
    */
-	public boolean saveAndCheckDiff(float diff, float step, float time)
+	public boolean saveAndCheckDiff(float diff, float step)
 	{
 		// if this is the first run, every value is set to the current difference
 		if (FirstRun)
