@@ -6,56 +6,58 @@ import com.sun.javafx.application.PlatformImpl;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-
+/**
+ * Used to plot Data via JavaFx
+ * 
+ * @author Raddock
+ *
+ */
 public class Plotter extends Application implements Runnable{
 	
-	XYChart.Series<Number, Number> series;
+	/**
+	 * stores image-deviations
+	 */
+	XYChart.Series<Number, Number> mSeries;
 	
-	@Override 
-	public void start(Stage stage) {
-	    stage.setTitle("Deviation-Plot");
-	    //defining the axes
-	    final NumberAxis xAxis = new NumberAxis();
-	    xAxis.setAnimated(true);
-	    final NumberAxis yAxis = new NumberAxis();
-	    yAxis.setAnimated(true);
-	    
-	    xAxis.setLabel("Time");
-	    //creating the chart
-	    final LineChart<Number,Number> lineChart = 
-	    		new LineChart<Number,Number>(xAxis,yAxis);
-	    
-	    lineChart.setAnimated(true);
-	                
-	    lineChart.setTitle("Deviation over Time");
-	    //defining a series
-	    series = new XYChart.Series<Number, Number>();
-	    series.setName("Deviations");
-	    //populating the series with data
-	    
-	    Scene scene  = new Scene(lineChart,800,600);
-	    lineChart.getData().add(series);
-	    
-	    stage.setScene(scene);
-	    stage.show();
-	}
+	/**
+	 * stores the sigma (dislocated to the deviation)
+	 */
+	XYChart.Series<Number, Number> mSeries2;
+	
+	/**
+	 * stores the timesteps computed
+	 */
+	XYChart.Series<Number, Number> mSeries3;
+	
+	/**
+	 * stores the current mean
+	 */
+	XYChart.Series<Number, Number> mSeries4;
  
-	public void plotdata(float time, float diff)
+	/**
+	 * actually adds data to the series created previously
+	 * 
+	 * @param time	The Timepoint
+	 * @param diff	The Difference-metric
+	 * @param sigma	The Sigma
+	 * @param step	The temporal stepsize
+	 * @param mean	The current mean 
+	 */
+	public void plotdata(float time, float diff, float sigma, float step, float mean)
 	{
 		final CountDownLatch lCountDownLatch = new CountDownLatch(1);
     	
         Platform.runLater( () ->  { 
-        	series.getData().add(new XYChart.Data<Number,Number>(time, diff)); 
+        	mSeries.getData().add(new XYChart.Data<Number,Number>(time, diff));
+        	mSeries2.getData().add(new XYChart.Data<Number,Number>(time, sigma));
+        	mSeries3.getData().add(new XYChart.Data<Number,Number>(time, step));
+        	mSeries4.getData().add(new XYChart.Data<Number,Number>(time, mean));
         	lCountDownLatch.countDown();
         });
 
@@ -64,21 +66,27 @@ public class Plotter extends Application implements Runnable{
         catch (InterruptedException e) { }
 	}
 	
+	/**
+	 * prepares the plot of the 4 series into a chart
+	 * 
+	 * @param fxOn	says whether JFx is initiated
+	 */
     public void plot(boolean fxOn) {
 
+    	// if the JFX-framework is not yet started, start it up
     	if (!fxOn)
     	{
-        PlatformImpl.startup(() -> {
-        });
-        //sets fxOn to true, so that its not started twice
-        fxOn=true;
+    		PlatformImpl.startup(() -> {
+    		});
+    		//sets fxOn to true, so that its not started twice
+    		fxOn=true;
     	}
     	
     	final CountDownLatch lCountDownLatch = new CountDownLatch(1);
     	
         Platform.runLater( () -> {
-        	Stage stage = new Stage();
-        	stage.setTitle("Deviation-Plot");
+        	Stage lStage = new Stage();
+        	lStage.setTitle("Plot");
     	    //defining the axes
     	    final NumberAxis xAxis = new NumberAxis();
     	    xAxis.setAnimated(true);
@@ -87,22 +95,31 @@ public class Plotter extends Application implements Runnable{
     	    
     	    xAxis.setLabel("Time");
     	    //creating the chart
-    	    final LineChart<Number,Number> lineChart = 
+    	    final LineChart<Number,Number> lLineChart = 
     	    		new LineChart<Number,Number>(xAxis,yAxis);
     	    
-    	    lineChart.setAnimated(true);
+    	    lLineChart.setAnimated(true);
     	                
-    	    lineChart.setTitle("Deviation over Time");
+    	    lLineChart.setTitle("Deviation over Time");
     	    //defining a series
-    	    series = new XYChart.Series<Number, Number>();
-    	    series.setName("Deviations");
+    	    mSeries = new XYChart.Series<Number, Number>();
+    	    mSeries.setName("Deviations");
+    	    mSeries2 = new XYChart.Series<Number, Number>();
+    	    mSeries2.setName("Sigma");
+    	    mSeries3 = new XYChart.Series<Number, Number>();
+    	    mSeries3.setName("Step");
+    	    mSeries4 = new XYChart.Series<Number, Number>();
+    	    mSeries4.setName("mean");
     	    //populating the series with data
     	    
-    	    Scene scene  = new Scene(lineChart,800,600);
-    	    lineChart.getData().add(series);
+    	    Scene scene  = new Scene(lLineChart,1200,900);
+    	    lLineChart.getData().add(mSeries);
+    	    lLineChart.getData().add(mSeries2);
+    	    lLineChart.getData().add(mSeries3);
+    	    lLineChart.getData().add(mSeries4);
     	    
-    	    stage.setScene(scene);
-    	    stage.show();
+    	    lStage.setScene(scene);
+    	    lStage.show();
 
           lCountDownLatch.countDown();
         });
@@ -115,6 +132,11 @@ public class Plotter extends Application implements Runnable{
 	@Override
 	public void run() {
 		launch();
+		
+	}
+
+	@Override
+	public void start(Stage arg0) throws Exception {
 		
 	}
 }

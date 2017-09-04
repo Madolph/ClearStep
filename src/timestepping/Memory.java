@@ -1,68 +1,84 @@
 package timestepping;
 
-
+/**
+ * saves deviations and computes stochastic values
+ */
 public class Memory {
 	
-  public float[] dev = new float[10];
-  float StDev;
-  float mean;
-  float sensitivity = (float) 0.5;
-  float currentSigma;
-  boolean FirstRun;
-
-	public Memory()
-	{
-		FirstRun = true;
-	}
+	/**
+	 * An Array that saves the last 10 deviations
+	 */
+	public float[] mDev = new float[10];
 	
 	/**
-   * saves the supplied difference to the array, after shifting all the values,
-   * so that only the 10 newest ones are stored. Also checks if the array has
-   * been initialized yet and if not, does so. Then is calculates some metrics
-   * and answers, if it is necessary to compute a new step
-   * 
-   * @param diff
-   * @param step
-   * @param time
-   * @return true if a new step needs to be calculated
-   */
+	 * The current Standard-Deviation
+	 */
+	float mStDev;
+	
+	/**
+	 * The current mean
+	 */
+	float mMean;
+	
+	/**
+	 * The set sensitivity (a higher value means the program will need more change to adjust the timestep)
+	 */
+	float mSensitivity = (float) 0.4;
+	
+	/**
+	 * the current Sigma
+	 */
+	float mCurrentSigma;
+	
+	/**
+	 * Is set to false after the first run
+	 */
+	boolean FirstRun=true;
+	
+	/**
+	 * saves the supplied difference to the array, after shifting all the values,
+	 * so that only the 10 newest ones are stored. Also checks if the array has
+	 * been initialized yet and if not, does so. Then is calculates some metrics
+	 * and answers, if it is necessary to compute a new step
+	 * 
+	 * @param diff	The difference-metric that is saved as a new deviation
+	 * @param step	The currently used timestep
+	 * @return True if a new step needs to be calculated
+	 */
 	public boolean saveAndCheckDiff(float diff, float step)
 	{
 		// if this is the first run, every value is set to the current difference
 		if (FirstRun)
-		{
-			//System.out.println("this is the first run");
-			for (int i=0;i<dev.length-1;i++)
-			{
-				dev[i]=diff/step;
+			{ 
+			for (int i=0;i<mDev.length-1;i++)
+				{ mDev[i]=diff/step; }
+			FirstRun=false; 
 			}
-			FirstRun=false;
-		}
 		
-		this.rearrangeDiff();
-		dev[0]= diff/step;
-		this.calcStDev();
+		rearrangeDev();
+		mDev[0]= diff/step;
+		calcStDev();
 		// Check if the new value is outside the Standard deviation
-		currentSigma=((dev[0]-mean)/StDev);
-		
-		if (currentSigma>sensitivity || 
-			currentSigma<-sensitivity)
-		{
-			return true;
-		}
+		if (mStDev==0)
+			// No deviation means Sigma has to be zero (would devide by = otherwise)
+			{ mCurrentSigma=0; }
 		else
-		{
-			return false;
-		}
+			{ mCurrentSigma=((mDev[0]-mMean)/mStDev); }
+		
+		if (mCurrentSigma>mSensitivity || mCurrentSigma<-mSensitivity)
+		{ return true; }
+		else
+		{ return false; }
 	}
 	
 	/**
-	 * just shifts the values of the array
+	 * Just shifts the values of the array.
+	 * Loses the oldest value along the way.
 	 */
-	private void rearrangeDiff()
+	private void rearrangeDev()
 	{
-		for (int i=dev.length-1;i>1;i--)
-			dev[i]=dev[i-1];
+		for (int i=mDev.length-1;i>0;i--)
+			mDev[i]=mDev[i-1];
 	}
 	
 	/**
@@ -70,18 +86,18 @@ public class Memory {
 	 */
 	private void calcStDev()
 	{
-		mean=0;
-		float gap=0;
-		for (int i=0;i<dev.length;i++)
+		float lMean=0;
+		float lGap=0;
+		for (int i=0;i<mDev.length;i++)
 		{
-			mean += dev[i];
+			lMean += mDev[i];
 		}
-		mean = mean/dev.length;
-		for (int i=0;i<dev.length;i++)
+		mMean = lMean/mDev.length;
+		for (int i=0;i<mDev.length;i++)
 		{
-			float lGap= (dev[i]-mean);
-			gap += lGap*lGap;
+			float lDummy= (mDev[i]-mMean);
+			lGap += lDummy*lDummy;
 		}
-		this.StDev = (float) Math.sqrt(gap);
+		mStDev = (float) Math.sqrt(lGap);
 	}
 }

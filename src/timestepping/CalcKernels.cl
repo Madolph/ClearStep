@@ -17,40 +17,23 @@
 
 //default buffersum p=0f
 __kernel 
-void buffersum(         const float p,
-        		            __global const float *a,
-        		            __global const float *b,
-        		            __global       float *c)
+void buffersum(const float p,
+        		__global const float *a,
+        		__global const float *b,
+        		__global       float *c)
 {
 	int x = get_global_id(0);
 	
 	c[x] = a[x] + b[x] + p * CONSTANT;
-	
-	//if(x%100000==1)
-	//  printf("this is a test string c[%d] = %f + %f + %f = %f \n", x, a[x], b[x], p,  c[x]);
  
-}
-
-// A kernel to fill an image with beautiful garbage:
-//default fillimagexor dx=0i
-//default fillimagexor dy=0i
-//default fillimagexor u=0f
-__kernel 
-void fillimagexor(__write_only image3d_t image, int dx, int dy, float u)
-{
-	int x = get_global_id(0); 
-	int y = get_global_id(1);
-	int z = get_global_id(2);
-	
-	write_imagef (image, (int4)(x, y, z, 0), u*((x+dx)^((y+dy)+1)^(z+2)));
 }
 
 __kernel 
 void sphere   (__write_only image3d_t image,
-                                        float       cx,
-                                        float       cy,
-                                        float       cz,
-                                        float     r)
+               float cx,
+               float cy,
+               float cz,
+               float r)
 {
   const int width  = get_image_width(image);
   const int height = get_image_height(image);
@@ -68,62 +51,18 @@ void sphere   (__write_only image3d_t image,
   
   float d = fast_length((pos-cen)/dim);
   
-  //float value = (float)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
-  float value = (float)(100.0f*((d<r)?1:0) );
+  float value = (float)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
+  //float value = (float)(100.0f*((d<r)?1:0) );
   
   write_imagef (image, (int4){x,y,z,0}, value);
 }
 
-/**__kernel
-void ball (__write_only image3d_t image,
-                                        int       cx,
-                                        int       cy,
-                                        int       cz,
-                                        float     r)
-
-{
-  const int width   = get_image_width(image);
-  const int height  = get_image_height(image);
-  const int depth   = get_image_depth(image);
-  
-  const int x       = get_global_id(0);
-  const int y       = get_global_id(1);
-  const int z       = get_global_id(2);
-  
-  const int nblocksx = get_global_size(0);
-  const int nblocksy = get_global_size(1);
-  const int nblocksz = get_global_size(2);
-  
-  const int blockwidth   = width/nblocksx;
-  const int blockheight  = height/nblocksy;
-  const int blockdepth   = depth/nblocksz;
-  
-  const int4 origin = {x*blockwidth,y*blockheight,z*blockdepth,0};
-  
-  int4 dim = {width,height,depth,1};
-  int4 cen = {cx,cy,cz,0};
-  
-  for(int lz=0; lz<blockwidth; lz++)
-  {
-    for(int ly=0; ly<blockheight; ly++)
-    {
-      for(int lx=0; lx<blockdepth; lx++)
-      {
-        const int4 pos = origin + (int4){lx,ly,lz,0};
-		float d = fast_length((pos-cen)/dim);
-		float value = (float)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
-		float4 val = (float4){value,0,0,0};
-		write_imagef(image, pos, val);
-      }
-    }
-  }
-}**/
 
 __kernel 
 void compare(__read_only image3d_t image1, 
-					  __read_only image3d_t image2, 
-					  __write_only image3d_t result,
-					  float threshold)
+			 __read_only image3d_t image2, 
+			 __write_only image3d_t result,
+			 float threshold)
 {
 	const int width  = get_image_width(image1);
 	const int height = get_image_height(image1);
@@ -144,11 +83,6 @@ void compare(__read_only image3d_t image1,
 	float val = val1.x-val2.x;
 	if (val<0)
 		val = -(val);
-		
-	//assign positive difference to the grid
-	//(val1.x>val2.x)?
-	//	val = val1.x-val2.x:
-	//	val = val2.x-val1.x;
 	
 	if (val>max)
 		max = val;
@@ -161,7 +95,6 @@ void compare(__read_only image3d_t image1,
 	
 	write_imagef(result, pos, res);
 }	
-
 
 
 __kernel 

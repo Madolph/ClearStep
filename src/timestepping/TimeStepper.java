@@ -2,28 +2,56 @@ package timestepping;
 
 public class TimeStepper {
 	
-	public Memory Info= new Memory();
-	public float neutralStep;
-	public float span;
-	public float max;
-	public float min;
-	// sets the stiffness of the neutralStep
-	public float stiff = (float) 0.9;
-	public float step;
+	/**
+	 * The Memory that stores the deviations and their stochastic values
+	 */
+	public Memory mInfo= new Memory();
 	
 	/**
-	 * initializes some necessary values of the TimeStepper
+	 * The step that is used as the center of the step-span
+	 */
+	public float mNeutralStep;
+	
+	/**
+	 * The span of steps that is available for spontaneous change
+	 */
+	public float mSpan;
+	
+	/**
+	 * the absolute maximum step
+	 */
+	public float mMaxStep;
+	
+	/**
+	 * The absolute minimum step
+	 */
+	public float mMinStep;
+	
+	/**
+	 * Determines how slowly the neutral step changes
+	 */
+	public float mStiffness = (float) 0.99;
+	
+	/**
+	 * The currently chosen timestep
+	 */
+	public float mStep;
+	
+	/**
+	 * Create a new Timestepper
 	 * 
-	 * @param start the chosen average timestep at the beginning
-	 * @param width the span of timesteps possible
+	 * @param start		The initially chosen timestep
+	 * @param width		The allowed span of the timestep from the neutral step (which is dynamic)
+	 * @param maxStep	The maximum allowed timestep (static)
+	 * @param minStep	The minimum allowed timestep (static)
 	 */
 	public TimeStepper(float start, float width, float maxStep, float minStep)
 	{
-		neutralStep = start*1000;
-		span = width*1000;
-		step = neutralStep;
-		max = maxStep*1000;
-		min = minStep*1000;
+		mNeutralStep = start*1000;
+		mSpan = width*1000;
+		mStep = mNeutralStep;
+		mMaxStep = maxStep*1000;
+		mMinStep = minStep*1000;
 	}
 
 	/**
@@ -34,43 +62,41 @@ public class TimeStepper {
 	 */
 	public float computeStep(float diff, float currStep)
 	{
-		boolean calcStep = Info.saveAndCheckDiff(diff, currStep);
+		boolean calcStep = mInfo.saveAndCheckDiff(diff, currStep);
 		if (!calcStep)
 		{
-			System.out.println("no need for new step");
 			// do nothing if the current change is within the current Area of error
 			;
 		}
 		else
 		{
-			System.out.println("new step neccessary");
 			// calculate new Step when necessary
 			// first, check, if the Sigma is at the limit
 			boolean stepSet=false;
-			if (Info.currentSigma>3)
+			if (mInfo.mCurrentSigma>=3)
 			{
-				step = neutralStep+span;
+				mStep = mNeutralStep-mSpan;
 				stepSet=true;
 			}
-			if (Info.currentSigma<-3)
+			if (mInfo.mCurrentSigma<=-3)
 			{
-				step = neutralStep-span;
+				mStep = mNeutralStep+mSpan;
 				stepSet=true;
 			}
 			if (!stepSet)
 			{
-				step=neutralStep-(Info.currentSigma/3)*span;
+				mStep=mNeutralStep-(mInfo.mCurrentSigma*(mSpan/3));
 			}
 		}
 		
 		// adjust neutral Step
-		neutralStep = (float) ((neutralStep*stiff) + (step*(1-stiff)));
+		mNeutralStep =((mNeutralStep*mStiffness) + (mStep*(1-mStiffness)));
 		
-		if (step>max)
-			step = max;
-		if (step<min)
-			step = min;
+		if (mStep>mMaxStep)
+			mStep = mMaxStep;
+		if (mStep<mMinStep)
+			mStep = mMinStep;
 		
-		return step;
+		return mStep;
 	}
 }
