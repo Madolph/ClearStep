@@ -30,7 +30,7 @@ public class TimeStepper {
 	/**
 	 * Determines how slowly the neutral step changes
 	 */
-	public float mStiffness = (float) 0.99;
+	public float mStiffness = (float) 0.75;
 	
 	/**
 	 * The currently chosen timestep
@@ -60,9 +60,9 @@ public class TimeStepper {
 	 * @param diff the metric of image-change
 	 * @return the newly computed timestep
 	 */
-	public float computeStep(float diff, float currStep)
+	public float computeStep(float diff, float time)
 	{
-		boolean calcStep = mInfo.saveAndCheckDiff(diff, currStep);
+		boolean calcStep = mInfo.saveAndCheckDiff(diff, time);
 		if (!calcStep)
 		{
 			// do nothing if the current change is within the current Area of error

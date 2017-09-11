@@ -85,7 +85,6 @@ public class Overlord {
 			  lImage.notifyListenersOfChange(lContext.getDefaultQueue());
 			  
 			  Thread.sleep((long) currStep);
-			  time += currStep;
 			  mCalc.CachePic(lImage, lContext, lSize);
 			  if (mCalc.filled)
 			  {			  
@@ -93,14 +92,15 @@ public class Overlord {
 				  float diff = mCalc.compareImages(lContext, lProgram, lSize);
 				  //System.out.println("diff is: "+diff);
 				  // computed the step out of the saved difference
-				  float step = mTimeStepper.computeStep(diff, currStep);
+				  float step = mTimeStepper.computeStep(diff, time);
 		  
 				  // put the Thread to sleep to simulate realtime... kinda... sorta
 		  
 				  //System.out.println("computed step is: "+step);
 				  
-				  Graph.plotdata(time, mTimeStepper.mInfo.mDev[0], mTimeStepper.mInfo.mDev[0]+mTimeStepper.mInfo.mCurrentSigma*100, step*15, mTimeStepper.mInfo.mMean);
+				  Graph.plotdata(time, mTimeStepper.mInfo.mDev[0][0], mTimeStepper.mInfo.mDev[0][0]+mTimeStepper.mInfo.mCurrentSigma, step, mTimeStepper.mInfo.mMean.val);
 			  }
+			  time += currStep;
 		  }
 		  
 		  lViewImage.waitWhileShowing();
