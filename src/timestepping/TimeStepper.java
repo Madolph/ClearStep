@@ -7,6 +7,10 @@ public class TimeStepper {
 	 */
 	public Memory mInfo= new Memory();
 	
+	Setable mStepSmooth = new Setable();
+	
+	boolean fluid;
+	
 	/**
 	 * The step that is used as the center of the step-span
 	 */
@@ -30,7 +34,7 @@ public class TimeStepper {
 	/**
 	 * Determines how slowly the neutral step changes
 	 */
-	public float mStiffness = (float) 0.75;
+	public float mRollback = (float) 0.01;
 	
 	/**
 	 * The currently chosen timestep
@@ -45,13 +49,14 @@ public class TimeStepper {
 	 * @param maxStep	The maximum allowed timestep (static)
 	 * @param minStep	The minimum allowed timestep (static)
 	 */
-	public TimeStepper(float start, float width, float maxStep, float minStep)
+	public TimeStepper(float start, float width, float maxStep, float minStep, boolean lfluid)
 	{
 		mNeutralStep = start*1000;
 		mSpan = width*1000;
 		mStep = mNeutralStep;
 		mMaxStep = maxStep*1000;
 		mMinStep = minStep*1000;
+		fluid = lfluid;
 	}
 
 	/**
@@ -89,14 +94,35 @@ public class TimeStepper {
 			}
 		}
 		
-		// adjust neutral Step
-		mNeutralStep =((mNeutralStep*mStiffness) + (mStep*(1-mStiffness)));
-		
 		if (mStep>mMaxStep)
 			mStep = mMaxStep;
 		if (mStep<mMinStep)
 			mStep = mMinStep;
 		
+		if (fluid)
+		{
+			float lDummy = (float) 0.9;
+			if (!mStepSmooth.set)
+			{
+				mStepSmooth.val = mStep;
+				mStepSmooth.set= true;
+			}
+			else 
+				mStepSmooth.val = mStepSmooth.val*(lDummy)+mStep*(1-lDummy);
+			
+			mStep = mStepSmooth.val;
+		}	
+		else
+			assignStep();
+		
+		// over time, the step will get back to the original step
+		mStep =((mNeutralStep*mRollback) + (mStep*(1-mRollback)));
+			
 		return mStep;
+	}
+	
+	public void assignStep(){
+		int lStep = (int) ((mStep-mMinStep)/mSpan);
+		mStep = mMinStep+(lStep*mSpan);
 	}
 }

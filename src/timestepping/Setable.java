@@ -1,6 +1,6 @@
 package timestepping;
 
-public class Mean {
+public class Setable {
 
 	public float val;
 	public boolean set=false;

@@ -59,6 +59,45 @@ void sphere   (__write_only image3d_t image,
 
 
 __kernel 
+void noisySphere   (__write_only image3d_t image,
+               float cx,
+               float cy,
+               float cz,
+               float r,
+               float p1)
+{
+  const int width  = get_image_width(image);
+  const int height = get_image_height(image);
+  const int depth  = get_image_depth(image);
+ 
+  float n= (float) 21.47483647;
+  
+  float4 dim = (float4){width,height,depth,1};
+  
+  int x = get_global_id(0); 
+  int y = get_global_id(1);
+  int z = get_global_id(2);
+  
+  int sum = x+y+z;
+  float cache = (float)sum*p1;
+  
+  float4 pos = (float4){x,y,z,0};
+  
+  float4 cen = (float4){cx,cy,cz,0};
+  
+  float d = fast_length((pos-cen)/dim);
+  
+  float value = (float)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
+  
+  float random = (float) (fmod(cache,n)/n)*5;
+  
+  if (value==0)
+  	write_imagef (image, (int4){x,y,z,0}, value+random);
+  else
+  	write_imagef (image, (int4){x,y,z,0}, value);
+}
+
+__kernel 
 void compare(__read_only image3d_t image1, 
 			 __read_only image3d_t image2, 
 			 __write_only image3d_t result,
@@ -68,6 +107,9 @@ void compare(__read_only image3d_t image1,
 	const int height = get_image_height(image1);
 	const int depth  = get_image_depth(image1);
 
+	float min = 999999;
+	float max = 0;
+
 	int x = get_global_id(0); 
 	int y = get_global_id(1);
 	int z = get_global_id(2);
@@ -76,9 +118,6 @@ void compare(__read_only image3d_t image1,
 	
 	float4 val1 = read_imagef(image1, pos);
 	float4 val2 = read_imagef(image2, pos);
-	
-	float min = 999999;
-	float max = 0;
 	
 	float val = val1.x-val2.x;
 	if (val<0)
@@ -91,7 +130,54 @@ void compare(__read_only image3d_t image1,
 		
 	float4 res = (float4){val,0,0,0};
 	
-	threshold = min+((max-min)/10);
+	float lthreshold = min+((max-min)/10);
+	
+	if (lthreshold>threshold)
+		threshold = lthreshold;
+	
+	write_imagef(result, pos, res);
+}	
+
+__kernel 
+void compareAndFilter(	__read_only image3d_t image1, 
+			 			__read_only image3d_t image2, 
+			 			__write_only image3d_t result,
+			 			float threshold)
+{
+	const int width  = get_image_width(image1);
+	const int height = get_image_height(image1);
+	const int depth  = get_image_depth(image1);
+
+	float min = 999999;
+	float max = 0;
+
+	int x = get_global_id(0); 
+	int y = get_global_id(1);
+	int z = get_global_id(2);
+
+	int4 pos = (int4){x,y,z,0};
+	
+	float4 val1 = read_imagef(image1, pos);
+	float4 val2 = read_imagef(image2, pos);
+	
+	float val = val1.x-val2.x;
+	if (val<0)
+		val = -(val);
+	
+	if (val>max)
+		max = val;
+	if (val<min)
+		min = val;
+	
+	if (val<threshold)
+		val=0;
+	
+	float4 res = (float4){val,0,0,0};
+		
+	float lthreshold = min+((max-min)/10);
+	
+	if (lthreshold>threshold)
+		threshold = lthreshold;
 	
 	write_imagef(result, pos, res);
 }	
@@ -249,3 +335,68 @@ void Sum3D (__read_only image3d_t image,
   
   result[index] = sum;
 }
+
+__kernel 
+void compareNFilter(	__read_only image3d_t image1, 
+			 			__read_only image3d_t image2, 
+			 			__write_only image3d_t result,
+			 			float threshold,
+			 			global float* BufferMin,
+			 			global float* BufferMax)
+{
+	const int width  = get_image_width(image1);
+	const int height = get_image_height(image1);
+	const int depth  = get_image_depth(image1);
+
+	float min = 999999;
+	float max = 0;
+
+	int x = get_global_id(0); 
+	int y = get_global_id(1);
+	int z = get_global_id(2);
+	
+	const int nblocksx = get_global_size(0);
+    const int nblocksy = get_global_size(1);
+  	const int nblocksz = get_global_size(2);
+  
+  	const int blockwidth   = width/nblocksx;
+  	const int blockheight  = height/nblocksy;
+  	const int blockdepth   = depth/nblocksz;
+
+	const int4 origin = (int4){x*blockwidth,y*blockheight,z*blockdepth,0};
+  
+  	for(int lz=0; lz<blockwidth; lz++)
+  	{
+    	for(int ly=0; ly<blockheight; ly++)
+    	{
+      		for(int lx=0; lx<blockdepth; lx++)
+      		{
+        		const int4 pos = origin + (int4){lx,ly,lz,0};
+        		
+        		float4 val1 = read_imagef(image1, pos);
+				float4 val2 = read_imagef(image2, pos);
+				
+				float val = val1.x-val2.x;
+				if (val<0)
+					val = -(val);
+	
+				if (val>max)
+					max = val;
+				if (val<min)
+					min = val;
+					
+				if (val<threshold)
+					val=0;
+	
+				float4 res = (float4){val,0,0,0};
+					
+				write_imagef(result, pos, res);
+      		}
+    	}
+    }
+    
+    const int index = x+nblocksx*y+nblocksx*nblocksy*z;
+  
+  	BufferMin[index] = min;
+  	BufferMax[index] = max;
+}	

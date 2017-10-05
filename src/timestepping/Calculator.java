@@ -19,6 +19,8 @@ import coremem.offheap.OffHeapMemory;
  */
 public class Calculator {
 	
+	Setable mThres = new Setable();
+	
 	/**
 	 * The first image that is stored by the calculator
 	 */
@@ -95,16 +97,53 @@ public class Calculator {
 	      ClearCLBuffer lEnd = lContext.createBuffer(NativeTypeEnum.Float,
 	                                                 (int) pow(lReductionFactor,
 	                                                           3));
+	      ClearCLBuffer BufferMin = lContext.createBuffer(NativeTypeEnum.Float,
+                  (int) pow(lReductionFactor,
+                            3));
+	      ClearCLBuffer BufferMax = lContext.createBuffer(NativeTypeEnum.Float,
+                  (int) pow(lReductionFactor,
+                            3));
 		
-		float lthres = 0;	//TODO currently unused
 		// runs the kernel for image-comparison
-	    ClearCLKernel lKernel = lProgram.createKernel("compare");
+	    /**String lString = new String();
+	    if (!mThres.set)
+	    {
+	    	lString = "compare";
+	    	mThres.set=true;
+	    }
+	    else 
+	    	lString = "compareAndFilter";*/
+	    if (!mThres.set)
+	    { 	
+	    	mThres.val=0;
+	    	mThres.set=true;
+	    }  
+	    ClearCLKernel lKernel = lProgram.createKernel("compareNFilter");
 	    lKernel.setArgument("image1", mImage1);
 	    lKernel.setArgument("image2", mImage2);
 	    lKernel.setArgument("result", lImage);
-	    lKernel.setArgument("threshold", lthres);
-	    lKernel.setGlobalSizes(mImage1);
+	    lKernel.setArgument("threshold", mThres.val);
+	    lKernel.setArgument("BufferMin", BufferMin);
+	    lKernel.setArgument("BufferMax", BufferMax);
+	    lKernel.setGlobalSizes(lReductionFactor, lReductionFactor, lReductionFactor);
 	    lKernel.run(true);
+	    
+	    OffHeapMemory lBufferMin = OffHeapMemory.allocateFloats(BufferMin.getLength());
+	    OffHeapMemory lBufferMax = OffHeapMemory.allocateFloats(BufferMax.getLength());
+	    
+	    BufferMin.writeTo(lBufferMin, true);
+	    float max = 0;
+    	float min = 99999;
+	    for (int i = 0; i < BufferMin.getLength(); i++)
+	    {
+	    	float lFloatAligned = lBufferMin.getFloatAligned(i);
+	    	if (lFloatAligned<min)
+	    		min=lFloatAligned;
+	    	if (lFloatAligned>max)
+	    		max=lFloatAligned;
+	    }
+	    
+	    mThres.val=min+((max-min)/10);
 		
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    ClearCLKernel lKernel1 = lProgram.createKernel("Sum3D");

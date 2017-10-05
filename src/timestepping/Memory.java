@@ -1,7 +1,6 @@
 package timestepping;
 
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
-import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
@@ -21,9 +20,9 @@ public class Memory {
 	float mStDev;
 	
 	/**
-	 * The current mean
+	 * The current mean (not a primitive value, to enable the functionality of mean-stiffness)
 	 */
-	Mean mMean = new Mean();
+	Setable mMean = new Setable();
 	
 	/**
 	 * used to store the estimated mean for every point by regression
@@ -33,8 +32,11 @@ public class Memory {
 	/**
 	 * The set sensitivity (a higher value means the program will need more change to adjust the timestep)
 	 */
-	float mSensitivity = (float) 0.25;
+	float mSensitivity = (float) 0.20;
 	
+	/**
+	 * decides whether the mean should be reset every step or always keep a part of its information
+	 */
 	float mMeanStiff = (float) 0.0;
 	
 	/**
@@ -47,6 +49,10 @@ public class Memory {
 	 */
 	boolean AllSet=false;
 	
+	
+	/**
+	 * creates an instance of memory and sets the array of deviations and timepoints to 0
+	 */
 	public Memory()
 	{
 		for (int i=0;i<mDev.length;i++)
@@ -69,7 +75,7 @@ public class Memory {
 	public boolean saveAndCheckDiff(float diff, float time)
 	{
 		rearrangeDev();
-		mDev[0][0]= diff/(time-mDev[1][1]);
+		mDev[0][0]= (diff)/(time-mDev[1][1]);
 		mDev[0][1]= time;
 		
 		if (mDev[9][1]==0)

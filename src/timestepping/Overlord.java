@@ -29,12 +29,12 @@ public class Overlord {
 	/**
 	 * The TimeStepper used for the Test
 	 */
-	public TimeStepper mTimeStepper = new TimeStepper((float) 0.3, (float) 0.1, (float) 0.5, (float) 0.1);
+	public TimeStepper mTimeStepper = new TimeStepper((float) 0.4, (float) 0.2, (float) 0.7, (float) 0.1, true);
 	
 	/**
 	 * duration of the Test in seconds
 	 */
-	public float mDuration = 20;
+	public float mDuration = 60;
 	
 	/**
 	 * stores whether or not JFx has been initialized
@@ -83,9 +83,9 @@ public class Overlord {
 			  
 			  mSim.generatePic(lContext, lProgram, time, lImage, lSize);
 			  lImage.notifyListenersOfChange(lContext.getDefaultQueue());
+			  mCalc.CachePic(lImage, lContext, lSize);
 			  
 			  Thread.sleep((long) currStep);
-			  mCalc.CachePic(lImage, lContext, lSize);
 			  if (mCalc.filled)
 			  {			  
 				  // computes the difference between the two pictures
@@ -98,7 +98,7 @@ public class Overlord {
 		  
 				  //System.out.println("computed step is: "+step);
 				  
-				  Graph.plotdata(time, mTimeStepper.mInfo.mDev[0][0], mTimeStepper.mInfo.mDev[0][0]+mTimeStepper.mInfo.mCurrentSigma, step, mTimeStepper.mInfo.mMean.val);
+				  Graph.plotdata(time, mTimeStepper.mInfo.mDev[0][0], mTimeStepper.mInfo.mDev[0][0]+mTimeStepper.mInfo.mCurrentSigma, step*10, mTimeStepper.mInfo.mMean.val);
 			  }
 			  time += currStep;
 		  }

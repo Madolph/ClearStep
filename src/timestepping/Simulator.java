@@ -1,5 +1,7 @@
 package timestepping;
 
+import java.util.Random;
+
 import clearcl.ClearCLContext;
 import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
@@ -36,8 +38,10 @@ public class Simulator {
 			float time, ClearCLImage lImage1, int lSize)
 	{ 
 	    computePosition(time);
+	    Random lRandom = new Random();
 	    
-	    ClearCLKernel lKernel = lProgram.createKernel("sphere");
+	    //ClearCLKernel lKernel = lProgram.createKernel("sphere");
+	    ClearCLKernel lKernel = lProgram.createKernel("noisySphere");
 	    lKernel.setArgument("image", lImage1);
 	    lKernel.setGlobalSizes(lImage1);
 	    lKernel.setArgument("r", 0.25f);
@@ -48,6 +52,7 @@ public class Simulator {
 	    System.out.println("shift Y is: "+mPosition[1]);
 	    lKernel.setArgument("cz", ((lSize/2)+mPosition[2]));
 	    System.out.println("shift Z is: "+mPosition[2]);
+	    lKernel.setArgument("p1", (float)16.807*(lRandom.nextFloat()));
 	    
 	    lKernel.run(true);      
 	}
@@ -59,7 +64,7 @@ public class Simulator {
 	 */
 	public void computePosition(float time)
 	{
-		float timespan = 20000;
+		float timespan = 40000;
 		float period = timespan/4;
 		float periodTime = time%period;
 		float phase = time%timespan;
