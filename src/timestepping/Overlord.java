@@ -98,7 +98,7 @@ public class Overlord {
 		  
 				  //System.out.println("computed step is: "+step);
 				  
-				  Graph.plotdata(time, mTimeStepper.mInfo.mDev[0][0], mTimeStepper.mInfo.mDev[0][0]+mTimeStepper.mInfo.mCurrentSigma, step*10, mTimeStepper.mInfo.mMean.val);
+				  Graph.plotdata(time, mTimeStepper.mInfo.mDev[0][0], mTimeStepper.mInfo.mDev[0][0]/*+mTimeStepper.mInfo.mCurrentSigma*/, step*10, mTimeStepper.mInfo.mMean.val);
 			  }
 			  time += currStep;
 		  }

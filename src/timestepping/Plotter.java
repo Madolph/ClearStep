@@ -56,6 +56,7 @@ public class Plotter extends Application implements Runnable{
         Platform.runLater( () ->  { 
         	mSeries.getData().add(new XYChart.Data<Number,Number>(time, diff));
         	mSeries2.getData().add(new XYChart.Data<Number,Number>(time, sigma));
+        	System.out.println("Sigma is: "+sigma);
         	mSeries3.getData().add(new XYChart.Data<Number,Number>(time, step));
         	mSeries4.getData().add(new XYChart.Data<Number,Number>(time, mean));
         	lCountDownLatch.countDown();

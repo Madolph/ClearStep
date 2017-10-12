@@ -115,7 +115,7 @@ public class Calculator {
 	    	lString = "compareAndFilter";*/
 	    if (!mThres.set)
 	    { 	
-	    	mThres.val=0;
+	    	mThres.val=5;
 	    	mThres.set=true;
 	    }  
 	    ClearCLKernel lKernel = lProgram.createKernel("compareNFilter");
@@ -144,6 +144,7 @@ public class Calculator {
 	    }
 	    
 	    mThres.val=min+((max-min)/10);
+	    mThres.val=5;
 		
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    ClearCLKernel lKernel1 = lProgram.createKernel("Sum3D");

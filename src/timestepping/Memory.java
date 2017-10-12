@@ -32,7 +32,7 @@ public class Memory {
 	/**
 	 * The set sensitivity (a higher value means the program will need more change to adjust the timestep)
 	 */
-	float mSensitivity = (float) 0.20;
+	float mSensitivity = (float) 0;
 	
 	/**
 	 * decides whether the mean should be reset every step or always keep a part of its information
@@ -82,7 +82,6 @@ public class Memory {
 			return false;
 	
 		calcStDevAdapt();
-		System.out.println("Sigma is: "+mCurrentSigma+" / StDev: "+mStDev);
 		// Check if the new value is outside the Standard deviation
 		if (mStDev==0)
 			// No deviation means Sigma has to be zero (would devide by = otherwise)
@@ -91,6 +90,7 @@ public class Memory {
 			//{ mCurrentSigma=((mDev[0][0]-mMean)/mStDev); }
 			{ mCurrentSigma=(float) ((mDev[0][0]-mMean.val)/mStDev); }
 		
+		System.out.println("Sigma is: "+mCurrentSigma+" / StDev: "+mStDev);
 		if (mCurrentSigma>mSensitivity || mCurrentSigma<-mSensitivity)
 		{ return true; }
 		else
