@@ -139,13 +139,30 @@ public class Overlord {
 		      int lPhantomDepth = lPhantomWidth;
 		      
 		      ClearCLImage lImage = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
-
-		      Drosophila lDrosophila = Drosophila.getDeveloppedEmbryo(6);
 			  
 			  ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
 			  
 			  Plotter Graph = new Plotter();
 			  Graph.plot(mFxOn); //mFxOn will be checked and set to true here if it is not already true
+			  
+			  int lNumberOfDetectionArms = 1;
+			  int lNumberOfIlluminationArms = 4;
+			  int lMaxCameraResolution = 1024;
+			  
+			  LightSheetMicroscopeSimulatorDrosophila lSimulator =
+                      new LightSheetMicroscopeSimulatorDrosophila(lContext,
+                                                             lNumberOfDetectionArms,
+                                                             lNumberOfIlluminationArms,
+                                                             lMaxCameraResolution,
+                                                             11f,
+                                                             lPhantomWidth,
+                                                             lPhantomHeight,
+                                                             lPhantomDepth);
+			  
+			  Drosophila.getDeveloppedEmbryo(0);
+			  
+			  ClearCLImageViewer lCameraImageViewer =
+                      lSimulator.openViewerForCameraImage(0);
 			  
 			  // as long as we aren't above the time, we will now generate pictures and compute timesteps from them
 			  while (time<(mDuration*1000))  
@@ -153,43 +170,7 @@ public class Overlord {
 				  float currStep = mTimeStepper.mStep;
 				  System.out.println("current time is: "+time);
 
-				  lDrosophila.simulationSteps((int)currStep/10);
-				  
-				  DrosophilaHistoneFluorescence lDrosophilaFluorescencePhantom =
-                          new DrosophilaHistoneFluorescence(lContext,
-                                                            lDrosophila,
-                                                            lPhantomWidth,
-                                                            lPhantomHeight,
-                                                            lPhantomDepth);
-				  lDrosophilaFluorescencePhantom.render(true);
-				  
-				  DrosophilaScatteringPhantom lDrosophilaScatteringPhantom =
-                          new DrosophilaScatteringPhantom(lContext,
-                                                          lDrosophila,
-                                                          lDrosophilaFluorescencePhantom,
-                                                          lPhantomWidth / 2,
-                                                          lPhantomHeight / 2,
-                                                          lPhantomDepth / 2);
-				  lDrosophilaScatteringPhantom.render(true);
-				  
-				  int lNumberOfDetectionArms = 1;
-				  int lNumberOfIlluminationArms = 4;
-				  int lMaxCameraResolution = 1024;
-				  
-				  LightSheetMicroscopeSimulatorDrosophila lSimulator =
-                          new LightSheetMicroscopeSimulatorDrosophila(lContext,
-                                                                 lNumberOfDetectionArms,
-                                                                 lNumberOfIlluminationArms,
-                                                                 lMaxCameraResolution,
-                                                                 11f,
-                                                                 lPhantomWidth,
-                                                                 lPhantomHeight,
-                                                                 lPhantomDepth);
-				  
-				  lSimulator.setPhantomParameter(PhantomParameter.Fluorescence,
-                          lDrosophilaFluorescencePhantom.getImage());
-				  lSimulator.setPhantomParameter(PhantomParameter.Scattering,
-                          lDrosophilaScatteringPhantom.getImage());
+				  lSimulator.simulationSteps((int)currStep/10);
 				  
 				  lSimulator.setNumberParameter(IlluminationParameter.Height,
                           0,
@@ -200,19 +181,11 @@ public class Overlord {
 				  lSimulator.setNumberParameter(IlluminationParameter.Gamma,
                           0,
                           0f);
-				  
-				  lDrosophilaFluorescencePhantom.render(false);
 
 		          lSimulator.render(true);
 				  
-		          // TODO still getting phantom, not camera image
-		          lDrosophilaFluorescencePhantom.getImage().copyTo(lImage, true);
-				  
-				  lDrosophilaScatteringPhantom.close();
-				  lDrosophilaFluorescencePhantom.close();
-				  lSimulator.close();
-				  
-				  // mSim.generatePic(lContext, lProgram, time, lImage, lSize);
+		          // TODO still not getting camera image
+		          //lSimulator.getCameraImage(0).copyTo(lImage, true);
 				  lImage.notifyListenersOfChange(lContext.getDefaultQueue());
 				  mCalc.CachePic(lImage, lContext, lSize);
 				  
@@ -235,6 +208,7 @@ public class Overlord {
 			  }
 			  
 			  lViewImage.waitWhileShowing();
+			  lSimulator.close();
 		  }
 	}
 }
