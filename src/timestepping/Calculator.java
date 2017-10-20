@@ -144,7 +144,7 @@ public class Calculator {
 	    }
 	    
 	    mThres.val=min+((max-min)/10);
-	    mThres.val=5;
+	    mThres.val=0;
 		
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    ClearCLKernel lKernel1 = lProgram.createKernel("Sum3D");
