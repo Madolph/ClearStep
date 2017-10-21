@@ -41,6 +41,29 @@ public class Calculator {
 	 */
 	boolean filled;
 
+	int mReductionFactor = 16;
+
+	ClearCLBuffer mEnd;
+	ClearCLBuffer mBufferMin;
+	ClearCLBuffer mBufferMax;
+	ClearCLContext mContext;
+
+	ClearCLImage mImage;
+
+	public Calculator(ClearCLContext pContext) {
+		mContext = pContext;
+
+		mEnd = mContext.createBuffer(NativeTypeEnum.Float,
+																							 (int) pow(mReductionFactor,
+																												 3));
+		mBufferMin = mContext.createBuffer(NativeTypeEnum.Float,
+																										 (int) pow(mReductionFactor,
+																															 3));
+		mBufferMax = mContext.createBuffer(NativeTypeEnum.Float,
+																										 (int) pow(mReductionFactor,
+																															 3));
+	}
+
 	
 	/**
 	 * receives an image and stores it into the Cache
@@ -78,31 +101,24 @@ public class Calculator {
 	/**
 	 * compares two images and responds with a metric that
 	 * relates to the change between the two
-	 * 
-	 * @param lContext 	The OpenCL-Context
+	 *
 	 * @param lProgram 	The OpenCL-Program
 	 * @param lSize 	The Size of the images
 	 * @return 			The metric of change between the images
 	 */
-	public float compareImages(ClearCLContext lContext, ClearCLProgram lProgram, int lSize)
+	public float compareImages(ClearCLProgram lProgram, int lSize)
 	{
-		// creates a temporary image to store the pixel-wise difference
-		ClearCLImage lImage = lContext.createSingleChannelImage(ImageChannelDataType.Float,
-                                                   lSize,
-                                                   lSize,
-                                                   lSize);
-		
-		int lReductionFactor = 16;
 
-	      ClearCLBuffer lEnd = lContext.createBuffer(NativeTypeEnum.Float,
-	                                                 (int) pow(lReductionFactor,
-	                                                           3));
-	      ClearCLBuffer BufferMin = lContext.createBuffer(NativeTypeEnum.Float,
-                  (int) pow(lReductionFactor,
-                            3));
-	      ClearCLBuffer BufferMax = lContext.createBuffer(NativeTypeEnum.Float,
-                  (int) pow(lReductionFactor,
-                            3));
+		// creates a temporary image to store the pixel-wise difference
+		if (mImage == null || mImage.getWidth() != lSize)
+		{
+			mImage =
+					mContext.createSingleChannelImage(ImageChannelDataType.Float,
+																						lSize,
+																						lSize,
+																						lSize);
+		}
+
 		
 		// runs the kernel for image-comparison
 	    /**String lString = new String();
@@ -117,24 +133,24 @@ public class Calculator {
 	    { 	
 	    	mThres.val=5;
 	    	mThres.set=true;
-	    }  
+	    }
 	    ClearCLKernel lKernel = lProgram.createKernel("compareNFilter");
 	    lKernel.setArgument("image1", mImage1);
 	    lKernel.setArgument("image2", mImage2);
-	    lKernel.setArgument("result", lImage);
+	    lKernel.setArgument("result", mImage);
 	    lKernel.setArgument("threshold", mThres.val);
-	    lKernel.setArgument("BufferMin", BufferMin);
-	    lKernel.setArgument("BufferMax", BufferMax);
-	    lKernel.setGlobalSizes(lReductionFactor, lReductionFactor, lReductionFactor);
+	    lKernel.setArgument("BufferMin", mBufferMin);
+	    lKernel.setArgument("BufferMax", mBufferMax);
+	    lKernel.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
 	    lKernel.run(true);
 	    
-	    OffHeapMemory lBufferMin = OffHeapMemory.allocateFloats(BufferMin.getLength());
-	    OffHeapMemory lBufferMax = OffHeapMemory.allocateFloats(BufferMax.getLength());
+	    OffHeapMemory lBufferMin = OffHeapMemory.allocateFloats(mBufferMin.getLength());
+	    OffHeapMemory lBufferMax = OffHeapMemory.allocateFloats(mBufferMax.getLength());
 	    
-	    BufferMin.writeTo(lBufferMin, true);
+	    mBufferMin.writeTo(lBufferMin, true);
 	    float max = 0;
     	float min = 99999;
-	    for (int i = 0; i < BufferMin.getLength(); i++)
+	    for (int i = 0; i < mBufferMin.getLength(); i++)
 	    {
 	    	float lFloatAligned = lBufferMin.getFloatAligned(i);
 	    	if (lFloatAligned<min)
@@ -148,17 +164,17 @@ public class Calculator {
 		
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    ClearCLKernel lKernel1 = lProgram.createKernel("Sum3D");
-	    lKernel1.setArgument("image", lImage);
-	    lKernel1.setArgument("result", lEnd);
-	    lKernel1.setGlobalSizes(lReductionFactor, lReductionFactor, lReductionFactor);
+	    lKernel1.setArgument("image", mImage);
+	    lKernel1.setArgument("result", mEnd);
+	    lKernel1.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
 	    lKernel1.run(true);
 
-	    OffHeapMemory lBuffer = OffHeapMemory.allocateFloats(lEnd.getLength());
+	    OffHeapMemory lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
 
 	    // copy the array from the kernel to a buffer and sum everything up
-	    lEnd.writeTo(lBuffer, true);
+	    mEnd.writeTo(lBuffer, true);
 	    float lDiff = 0;
-	    for (int i = 0; i < lEnd.getLength(); i++)
+	    for (int i = 0; i < mEnd.getLength(); i++)
 	    {
 	    	float lFloatAligned = lBuffer.getFloatAligned(i);
 	    	lDiff += lFloatAligned;
