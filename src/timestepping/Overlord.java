@@ -138,7 +138,8 @@ public class Overlord {
 		      int lPhantomHeight = lPhantomWidth;
 		      int lPhantomDepth = lPhantomWidth;
 		      
-		      ClearCLImage lImage = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
+		      //hier drigend auf Datentyp achten
+		      ClearCLImage lImage = lContext.createSingleChannelImage(ImageChannelDataType.UnsignedInt16, lSize, lSize, lSize);
 			  
 			  ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
 			  
@@ -147,19 +148,17 @@ public class Overlord {
 			  
 			  int lNumberOfDetectionArms = 1;
 			  int lNumberOfIlluminationArms = 4;
-			  int lMaxCameraResolution = 1024;
+			  int lMaxCameraResolution = lSize;
 			  
 			  LightSheetMicroscopeSimulatorDrosophila lSimulator =
                       new LightSheetMicroscopeSimulatorDrosophila(lContext,
                                                              lNumberOfDetectionArms,
                                                              lNumberOfIlluminationArms,
                                                              lMaxCameraResolution,
-                                                             11f,
+                                                             5f,
                                                              lPhantomWidth,
                                                              lPhantomHeight,
                                                              lPhantomDepth);
-			  
-			  Drosophila.getDeveloppedEmbryo(0);
 			  
 			  ClearCLImageViewer lCameraImageViewer =
                       lSimulator.openViewerForCameraImage(0);
@@ -184,8 +183,17 @@ public class Overlord {
 
 		          lSimulator.render(true);
 				  
-		          // TODO still not getting camera image
-		          //lSimulator.getCameraImage(0).copyTo(lImage, true);
+		          /** Checkt die Werte des Bildes
+		          if (lSimulator.getCameraImage(0).isFloat())
+		        	  System.out.println("is float");
+		          if (lSimulator.getCameraImage(0).isNormalized())
+		        	  System.out.println("is normalized");
+		          if (lSimulator.getCameraImage(0).isSigned())
+		        	  System.out.println("is signed");
+		          if (lSimulator.getCameraImage(0).isInteger())
+		        	  System.out.println("is int");**/
+		          
+		          lSimulator.getCameraImage(0).copyTo(lImage, true);
 				  lImage.notifyListenersOfChange(lContext.getDefaultQueue());
 				  mCalc.CachePic(lImage, lContext, lSize);
 				  
