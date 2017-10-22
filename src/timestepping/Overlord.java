@@ -30,7 +30,7 @@ public class Overlord {
 	/**
 	 * The Calculator used for the Test
 	 */
-	public Calculator mCalc = new Calculator();
+	public Calculator mCalc;
 	
 	/**
 	 * The TimeStepper used for the Test
@@ -64,6 +64,7 @@ public class Overlord {
 		  System.out.println(lFastestGPUDevice);
 
 		  ClearCLContext lContext = lFastestGPUDevice.createContext();
+		  mCalc = new Calculator(lContext);
 
 		  ClearCLProgram lProgram = lContext.createProgram(Simulator.class, "CalcKernels.cl");
 		  lProgram.addDefine("CONSTANT", "1");
@@ -95,7 +96,7 @@ public class Overlord {
 			  if (mCalc.filled)
 			  {			  
 				  // computes the difference between the two pictures
-				  float diff = mCalc.compareImages(lContext, lProgram, lSize);
+				  float diff = mCalc.compareImages(lProgram, lSize);
 				  //System.out.println("diff is: "+diff);
 				  // computed the step out of the saved difference
 				  float step = mTimeStepper.computeStep(diff, time);
@@ -123,6 +124,8 @@ public class Overlord {
 			  System.out.println(lFastestGPUDevice);
 
 			  ClearCLContext lContext = lFastestGPUDevice.createContext();
+				mCalc = new Calculator(lContext);
+
 
 			  ClearCLProgram lProgram = lContext.createProgram(Simulator.class, "CalcKernels.cl");
 			  lProgram.addDefine("CONSTANT", "1");
@@ -201,7 +204,7 @@ public class Overlord {
 				  if (mCalc.filled)
 				  {			  
 					  // computes the difference between the two pictures
-					  float diff = mCalc.compareImages(lContext, lProgram, lSize);
+					  float diff = mCalc.compareImages(lProgram, lSize);
 					  //System.out.println("diff is: "+diff);
 					  // computed the step out of the saved difference
 					  float step = mTimeStepper.computeStep(diff, time);
