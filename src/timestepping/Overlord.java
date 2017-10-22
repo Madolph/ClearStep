@@ -35,7 +35,7 @@ public class Overlord {
 	/**
 	 * The TimeStepper used for the Test
 	 */
-	public TimeStepper mTimeStepper = new TimeStepper((float) 0.5, (float) 0.2, (float) 1.0, (float) 0.1, true);
+	public TimeStepper mTimeStepper;
 	
 	/**
 	 * duration of the Test in seconds
@@ -65,6 +65,8 @@ public class Overlord {
 
 		  ClearCLContext lContext = lFastestGPUDevice.createContext();
 		  mCalc = new Calculator(lContext);
+		  
+		  mTimeStepper = new TimeStepper((float) 0.5, (float) 0.2, (float) 1.0, (float) 0.1, true);
 
 		  ClearCLProgram lProgram = lContext.createProgram(Simulator.class, "CalcKernels.cl");
 		  lProgram.addDefine("CONSTANT", "1");
@@ -124,8 +126,12 @@ public class Overlord {
 			  System.out.println(lFastestGPUDevice);
 
 			  ClearCLContext lContext = lFastestGPUDevice.createContext();
+			  
+			  	// initialize the Calculator
 				mCalc = new Calculator(lContext);
 
+				// initialize the Timestepper
+				mTimeStepper = new TimeStepper((float) 0.5, (float) 0.2, (float) 1.0, (float) 0.1, true);
 
 			  ClearCLProgram lProgram = lContext.createProgram(Simulator.class, "CalcKernels.cl");
 			  lProgram.addDefine("CONSTANT", "1");

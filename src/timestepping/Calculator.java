@@ -32,6 +32,11 @@ public class Calculator {
 	ClearCLImage mImage2=null;
 	
 	/**
+	 * The "Image" that stores the values of calculation
+	 */
+	ClearCLImage mImage;
+	
+	/**
 	 * Is used to decide which cached picture will be overwritten
 	 */
 	boolean even = false;
@@ -47,8 +52,6 @@ public class Calculator {
 	ClearCLBuffer mBufferMin;
 	ClearCLBuffer mBufferMax;
 	ClearCLContext mContext;
-
-	ClearCLImage mImage;
 
 	public Calculator(ClearCLContext pContext) {
 		mContext = pContext;
@@ -78,7 +81,7 @@ public class Calculator {
 		{
 			if (mImage1==null)
 				// creates an empty picture if the cache is null
-				{ mImage1 = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize); }
+				{ mImage1 = lContext.createSingleChannelImage(image.getChannelDataType(), lSize, lSize, lSize); }
 					
 			image.copyTo(mImage1, false);
 			even=true;
@@ -88,7 +91,7 @@ public class Calculator {
 		{
 			if (mImage2==null)
 				// creates an empty picture if the cache is null
-				{ mImage2 = lContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize); }
+				{ mImage2 = lContext.createSingleChannelImage(image.getChannelDataType(), lSize, lSize, lSize); }
 			
 			image.copyTo(mImage2, false);
 			even=false;
@@ -113,7 +116,7 @@ public class Calculator {
 		if (mImage == null || mImage.getWidth() != lSize)
 		{
 			mImage =
-					mContext.createSingleChannelImage(ImageChannelDataType.Float,
+					mContext.createSingleChannelImage(mImage1.getChannelDataType(),
 																						lSize,
 																						lSize,
 																						lSize);
@@ -160,7 +163,6 @@ public class Calculator {
 	    }
 	    
 	    mThres.val=min+((max-min)/10);
-	    mThres.val=0;
 		
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    ClearCLKernel lKernel1 = lProgram.createKernel("Sum3D");
