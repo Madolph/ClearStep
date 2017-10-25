@@ -1,18 +1,16 @@
 package timestepping;
 
-import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
-import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 /**
  * saves deviations and computes stochastic values
  */
-public class Memory {
+public class PredictorStDev extends Predictor {
 	
 	/**
 	 * An Array that saves the last 10 deviations
 	 */
-	public float[][] mDev = new float[10][2];
+	public float[][] mDev = new float[5][2];
 	
 	/**
 	 * The current Standard-Deviation
@@ -53,13 +51,34 @@ public class Memory {
 	/**
 	 * creates an instance of memory and sets the array of deviations and timepoints to 0
 	 */
-	public Memory()
+	public PredictorStDev()
 	{
 		for (int i=0;i<mDev.length;i++)
 		{
 			mDev[i][0]=0;
 			mDev[i][1]=0;
 		}
+	}
+	
+	public float predict(float diff, float time)
+	{
+		rearrangeDev();
+		mDev[0][0]= (diff)/(time-mDev[1][1]);
+		mDev[0][1]= time;
+	
+		calcStDevAdapt();
+		// Check if the new value is outside the Standard deviation
+		if (mStDev==0)
+			// No deviation means Sigma has to be zero (would devide by = otherwise)
+			{ mCurrentSigma = 0; }
+		else
+			//{ mCurrentSigma=((mDev[0][0]-mMean)/mStDev); }
+			{ mCurrentSigma = (float)((mDev[0][0]-mMean.val)/mStDev); }
+		
+		mCurrentSigma /= 3;
+		setPlotValues();
+		System.out.println("Sigma is: "+mCurrentSigma+" / StDev: "+mStDev);
+		return mCurrentSigma;
 	}
 	
 	/**
@@ -78,7 +97,7 @@ public class Memory {
 		mDev[0][0]= (diff)/(time-mDev[1][1]);
 		mDev[0][1]= time;
 		
-		if (mDev[9][1]==0)
+		if (mDev[mDev.length-1][1]==0)
 			return false;
 	
 		calcStDevAdapt();
@@ -88,8 +107,9 @@ public class Memory {
 			{ mCurrentSigma=0; }
 		else
 			//{ mCurrentSigma=((mDev[0][0]-mMean)/mStDev); }
-			{ mCurrentSigma=(float) ((mDev[0][0]-mMean.val)/mStDev); }
+			{ mCurrentSigma= (float)((mDev[0][0]-mMean.val)/mStDev); }
 		
+		setPlotValues();
 		System.out.println("Sigma is: "+mCurrentSigma+" / StDev: "+mStDev);
 		if (mCurrentSigma>mSensitivity || mCurrentSigma<-mSensitivity)
 		{ return true; }
@@ -110,26 +130,6 @@ public class Memory {
 			}
 	}
 	
-	/**
-	 * calculates the standard-deviation
-	 */
-	private void calcStDev()
-	{
-		float lMean=0;
-		float lGap=0;
-		for (int i=0;i<mDev.length;i++)
-		{
-			lMean += mDev[i][0];
-		}
-		mMean.val = lMean/mDev.length;
-		for (int i=0;i<mDev.length;i++)
-		{
-			float lDummy= (mDev[i][0]-mMean.val);
-			lGap += lDummy*lDummy;
-		}
-		mStDev = (float) Math.sqrt(lGap);
-	}
-	
 	private void calcStDevAdapt(){
 		mMeanCache=adaptMeanRegress();
 		System.out.println("function ready");
@@ -140,33 +140,6 @@ public class Memory {
 			lGap += lDummy*lDummy;
 		}
 		mStDev = (float) Math.sqrt(lGap);			
-	}
-	
-	private double[] adaptMean(){
-		double[] x = new double[mDev.length];
-		double[] y = new double[mDev.length];
-		
-		for (int i=0;i<x.length;i++)
-			{
-			x[i]=(double) mDev[mDev.length-i-1][1];
-			y[i]=(double) mDev[mDev.length-i-1][0];
-			}
-		// TODO Use Regression instead of interpolation
-		LinearInterpolator  lLinInterp = new LinearInterpolator() ;
-		PolynomialSplineFunction lPolyFunc = lLinInterp.interpolate(x, y);
-		double[] lMeanCache = new double[mDev.length];
-		for (int i=0;i<lMeanCache.length;i++)
-		{
-			lMeanCache[i] = lPolyFunc.value(x[x.length-i-1]);
-		}
-		float lMean=0;
-		for (int i=0;i<lMeanCache.length;i++)
-			lMean += lMeanCache[i];
-		lMean = lMean/lMeanCache.length;
-		
-		mMean.val = mMean.val*(mMeanStiff)+lMean*(1-mMeanStiff);
-		
-		return lMeanCache;
 	}
 	
 	private double[] adaptMeanRegress(){
@@ -193,5 +166,13 @@ public class Memory {
 			mMean.set = true; }
 		
 		return lMeanCache;
+	}
+	
+	public void setPlotValues()
+	{
+		value = mDev[0][0];
+		prediction = mCurrentSigma;
+		average = mMean.val;
+		System.out.println("value: "+value+" / prediction: "+prediction+" / average: "+average);
 	}
 }

@@ -13,12 +13,8 @@ import clearcl.backend.ClearCLBackendInterface;
 import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
-import simbryo.dynamics.tissue.embryo.zoo.Drosophila;
 import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscopeSimulatorDrosophila;
 import simbryo.synthoscopy.microscope.parameters.IlluminationParameter;
-import simbryo.synthoscopy.microscope.parameters.PhantomParameter;
-import simbryo.synthoscopy.phantom.fluo.impl.drosophila.DrosophilaHistoneFluorescence;
-import simbryo.synthoscopy.phantom.scatter.impl.drosophila.DrosophilaScatteringPhantom;
 
 public class Overlord {
 	
@@ -66,7 +62,7 @@ public class Overlord {
 		  ClearCLContext lContext = lFastestGPUDevice.createContext();
 		  mCalc = new Calculator(lContext);
 		  
-		  mTimeStepper = new TimeStepper((float) 0.5, (float) 0.2, (float) 1.0, (float) 0.1, true);
+		  mTimeStepper = new TimeStepper((float) 0.5, (float) 0.2, (float) 1.0, (float) 0.1);
 
 		  ClearCLProgram lProgram = lContext.createProgram(Simulator.class, "CalcKernels.cl");
 		  lProgram.addDefine("CONSTANT", "1");
@@ -82,7 +78,7 @@ public class Overlord {
 		  ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
 		  
 		  Plotter Graph = new Plotter();
-		  Graph.plot(mFxOn); //mFxOn will be checked and set to true here if it is not already true
+		  Graph.initializePlot(mFxOn); //mFxOn will be checked and set to true here if it is not already true
 		  
 		  // as long as we aren't above the time, we will now generate pictures and compute timesteps from them
 		  while (time<(mDuration*1000))  
@@ -90,7 +86,7 @@ public class Overlord {
 			  float currStep = mTimeStepper.mStep;
 			  System.out.println("current time is: "+time);
 			  
-			  mSim.generatePic(lContext, lProgram, time, lImage, lSize);
+			  mSim.generatePic(lContext, lProgram, time, lImage, lSize, true);
 			  lImage.notifyListenersOfChange(lContext.getDefaultQueue());
 			  mCalc.CachePic(lImage, lContext, lSize);
 			  
@@ -131,7 +127,7 @@ public class Overlord {
 				mCalc = new Calculator(lContext);
 
 				// initialize the Timestepper
-				mTimeStepper = new TimeStepper((float) 0.5, (float) 0.2, (float) 1.0, (float) 0.1, true);
+				mTimeStepper = new TimeStepper((float) 0.5, (float) 0.2, (float) 1.0, (float) 0.1);
 
 			  ClearCLProgram lProgram = lContext.createProgram(Simulator.class, "CalcKernels.cl");
 			  lProgram.addDefine("CONSTANT", "1");
@@ -153,7 +149,7 @@ public class Overlord {
 			  ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
 			  
 			  Plotter Graph = new Plotter();
-			  Graph.plot(mFxOn); //mFxOn will be checked and set to true here if it is not already true
+			  Graph.initializePlot(mFxOn); //mFxOn will be checked and set to true here if it is not already true
 			  
 			  int lNumberOfDetectionArms = 1;
 			  int lNumberOfIlluminationArms = 4;
@@ -228,4 +224,22 @@ public class Overlord {
 			  lSimulator.close();
 		  }
 	}
+	
+	@Test
+	public void PredictorDemo()
+	{
+		PredictorHoltWinters lPred = new PredictorHoltWinters();
+		int i = 0;
+		float res;
+		float val=0;
+		while (i<100)
+		{		
+			res = lPred.predict(val);
+			val++;
+			System.out.println(res);
+			i++;
+		}
+		
+	}
+	
 }

@@ -35,24 +35,31 @@ public class Simulator {
 	 * @param lSize 	The size of the images
 	 */
 	public void generatePic(ClearCLContext lContext, ClearCLProgram lProgram, 
-			float time, ClearCLImage lImage1, int lSize)
+			float time, ClearCLImage lImage1, int lSize, boolean noise)
 	{ 
 	    computePosition(time);
 	    Random lRandom = new Random();
+	    float random = 0;
+	    
+	    if (noise)
+	    	random = (float)16.807*(lRandom.nextFloat());
+	    
+	    boolean vibrate = false;
+	    
+	    float vibration = 0;
+	    
+	    if (vibrate)
+	    	vibration = (lRandom.nextFloat()-0.5f)*4;
 	    
 	    //ClearCLKernel lKernel = lProgram.createKernel("sphere");
 	    ClearCLKernel lKernel = lProgram.createKernel("noisySphere");
-	    lKernel.setArgument("image", lImage1);
 	    lKernel.setGlobalSizes(lImage1);
-	    lKernel.setArgument("r", 0.25f);
-	    
+	    lKernel.setArgument("image", lImage1);
 	    lKernel.setArgument("cx", ((lSize/2)+mPosition[0]));
-	    System.out.println("shift X is: "+mPosition[0]);
-	    lKernel.setArgument("cy", ((lSize/2)+mPosition[1]));
-	    System.out.println("shift Y is: "+mPosition[1]);
+	    lKernel.setArgument("cy", ((lSize/2)+mPosition[1])+vibration);
 	    lKernel.setArgument("cz", ((lSize/2)+mPosition[2]));
-	    System.out.println("shift Z is: "+mPosition[2]);
-	    lKernel.setArgument("p1", (float)16.807*(lRandom.nextFloat()));
+	    lKernel.setArgument("r", 0.25f);
+	    lKernel.setArgument("p1", random);
 	    
 	    lKernel.run(true);      
 	}

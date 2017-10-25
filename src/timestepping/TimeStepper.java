@@ -5,7 +5,7 @@ public class TimeStepper {
 	/**
 	 * The Memory that stores the deviations and their stochastic values
 	 */
-	public Memory mInfo= new Memory();
+	public PredictorStDev mInfo= new PredictorStDev();
 	
 	Setable mStepSmooth = new Setable();
 	
@@ -41,6 +41,8 @@ public class TimeStepper {
 	 */
 	public float mStep;
 	
+	public float smoothing = 0.9f;
+	
 	/**
 	 * Create a new Timestepper
 	 * 
@@ -49,16 +51,54 @@ public class TimeStepper {
 	 * @param maxStep	The maximum allowed timestep (static)
 	 * @param minStep	The minimum allowed timestep (static)
 	 */
-	public TimeStepper(float start, float width, float maxStep, float minStep, boolean lfluid)
+	public TimeStepper(float start, float width, float maxStep, float minStep)
 	{
 		mNeutralStep = start*1000;
 		mSpan = width*1000;
 		mStep = mNeutralStep;
 		mMaxStep = maxStep*1000;
 		mMinStep = minStep*1000;
-		fluid = lfluid;
 	}
 
+	public void limitMetric(float metric)
+	{
+		if (metric>1)
+			metric=1;
+		if (metric<-1)
+			metric=-1;
+	}
+	
+	public void limitStep()
+	{
+		if (mStep>mMaxStep)
+			mStep = mMaxStep;
+		if (mStep<mMinStep)
+			mStep = mMinStep;
+	}
+	
+	public float computeNextStep(float metric)
+	{
+		limitMetric(metric);
+		mStep=mNeutralStep+(-metric*mSpan);
+		
+		limitStep();
+		
+		if (!mStepSmooth.set)
+		{
+			mStepSmooth.val = mStep;
+			mStepSmooth.set= true;
+		}
+		else 
+			mStepSmooth.val = mStepSmooth.val*(smoothing)+mStep*(1-smoothing);
+			
+		mStep = mStepSmooth.val;	
+		
+		// over time, the step will get back to the original step
+		mStep =(mNeutralStep*mRollback) + (mStep*(1-mRollback));
+			
+		return mStep;
+	}
+	
 	/**
 	 * calculates the new Timestep
 	 * 
@@ -121,7 +161,8 @@ public class TimeStepper {
 		return mStep;
 	}
 	
-	public void assignStep(){
+	public void assignStep()
+	{
 		int lStep = (int) ((mStep-mMinStep)/mSpan);
 		mStep = mMinStep+(lStep*mSpan);
 	}
