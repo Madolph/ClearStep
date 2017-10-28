@@ -159,7 +159,7 @@ public class Handler {
 		      
 		//hier drigend auf Datentyp achten
 		ClearCLImage lImage = mContext.createSingleChannelImage(ImageChannelDataType.UnsignedInt16, 
-																lSize, lSize, lSize);
+																lSize, lSize, 1);
 			  
 		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
 			  
