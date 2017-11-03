@@ -13,8 +13,13 @@ import clearcl.backend.ClearCLBackendInterface;
 import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
+import fastfuse.FastFusionEngine;
+import fastfuse.stackgen.StackGenerator;
+import fastfuse.tasks.AverageTask;
+import simbryo.dynamics.tissue.embryo.zoo.Drosophila;
 import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscopeSimulatorDrosophila;
 import simbryo.synthoscopy.microscope.parameters.IlluminationParameter;
+import simbryo.util.timing.Timming;
 
 public class Handler {
 
@@ -135,10 +140,13 @@ public class Handler {
 		}  
 		lViewImage.waitWhileShowing();
 	}
+
 	
 	@Test
 	public void SimbryoTest() throws Exception
 	{
+		int milestone = 1;
+		
 		boolean StDev = true;
 		
 		InitializeModules(StDev);
@@ -166,7 +174,7 @@ public class Handler {
 		Plotter Graph = new Plotter();
 		Graph.initializePlot(mFxOn); //mFxOn will be checked and set to true here if it is not already true
 			  
-		int lNumberOfDetectionArms = 1;
+		int lNumberOfDetectionArms = 2;
 		int lNumberOfIlluminationArms = 4;
 		int lMaxCameraResolution = lSize;
 			  
@@ -180,6 +188,10 @@ public class Handler {
                                                              		lPhantomHeight,
                                                              		lPhantomDepth);
 			  
+		StackGenerator lStackGenerator = new StackGenerator(lSimulator);
+		
+		FastFusionEngine lFastFusionEngine = new FastFusionEngine(mContext);
+		
 		@SuppressWarnings("unused")
 		ClearCLImageViewer lCameraImageViewer =
                       lSimulator.openViewerForCameraImage(0);
@@ -191,20 +203,60 @@ public class Handler {
 			System.out.println("current time is: "+time);
 
 			lSimulator.simulationSteps((int)currStep/10);
-				  
-		lSimulator.setNumberParameter(IlluminationParameter.Height,
-                          					0,
-                          					1f);
-			lSimulator.setNumberParameter(IlluminationParameter.Intensity,
+			/**lSimulator.setNumberParameter(IlluminationParameter.Intensity,
                           					0,
                           					50f);
-			lSimulator.setNumberParameter(IlluminationParameter.Gamma,
-                          					0,
-                          					0f);
-
+			lSimulator.setNumberParameter(IlluminationParameter.Intensity,
+  											1,
+  											50f);**/
+			
 		    lSimulator.render(true);
+		    
+		    lFastFusionEngine.addTask(new AverageTask("C0L0",
+                    "C0L1",
+                    "C0L2",
+                    "C0L3",
+                    "C0"));
+		    lFastFusionEngine.addTask(new AverageTask("C1L0",
+                    "C1L1",
+                    "C1L2",
+                    "C1L3",
+                    "C1"));
+		    lFastFusionEngine.addTask(new AverageTask("C0", "C1", "fused"));
+		    
+		    lStackGenerator.setCenteredROI(lMaxCameraResolution / 2, lMaxCameraResolution);
+		    
+		    lStackGenerator.setLightSheetHeight(1f);
+		    lStackGenerator.setLightSheetIntensity(10f);
+		    
+		    System.out.println("Milestone "+milestone+" met");
+			milestone++;
+		    
+			for (int c = 0; c < 2; c++)
+		        for (int l = 0; l < 4; l++)
+		        {
+		          String lKey = String.format("C%dL%d", c, l);
 		          
-		    lSimulator.getCameraImage(0).copyTo(lImage, true);
+		          System.out.println("Milestone "+milestone+" met");
+		          milestone++;
+		          
+		          lStackGenerator.generateStack(c, l, -64f, 64f, 128);
+		          
+		          System.out.println("Milestone "+milestone+" met");
+		          milestone++;
+		          
+		          lFastFusionEngine.passImage(lKey,
+		                                      lStackGenerator.getStack());
+		        }
+		    
+		    System.out.println("Milestone "+milestone+" met");
+			milestone++;
+		    
+		    lFastFusionEngine.executeAllTasks();
+		    
+		    lFastFusionEngine.getImage("fused").copyTo(lImage, true);
+		    
+		    
 		    lImage.notifyListenersOfChange(mContext.getDefaultQueue());
 			mCalc.CachePic(lImage, mContext, lSize);
 				  
@@ -217,7 +269,7 @@ public class Handler {
 				// computed the step out of the saved difference
 				float step = mTimeStepper.computeStep(diff, time);
 			  
-				// put the Thread to sleep to simulate realtime... kinda... sorta
+				//put the Thread to sleep to simulate realtime... kinda... sorta
 			  
 				//System.out.println("computed step is: "+step);
 					  
@@ -227,6 +279,7 @@ public class Handler {
 		}	  
 		lViewImage.waitWhileShowing();
 		lSimulator.close();
+		lStackGenerator.close();
 	}
 	
 	@Test

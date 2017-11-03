@@ -45,6 +45,7 @@ public class PredictorStDev extends Predictor {
 	/**
 	 * becomes true when 10 the dev-matrix is set up
 	 */
+	
 	boolean AllSet=false;
 	
 	
