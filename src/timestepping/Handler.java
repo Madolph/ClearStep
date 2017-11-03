@@ -213,21 +213,21 @@ public class Handler {
 		    lSimulator.render(true);
 		    
 		    lFastFusionEngine.addTask(new AverageTask("C0L0",
-                    "C0L1",
-                    "C0L2",
-                    "C0L3",
-                    "C0"));
+                    									"C0L1",
+                    									"C0L2",
+                    									"C0L3",
+                    									"C0"));
 		    lFastFusionEngine.addTask(new AverageTask("C1L0",
-                    "C1L1",
-                    "C1L2",
-                    "C1L3",
-                    "C1"));
+                    									"C1L1",
+                    									"C1L2",
+                    									"C1L3",
+                    									"C1"));
 		    lFastFusionEngine.addTask(new AverageTask("C0", "C1", "fused"));
 		    
-		    lStackGenerator.setCenteredROI(lMaxCameraResolution / 2, lMaxCameraResolution);
+		    lStackGenerator.setCenteredROI(lSize, lSize);
 		    
-		    lStackGenerator.setLightSheetHeight(1f);
-		    lStackGenerator.setLightSheetIntensity(10f);
+		    lStackGenerator.setLightSheetHeight(50f);
+		    lStackGenerator.setLightSheetIntensity(50f);
 		    
 		    System.out.println("Milestone "+milestone+" met");
 			milestone++;
@@ -236,9 +236,6 @@ public class Handler {
 		        for (int l = 0; l < 4; l++)
 		        {
 		          String lKey = String.format("C%dL%d", c, l);
-		          
-		          System.out.println("Milestone "+milestone+" met");
-		          milestone++;
 		          
 		          lStackGenerator.generateStack(c, l, -64f, 64f, 128);
 		          
