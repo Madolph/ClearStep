@@ -14,12 +14,10 @@ import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
 import fastfuse.FastFusionEngine;
+import fastfuse.FastFusionMemoryPool;
 import fastfuse.stackgen.StackGenerator;
 import fastfuse.tasks.AverageTask;
-import simbryo.dynamics.tissue.embryo.zoo.Drosophila;
 import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscopeSimulatorDrosophila;
-import simbryo.synthoscopy.microscope.parameters.IlluminationParameter;
-import simbryo.util.timing.Timming;
 
 public class Handler {
 
@@ -145,8 +143,6 @@ public class Handler {
 	@Test
 	public void SimbryoTest() throws Exception
 	{
-		int milestone = 1;
-		
 		boolean StDev = true;
 		
 		InitializeModules(StDev);
@@ -229,9 +225,6 @@ public class Handler {
 		    lStackGenerator.setLightSheetHeight(50f);
 		    lStackGenerator.setLightSheetIntensity(50f);
 		    
-		    System.out.println("Milestone "+milestone+" met");
-			milestone++;
-		    
 			for (int c = 0; c < 2; c++)
 		        for (int l = 0; l < 4; l++)
 		        {
@@ -239,15 +232,9 @@ public class Handler {
 		          
 		          lStackGenerator.generateStack(c, l, -64f, 64f, 128);
 		          
-		          System.out.println("Milestone "+milestone+" met");
-		          milestone++;
-		          
 		          lFastFusionEngine.passImage(lKey,
 		                                      lStackGenerator.getStack());
 		        }
-		    
-		    System.out.println("Milestone "+milestone+" met");
-			milestone++;
 		    
 		    lFastFusionEngine.executeAllTasks();
 		    
@@ -294,5 +281,95 @@ public class Handler {
 			i++;
 		}
 		
+	}
+	
+	@Test
+	public void createAndMeasureSimbryoStack() throws Exception
+	{
+		boolean StDev = true;
+		
+		InitializeModules(StDev);
+		
+		mProgram1 = mContext.createProgram(Simulator.class, "Calculator.cl");
+		mProgram1.addDefine("CONSTANT", "1");
+		mProgram1.buildAndLog();
+			  
+		// now that this is done, we initialize the time and create two images that will
+		// be filled by the simulator during the run	  
+		int lSize = 64;
+			  
+		int lPhantomWidth = lSize;
+		int lPhantomHeight = lPhantomWidth;
+		int lPhantomDepth = lPhantomWidth;
+		      
+		//hier drigend auf Datentyp achten
+		ClearCLImage lImage = mContext.createSingleChannelImage(ImageChannelDataType.UnsignedInt16, 
+																lSize, lSize, lSize);
+			  
+		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
+			  
+		int lNumberOfDetectionArms = 2;
+		int lNumberOfIlluminationArms = 4;
+		int lMaxCameraResolution = lSize;
+			  
+		LightSheetMicroscopeSimulatorDrosophila lSimulator =
+                      new LightSheetMicroscopeSimulatorDrosophila(mContext,
+                                                             		lNumberOfDetectionArms,
+                                                             		lNumberOfIlluminationArms,
+                                                             		lMaxCameraResolution,
+                                                             		5f,
+                                                             		lPhantomWidth,
+                                                             		lPhantomHeight,
+                                                             		lPhantomDepth);
+			  
+		StackGenerator lStackGenerator = new StackGenerator(lSimulator);
+		
+		FastFusionEngine lFastFusionEngine = new FastFusionEngine(mContext);
+		
+		@SuppressWarnings("unused")
+		FastFusionMemoryPool lMemoryPool = FastFusionMemoryPool.getInstance(mContext,
+                                                 							100 * 1024 * 1024, true);
+		@SuppressWarnings("unused")
+		ClearCLImageViewer lCameraImageViewer = lSimulator.openViewerForCameraImage(0);
+
+		lSimulator.simulationSteps((int)mTimeStepper.mStep/10);
+		
+		lSimulator.render(true);
+		    
+		lFastFusionEngine.addTask(new AverageTask("C0L0",
+                    								"C0L1",
+                    								"C0L2",
+                    								"C0L3",
+                    								"C0"));
+		lFastFusionEngine.addTask(new AverageTask("C1L0",
+                    								"C1L1",
+                    								"C1L2",
+                    								"C1L3",
+                    								"C1"));
+		lFastFusionEngine.addTask(new AverageTask("C0", "C1", "fused"));
+
+		lStackGenerator.setCenteredROI(lSize, lSize);
+
+		lStackGenerator.setLightSheetHeight(50f);
+		lStackGenerator.setLightSheetIntensity(50f);
+
+		for (int c = 0; c < 2; c++)
+			for (int l = 0; l < 4; l++)
+		    {
+				String lKey = String.format("C%dL%d", c, l);
+
+		        lStackGenerator.generateStack(c, l, -lSize/2f, lSize/2f, lSize);
+
+		        lFastFusionEngine.passImage(lKey,
+		                                      lImage);
+		    }
+		
+		lFastFusionEngine.executeAllTasks();
+
+		lImage.notifyListenersOfChange(mContext.getDefaultQueue());
+
+		lViewImage.waitWhileShowing();
+		lSimulator.close();
+		lStackGenerator.close();
 	}
 }
