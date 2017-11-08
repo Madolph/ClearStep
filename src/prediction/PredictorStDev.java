@@ -1,6 +1,8 @@
-package timestepping;
+package prediction;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+
+import framework.Setable;
 
 /**
  * saves deviations and computes stochastic values
@@ -20,7 +22,7 @@ public class PredictorStDev extends Predictor {
 	/**
 	 * The current mean (not a primitive value, to enable the functionality of mean-stiffness)
 	 */
-	Setable mMean = new Setable();
+	public Setable mMean = new Setable();
 	
 	/**
 	 * used to store the estimated mean for every point by regression
@@ -40,7 +42,7 @@ public class PredictorStDev extends Predictor {
 	/**
 	 * the current Sigma
 	 */
-	float mCurrentSigma;
+	public float mCurrentSigma;
 	
 	/**
 	 * becomes true when 10 the dev-matrix is set up

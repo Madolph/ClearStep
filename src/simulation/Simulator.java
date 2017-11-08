@@ -1,4 +1,4 @@
-package timestepping;
+package simulation;
 
 import java.util.Random;
 

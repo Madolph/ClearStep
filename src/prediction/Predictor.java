@@ -1,4 +1,4 @@
-package timestepping;
+package prediction;
 
 public class Predictor {
 	

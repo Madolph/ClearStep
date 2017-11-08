@@ -1,4 +1,4 @@
-package timestepping;
+package demo;
 
 import java.io.IOException;
 
@@ -14,6 +14,7 @@ import clearcl.backend.ClearCLBackendInterface;
 import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
+import simulation.Simulator;
 
 public class KernelTest {
 	

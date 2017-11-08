@@ -1,4 +1,4 @@
-package timestepping;
+package plotting;
 
 import java.util.concurrent.CountDownLatch;
 

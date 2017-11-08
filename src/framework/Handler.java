@@ -1,9 +1,10 @@
-package timestepping;
+package framework;
 
 import java.io.IOException;
 
 import org.junit.Test;
 
+import calculation.Calculator;
 import clearcl.ClearCL;
 import clearcl.ClearCLContext;
 import clearcl.ClearCLDevice;
@@ -17,7 +18,13 @@ import fastfuse.FastFusionEngine;
 import fastfuse.FastFusionMemoryPool;
 import fastfuse.stackgen.StackGenerator;
 import fastfuse.tasks.AverageTask;
+import plotting.Plotter;
+import prediction.Predictor;
+import prediction.PredictorHoltWinters;
+import prediction.PredictorStDev;
 import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscopeSimulatorDrosophila;
+import simulation.Simulator;
+import timestepping.TimeStepper;
 
 public class Handler {
 

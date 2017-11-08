@@ -1,4 +1,4 @@
-package timestepping;
+package calculation;
 
 import static java.lang.Math.pow;
 
@@ -41,7 +41,7 @@ public class Calculator {
 	/**
 	 * stores whether or not the calculator currently has two images stored
 	 */
-	boolean filled;
+	public boolean filled;
 
 	int mReductionFactor = 16;
 
