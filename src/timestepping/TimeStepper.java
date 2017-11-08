@@ -113,7 +113,7 @@ public class TimeStepper {
 		boolean calcStep = mInfo.saveAndCheckDiff(diff, time);
 		if (!calcStep)
 		{
-			// do nothing if the current change is within the current Area of error
+			// do nothing if the current change is within the current Area of error or calc isnt set up
 			;
 		}
 		else

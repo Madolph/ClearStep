@@ -53,14 +53,41 @@ public class Handler {
 	/**
 	 * stores whether or not JFx has been initialized
 	 */
-	boolean mFxOn = false;
+	public boolean mFxOn = false;
 	
 	public ClearCLContext mContext;
 	public ClearCLDevice mFastestGPUDevice;
 	public ClearCL mClearCL;
 	public ClearCLBackendInterface mClearCLBackendInterface;
+	// Calculation
 	public ClearCLProgram mProgram1;
+	// Generation
 	public ClearCLProgram mProgram2;
+	
+	public boolean checkInitialization()
+	{
+		return true;
+	}
+	
+	public void processImage(ClearCLImage image, ClearCLContext mContext, float time)
+	{
+		boolean ready = checkInitialization();
+		
+		float diff = mCalc.cacheAndCompare(image, mContext, mProgram1, (int)image.getHeight());
+		boolean StDev = true;
+		float metric;
+		if (StDev)
+		{
+			metric = mPred.predict(diff, time);
+		}
+		else
+		{
+			metric = mPred.predict(diff, time);
+		}
+		float step = mTimeStepper.computeNextStep(metric);
+		
+		System.out.println("Timestep is: "+step);
+	}
 	
 	/**
 	 * Initializes all the Classes and ClearCL-Overhead
@@ -88,62 +115,6 @@ public class Handler {
 			mPred = new PredictorHoltWinters();
 		
 		mTimeStepper = new TimeStepper(0.5f, 0.2f, 1f, 0.1f);	
-	}
-	
-	@Test
-	public void SimpleSimStepper() throws IOException, InterruptedException
-	{
-		boolean StDev = true;
-		
-		InitializeModules(StDev);
-		
-		mProgram1 = mContext.createProgram(Handler.class, "Calculator.cl");
-		mProgram1.addDefine("CONSTANT", "1");
-		mProgram1.buildAndLog();
-		
-		mProgram2 = mContext.createProgram(Handler.class, "Simulator.cl");
-		mProgram2.addDefine("CONSTANT", "1");
-		mProgram2.buildAndLog();
-		
-		Plotter Plotter = new Plotter();
-		Plotter.initializePlotSimpleSimStepper(mFxOn);
-		
-		int lSize = 128;
-		ClearCLImage lImage = mContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
-		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
-		float time=0;
-		while (time<(mDuration*1000))  
-		{
-			float currStep = mTimeStepper.mStep;
-			System.out.println("current time is: "+time+" with step: "+currStep);
-			  
-			mSim.generatePic(mContext, mProgram2, time, lImage, lSize, false);
-			lImage.notifyListenersOfChange(mContext.getDefaultQueue());
-			mCalc.CachePic(lImage, mContext, lSize);
-			if (mCalc.filled)
-			{			  
-				float diff = mCalc.compareImages(mProgram1, lSize);
-				float metric;
-				if (StDev)
-				{
-					metric = mPred.predict(diff, time);
-				}
-				else
-				{
-					diff = diff/currStep;
-					metric = mPred.predict(diff);
-				}
-				float step = mTimeStepper.computeNextStep(metric);  
-				
-				Plotter.plotDataSimpleSimStepper(time,
-						step/100,
-						mPred.prediction,
-						mPred.average);
-			}
-			time += currStep;
-			Thread.sleep((long) currStep);
-		}  
-		lViewImage.waitWhileShowing();
 	}
 
 	
@@ -277,106 +248,18 @@ public class Handler {
 	public void PredictorDemo()
 	{
 		PredictorHoltWinters lPred = new PredictorHoltWinters();
+		float time = 1;
 		int i = 0;
 		float res;
 		float val=0;
 		while (i<100)
 		{		
-			res = lPred.predict(val);
+			res = lPred.predict(val, time);
 			val++;
 			System.out.println(res);
 			i++;
+			time += 1;
 		}
 		
-	}
-	
-	@Test
-	public void createAndMeasureSimbryoStack() throws Exception
-	{
-		boolean StDev = true;
-		
-		InitializeModules(StDev);
-		
-		mProgram1 = mContext.createProgram(Simulator.class, "Calculator.cl");
-		mProgram1.addDefine("CONSTANT", "1");
-		mProgram1.buildAndLog();
-			  
-		// now that this is done, we initialize the time and create two images that will
-		// be filled by the simulator during the run	  
-		int lSize = 64;
-			  
-		int lPhantomWidth = lSize;
-		int lPhantomHeight = lPhantomWidth;
-		int lPhantomDepth = lPhantomWidth;
-		      
-		//hier drigend auf Datentyp achten
-		ClearCLImage lImage = mContext.createSingleChannelImage(ImageChannelDataType.UnsignedInt16, 
-																lSize, lSize, lSize);
-			  
-		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
-			  
-		int lNumberOfDetectionArms = 2;
-		int lNumberOfIlluminationArms = 4;
-		int lMaxCameraResolution = lSize;
-			  
-		LightSheetMicroscopeSimulatorDrosophila lSimulator =
-                      new LightSheetMicroscopeSimulatorDrosophila(mContext,
-                                                             		lNumberOfDetectionArms,
-                                                             		lNumberOfIlluminationArms,
-                                                             		lMaxCameraResolution,
-                                                             		5f,
-                                                             		lPhantomWidth,
-                                                             		lPhantomHeight,
-                                                             		lPhantomDepth);
-			  
-		StackGenerator lStackGenerator = new StackGenerator(lSimulator);
-		
-		FastFusionEngine lFastFusionEngine = new FastFusionEngine(mContext);
-		
-		@SuppressWarnings("unused")
-		FastFusionMemoryPool lMemoryPool = FastFusionMemoryPool.getInstance(mContext,
-                                                 							100 * 1024 * 1024, true);
-		@SuppressWarnings("unused")
-		ClearCLImageViewer lCameraImageViewer = lSimulator.openViewerForCameraImage(0);
-
-		lSimulator.simulationSteps((int)mTimeStepper.mStep/10);
-		
-		lSimulator.render(true);
-		    
-		lFastFusionEngine.addTask(new AverageTask("C0L0",
-                    								"C0L1",
-                    								"C0L2",
-                    								"C0L3",
-                    								"C0"));
-		lFastFusionEngine.addTask(new AverageTask("C1L0",
-                    								"C1L1",
-                    								"C1L2",
-                    								"C1L3",
-                    								"C1"));
-		lFastFusionEngine.addTask(new AverageTask("C0", "C1", "fused"));
-
-		lStackGenerator.setCenteredROI(lSize, lSize);
-
-		lStackGenerator.setLightSheetHeight(50f);
-		lStackGenerator.setLightSheetIntensity(50f);
-
-		for (int c = 0; c < 2; c++)
-			for (int l = 0; l < 4; l++)
-		    {
-				String lKey = String.format("C%dL%d", c, l);
-
-		        lStackGenerator.generateStack(c, l, -lSize/2f, lSize/2f, lSize);
-
-		        lFastFusionEngine.passImage(lKey,
-		                                      lImage);
-		    }
-		
-		lFastFusionEngine.executeAllTasks();
-
-		lImage.notifyListenersOfChange(mContext.getDefaultQueue());
-
-		lViewImage.waitWhileShowing();
-		lSimulator.close();
-		lStackGenerator.close();
 	}
 }

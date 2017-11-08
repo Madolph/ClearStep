@@ -1,5 +1,7 @@
 package demo;
 
+import java.io.IOException;
+
 import org.junit.Test;
 
 import clearcl.ClearCLImage;
@@ -10,6 +12,7 @@ import fastfuse.FastFusionMemoryPool;
 import fastfuse.stackgen.StackGenerator;
 import fastfuse.tasks.AverageTask;
 import framework.Handler;
+import plotting.Plotter;
 import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscopeSimulatorDrosophila;
 import simulation.Simulator;
 
@@ -106,5 +109,62 @@ public class HandlerDemo {
 		lViewImage.waitWhileShowing();
 		lSimulator.close();
 		lStackGenerator.close();
+	}
+	
+	@Test
+	public void SimpleSimStepper() throws IOException, InterruptedException
+	{
+		Handler lHandler = new Handler();
+		
+		boolean StDev = true;
+		
+		lHandler.InitializeModules(StDev);
+		
+		lHandler.mProgram1 = lHandler.mContext.createProgram(Handler.class, "Calculator.cl");
+		lHandler.mProgram1.addDefine("CONSTANT", "1");
+		lHandler.mProgram1.buildAndLog();
+		
+		lHandler.mProgram2 = lHandler.mContext.createProgram(Handler.class, "Simulator.cl");
+		lHandler.mProgram2.addDefine("CONSTANT", "1");
+		lHandler.mProgram2.buildAndLog();
+		
+		Plotter Plotter = new Plotter();
+		Plotter.initializePlotSimpleSimStepper(lHandler.mFxOn);
+		
+		int lSize = 128;
+		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
+		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
+		float time=0;
+		while (time<(lHandler.mDuration*1000))  
+		{
+			float currStep = lHandler.mTimeStepper.mStep;
+			System.out.println("current time is: "+time+" with step: "+currStep);
+			  
+			lHandler.mSim.generatePic(lHandler.mContext, lHandler.mProgram2, time, lImage, lSize, false);
+			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
+			lHandler.mCalc.CachePic(lImage, lHandler.mContext, lSize);
+			if (lHandler.mCalc.filled)
+			{			  
+				float diff = lHandler.mCalc.compareImages(lHandler.mProgram1, lSize);
+				float metric;
+				if (StDev)
+				{
+					metric = lHandler.mPred.predict(diff, time);
+				}
+				else
+				{
+					metric = lHandler.mPred.predict(diff, time);
+				}
+				float step = lHandler.mTimeStepper.computeNextStep(metric);  
+				
+				Plotter.plotDataSimpleSimStepper(time,
+						step/100,
+						lHandler.mPred.prediction,
+						lHandler.mPred.average);
+			}
+			time += currStep;
+			Thread.sleep((long) currStep);
+		}  
+		lViewImage.waitWhileShowing();
 	}
 }

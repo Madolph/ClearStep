@@ -45,13 +45,6 @@ public class PredictorStDev extends Predictor {
 	public float mCurrentSigma;
 	
 	/**
-	 * becomes true when 10 the dev-matrix is set up
-	 */
-	
-	boolean AllSet=false;
-	
-	
-	/**
 	 * creates an instance of memory and sets the array of deviations and timepoints to 0
 	 */
 	public PredictorStDev()
@@ -100,9 +93,13 @@ public class PredictorStDev extends Predictor {
 		mDev[0][0]= (diff)/(time-mDev[1][1]);
 		mDev[0][1]= time;
 		
+		// check if the whole array is filled with data
 		if (mDev[mDev.length-1][1]==0)
+		{
+			System.out.println("Data not yet set");
 			return false;
-	
+		}
+		
 		calcStDevAdapt();
 		// Check if the new value is outside the Standard deviation
 		if (mStDev==0)

@@ -53,6 +53,13 @@ public class Calculator {
 		mEnd = mContext.createBuffer(NativeTypeEnum.Float, (int) pow(mReductionFactor, 3));
 	}
 
+	public float cacheAndCompare(ClearCLImage lImage, ClearCLContext lContext, ClearCLProgram lProgram, int lSize)
+	{
+		float result = 0;
+		CachePic(lImage, lContext, lSize);
+		result = compareImages(lProgram, lSize);
+		return result;
+	}
 	
 	/**
 	 * receives an image and stores it into the Cache

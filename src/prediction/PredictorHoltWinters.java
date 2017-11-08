@@ -47,6 +47,8 @@ public class PredictorHoltWinters extends Predictor {
 	
 	public float gamma;
 	
+	public float lastTime;
+	
 	public PredictorHoltWinters()
 	{
 		phi = 0.8f;
@@ -54,8 +56,10 @@ public class PredictorHoltWinters extends Predictor {
 		gamma = 0.5f;
 	}
 	
-	public float predict(float value)
+	public float predict(float value, float time)
 	{
+		adjustvalue(value, time);
+		
 		saveEntry(value);
 		
 		if (!running && !trend)
@@ -82,6 +86,12 @@ public class PredictorHoltWinters extends Predictor {
 		return normTrend;
 	}
 	
+	public void adjustvalue(float value, float time) 
+	{
+		value = value/(time-lastTime);
+		lastTime = time;
+	}
+
 	public void setPlotValues()
 	{
 		value = SN;
