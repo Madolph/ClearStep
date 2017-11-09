@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import Kernels.KernelTest;
 import calculation.Calculator;
 import clearcl.ClearCL;
 import clearcl.ClearCLContext;
@@ -15,7 +16,6 @@ import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
 import fastfuse.FastFusionEngine;
-import fastfuse.FastFusionMemoryPool;
 import fastfuse.stackgen.StackGenerator;
 import fastfuse.tasks.AverageTask;
 import plotting.Plotter;
@@ -26,12 +26,7 @@ import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscope
 import simulation.Simulator;
 import timestepping.TimeStepper;
 
-public class Handler {
-
-	/**
-	 * The simulator used for the Test
-	 */
-	public Simulator mSim;
+public class Handler implements timeStepAdapter{
 	
 	/**
 	 * The Calculator used for the Test
@@ -48,7 +43,7 @@ public class Handler {
 	/**
 	 * duration of the Test in seconds
 	 */
-	public float mDuration = 3600;
+	public float mDuration;
 	
 	/**
 	 * stores whether or not JFx has been initialized
@@ -64,16 +59,57 @@ public class Handler {
 	// Generation
 	public ClearCLProgram mProgram2;
 	
-	public boolean checkInitialization()
+	public Handler(ClearCLContext Context)
 	{
-		return true;
+		
 	}
 	
-	public void processImage(ClearCLImage image, ClearCLContext mContext, float time)
+	public Handler()
+	{
+		// add option to choose the predictor
+		boolean StDev = true;
+		
+		if (mContext==null)
+		{
+			mClearCLBackendInterface = ClearCLBackends.getBestBackend();
+			mClearCL = new ClearCL(mClearCLBackendInterface);
+			mFastestGPUDevice = mClearCL.getFastestGPUDeviceForImages();
+			System.out.println(mFastestGPUDevice);
+
+			mContext = mFastestGPUDevice.createContext();
+		}
+		
+		mCalc = new Calculator(mContext);
+		
+		if (StDev)
+			mPred = new PredictorStDev();
+		else
+			mPred = new PredictorHoltWinters();
+		
+		mTimeStepper = new TimeStepper(0.5f, 0.2f, 1f, 0.1f);
+		
+		// might not be necessary
+		mDuration = 3600;
+	}
+	
+	public boolean checkInitialization()
+	{
+		boolean initialzed = false;
+		if (mContext!=null)
+			initialzed = true;
+		return initialzed;
+	}
+	
+	public void passContext(ClearCLContext Context)
+	{
+		mContext = Context;
+	}
+	
+	public void processImage(ClearCLImage image, float time)
 	{
 		boolean ready = checkInitialization();
 		
-		float diff = mCalc.cacheAndCompare(image, mContext, mProgram1, (int)image.getHeight());
+		float diff = mCalc.cacheAndCompare(image, mProgram1, (int)image.getHeight());
 		boolean StDev = true;
 		float metric;
 		if (StDev)
@@ -91,11 +127,14 @@ public class Handler {
 	
 	/**
 	 * Initializes all the Classes and ClearCL-Overhead
+	 * to use the Handler as the executing class that calls the simulation
+	 * and then handles images
 	 * @throws IOException
+	 * @param StDev specifies the used predictor
 	 */
 	public void InitializeModules(boolean StDev) throws IOException
 	{
-		mSim = new Simulator();
+		Simulator lSim = new Simulator();
 		
 		mClearCLBackendInterface = ClearCLBackends.getBestBackend();
 		  mClearCL = new ClearCL(mClearCLBackendInterface);
@@ -106,7 +145,7 @@ public class Handler {
 			  mContext = mFastestGPUDevice.createContext();
 		  }
 		
-		mSim = new Simulator();
+		lSim = new Simulator();
 		mCalc = new Calculator(mContext);
 		
 		if (StDev)
@@ -118,6 +157,9 @@ public class Handler {
 	}
 
 	
+	
+	
+	
 	@Test
 	public void SimbryoTest() throws Exception
 	{
@@ -125,7 +167,7 @@ public class Handler {
 		
 		InitializeModules(StDev);
 		
-		mProgram1 = mContext.createProgram(Simulator.class, "Calculator.cl");
+		mProgram1 = mContext.createProgram(KernelTest.class, "Calculator.cl");
 		mProgram1.addDefine("CONSTANT", "1");
 		mProgram1.buildAndLog();
 			  
@@ -170,7 +212,7 @@ public class Handler {
 		ClearCLImageViewer lCameraImageViewer =
                       lSimulator.openViewerForCameraImage(0);
 			  
-			  // as long as we aren't above the time, we will now generate pictures and compute timesteps from them
+		// as long as we aren't above the time, we will now generate pictures and compute timesteps from them
 		while (time<(mDuration*1000))  
 		{
 			float currStep = mTimeStepper.mStep;
@@ -262,4 +304,5 @@ public class Handler {
 		}
 		
 	}
+
 }

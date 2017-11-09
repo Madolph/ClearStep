@@ -53,10 +53,10 @@ public class Calculator {
 		mEnd = mContext.createBuffer(NativeTypeEnum.Float, (int) pow(mReductionFactor, 3));
 	}
 
-	public float cacheAndCompare(ClearCLImage lImage, ClearCLContext lContext, ClearCLProgram lProgram, int lSize)
+	public float cacheAndCompare(ClearCLImage lImage, ClearCLProgram lProgram, int lSize)
 	{
 		float result = 0;
-		CachePic(lImage, lContext, lSize);
+		CachePic(lImage, mContext, lSize);
 		result = compareImages(lProgram, lSize);
 		return result;
 	}
@@ -134,19 +134,25 @@ public class Calculator {
 	    lKernel1.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
 	    lKernel1.run(true);
 
+	    // fill Buffer
 	    OffHeapMemory lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
 
 	    // copy the array from the kernel to a buffer and sum everything up
-	    mEnd.writeTo(lBuffer, true);
+	    float lSum = sumUpBuffer(lBuffer);	
+	    lSum = (float) Math.sqrt(lSum);
+	    System.out.println("Difference is: "+ lSum);
+	    
+		return lSum;
+	}
+
+	public float sumUpBuffer(OffHeapMemory lBuffer) {
+		mEnd.writeTo(lBuffer, true);
 	    float lDiff = 0;
 	    for (int i = 0; i < mEnd.getLength(); i++)
 	    {
 	    	float lFloatAligned = lBuffer.getFloatAligned(i);
 	    	lDiff += lFloatAligned;
-	    }	
-	    lDiff = (float) Math.sqrt(lDiff);
-	    System.out.println("Difference is: "+ lDiff);
-	    
+	    }
 		return lDiff;
 	}
 }

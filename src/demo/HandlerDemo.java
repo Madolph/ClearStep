@@ -118,6 +118,8 @@ public class HandlerDemo {
 		
 		boolean StDev = true;
 		
+		Simulator lSim = new Simulator();
+		
 		lHandler.InitializeModules(StDev);
 		
 		lHandler.mProgram1 = lHandler.mContext.createProgram(Handler.class, "Calculator.cl");
@@ -140,7 +142,7 @@ public class HandlerDemo {
 			float currStep = lHandler.mTimeStepper.mStep;
 			System.out.println("current time is: "+time+" with step: "+currStep);
 			  
-			lHandler.mSim.generatePic(lHandler.mContext, lHandler.mProgram2, time, lImage, lSize, false);
+			lSim.generatePic(lHandler.mContext, lHandler.mProgram2, time, lImage, lSize, false);
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
 			lHandler.mCalc.CachePic(lImage, lHandler.mContext, lSize);
 			if (lHandler.mCalc.filled)
