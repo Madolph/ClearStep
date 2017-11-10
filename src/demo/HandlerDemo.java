@@ -45,7 +45,7 @@ public class HandlerDemo {
 			  
 		// now that this is done, we initialize the time and create two images that will
 		// be filled by the simulator during the run	  
-		int lSize = 16;
+		int lSize = 64;
 			  
 		int lPhantomWidth = lSize;
 		int lPhantomHeight = lPhantomWidth;
@@ -120,15 +120,14 @@ public class HandlerDemo {
 	
 			        lStackGenerator.generateStack(c, l, -lSize/2f, lSize/2f, lSize);
 	
-			        lFastFusionEngine.passImage(lKey,
-			                                      lImage);
+			        lFastFusionEngine.passImage(lKey,lStackGenerator.getStack());
 			    }
 			
 			lFastFusionEngine.executeAllTasks();
-	
-			ClearCLImageViewer lViewImage=ClearCLImageViewer.view(lFastFusionEngine.getImage("fused"));
-			ClearCLImage testImage= lFastFusionEngine.getImage("fused");
 			
+			lFastFusionEngine.getImage("fused").copyTo(lImage, true);
+			
+			/**
 			final OffHeapMemory cache = OffHeapMemory.allocateBytes(testImage.getSizeInBytes());
 			
 			testImage.writeTo(cache, true);
@@ -145,16 +144,17 @@ public class HandlerDemo {
 			testImage.writeTo(cache2, true);
 			
 			System.out.println(cache2.getByte(10));
+			*/
 			
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
 			
-			RawWriter writer = new RawWriter(NativeTypeEnum.UnsignedInt, 1, 0);
+			//RawWriter writer = new RawWriter(NativeTypeEnum.UnsignedInt, 1, 0);
 			
-			File rootFile=new File("/Users/madolph/Desktop/test.raw");
+			//File rootFile=new File("/Users/madolph/Desktop/test.raw");
 			
-			writer.write(lImage, rootFile);
+			//writer.write(lImage, rootFile);
 			
-			System.out.println("something"+rootFile.exists());
+			//System.out.println("something"+rootFile.exists());
 			
 			/**
 			// save stack to disk

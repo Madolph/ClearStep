@@ -20,10 +20,12 @@ import javafx.stage.Stage;
  */
 public class Plotter extends Application implements Runnable{
 	
+	XYChart.Series<Number, Number>[] mSeries;
+	
 	/**
 	 * stores image-deviations
 	 */
-	XYChart.Series<Number, Number> mSeries;
+	XYChart.Series<Number, Number> mSeries1;
 	
 	/**
 	 * stores the sigma (dislocated to the deviation)
@@ -35,11 +37,16 @@ public class Plotter extends Application implements Runnable{
 	 */
 	XYChart.Series<Number, Number> mSeries3;
 	
+	
+	
 	/**
 	 * stores the current mean
 	 */
 	XYChart.Series<Number, Number> mSeries4;
  
+	
+	
+	
 	/**
 	 * actually adds data to the series created previously
 	 * 
@@ -54,7 +61,7 @@ public class Plotter extends Application implements Runnable{
 		final CountDownLatch lCountDownLatch = new CountDownLatch(1);
     	
         Platform.runLater( () ->  { 
-        	mSeries.getData().add(new XYChart.Data<Number,Number>(time, diff));
+        	mSeries1.getData().add(new XYChart.Data<Number,Number>(time, diff));
         	mSeries2.getData().add(new XYChart.Data<Number,Number>(time, sigma));
         	System.out.println("Sigma is: "+sigma);
         	mSeries3.getData().add(new XYChart.Data<Number,Number>(time, step));
@@ -72,7 +79,7 @@ public class Plotter extends Application implements Runnable{
 		final CountDownLatch lCountDownLatch = new CountDownLatch(1);
     	
         Platform.runLater( () ->  { 
-        	mSeries.getData().add(new XYChart.Data<Number,Number>(time, timeStep));
+        	mSeries1.getData().add(new XYChart.Data<Number,Number>(time, timeStep));
         	mSeries2.getData().add(new XYChart.Data<Number,Number>(time, trend));
         	mSeries3.getData().add(new XYChart.Data<Number,Number>(time, metric));
         	lCountDownLatch.countDown();
@@ -114,8 +121,8 @@ public class Plotter extends Application implements Runnable{
     	                
     	    lLineChart.setTitle("Deviation over Time");
     	    //defining a series
-    	    mSeries = new XYChart.Series<Number, Number>();
-    	    mSeries.setName("Timestep");
+    	    mSeries1 = new XYChart.Series<Number, Number>();
+    	    mSeries1.setName("Timestep");
     	    mSeries2 = new XYChart.Series<Number, Number>();
     	    mSeries2.setName("Trend");
     	    mSeries3 = new XYChart.Series<Number, Number>();
@@ -123,7 +130,7 @@ public class Plotter extends Application implements Runnable{
     	    //populating the series with data
     	    
     	    Scene scene  = new Scene(lLineChart,1200,900);
-    	    lLineChart.getData().add(mSeries);
+    	    lLineChart.getData().add(mSeries1);
     	    lLineChart.getData().add(mSeries2);
     	    lLineChart.getData().add(mSeries3);
     	    
@@ -174,8 +181,8 @@ public class Plotter extends Application implements Runnable{
     	                
     	    lLineChart.setTitle("Deviation over Time");
     	    //defining a series
-    	    mSeries = new XYChart.Series<Number, Number>();
-    	    mSeries.setName("Deviations");
+    	    mSeries1 = new XYChart.Series<Number, Number>();
+    	    mSeries1.setName("Deviations");
     	    mSeries2 = new XYChart.Series<Number, Number>();
     	    mSeries2.setName("Sigma");
     	    mSeries3 = new XYChart.Series<Number, Number>();
@@ -185,7 +192,7 @@ public class Plotter extends Application implements Runnable{
     	    //populating the series with data
     	    
     	    Scene scene  = new Scene(lLineChart,1200,900);
-    	    lLineChart.getData().add(mSeries);
+    	    lLineChart.getData().add(mSeries1);
     	    lLineChart.getData().add(mSeries2);
     	    lLineChart.getData().add(mSeries3);
     	    lLineChart.getData().add(mSeries4);
