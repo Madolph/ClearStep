@@ -196,6 +196,9 @@ dependencies
     // Clear*:
     compile ('net.clearvolume:clearvolume:[1.4.1, 1.5.0[')   {transitive= true; changing= true}
     compile ('net.clearvolume:clearaudio:[1.0.2, 1.1.0[')    {transitive= true; changing= true}
+
+    // clearcontrol
+    compile ('net.clearcontrol:clearcontrol:0.8.9')   {transitive= true; changing= true}
     
     // Symbrio:
     compile ('net.clearcontrol:simbryo:[0.7.3, 0.8.0[')      {transitive= true; changing= true}
