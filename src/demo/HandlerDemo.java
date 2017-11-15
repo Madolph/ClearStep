@@ -36,7 +36,7 @@ public class HandlerDemo {
 			  
 		// now that this is done, we initialize the time and create two images that will
 		// be filled by the simulator during the run	  
-		int lSize = 64;
+		int lSize = 128;
 			  
 		int lPhantomWidth = lSize;
 		int lPhantomHeight = lPhantomWidth;
@@ -71,6 +71,8 @@ public class HandlerDemo {
 		@SuppressWarnings("unused")
 		FastFusionMemoryPool lMemoryPool = FastFusionMemoryPool.getInstance(lHandler.mContext,
                                                  							100 * 1024 * 1024, true);
+		
+		//opens the viewer to see what the simulated camera sees
 		@SuppressWarnings("unused")
 		ClearCLImageViewer lCameraImageViewer = lSimulator.openViewerForCameraImage(0);
 		

@@ -34,7 +34,7 @@ public class Calculator {
 	ClearCLImage mImage;
 	
 	/**
-	 * Is used to decide which cached picture will be overwritten
+	 * stores whether the last image received was an even or uneven capture
 	 */
 	boolean even = false;
 	
@@ -53,6 +53,13 @@ public class Calculator {
 		mEnd = mContext.createBuffer(NativeTypeEnum.Float, (int) pow(mReductionFactor, 3));
 	}
 
+	/** 
+	 * saves an image to Cache and then compares two cached images, if possible
+	 * @param lImage
+	 * @param lProgram
+	 * @param lSize
+	 * @return
+	 */
 	public float cacheAndCompare(ClearCLImage lImage, ClearCLProgram lProgram, int lSize)
 	{
 		float result = 0;
@@ -104,7 +111,8 @@ public class Calculator {
 	 */
 	public float compareImages(ClearCLProgram lProgram, int lSize)
 	{
-
+		
+		
 		if (!filled)
 		{
 			System.out.println("Calculator is not set up");
@@ -119,20 +127,14 @@ public class Calculator {
 														lSize,
 														lSize);
 		}
-
-	    ClearCLKernel lKernel = lProgram.createKernel("compare");
-	    lKernel.setArgument("image1", mImage1);
-	    lKernel.setArgument("image2", mImage2);
-	    lKernel.setArgument("result", mImage);
-	    lKernel.setGlobalSizes(mImage1);
-	    lKernel.run(true);
+		squareDiff(lProgram);
+	    
+		boolean noise = false;
+		if (noise)
+			cleanNoise(lProgram);
 	    
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
-	    ClearCLKernel lKernel1 = lProgram.createKernel("Sum3D");
-	    lKernel1.setArgument("image", mImage);
-	    lKernel1.setArgument("result", mEnd);
-	    lKernel1.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
-	    lKernel1.run(true);
+	    sumUpImageToBuffer(lProgram);
 
 	    // fill Buffer
 	    OffHeapMemory lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
@@ -145,6 +147,61 @@ public class Calculator {
 		return lSum;
 	}
 
+	/**
+	 * sums up the values of an image into a much smaller buffer
+	 * @param lProgram
+	 */
+	public void sumUpImageToBuffer(ClearCLProgram lProgram)
+	{
+		ClearCLKernel lKernel = lProgram.createKernel("Sum3D");
+	    lKernel.setArgument("image", mImage);
+	    lKernel.setArgument("result", mEnd);
+	    lKernel.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
+	    lKernel.run(true);
+	}
+	
+	/**
+	 * cleans the result-image from noise (the older image is used as a cache
+	 * and will be overwritten here)
+	 * @param lProgram
+	 */
+	public void cleanNoise(ClearCLProgram lProgram)
+	{
+		ClearCLKernel lKernel = lProgram.createKernel("noiseSweep");
+		lKernel.setArgument("result", mImage);
+		if (even)
+			lKernel.setArgument("clean", mImage2);
+		else
+			lKernel.setArgument("clean", mImage1);
+		lKernel.setGlobalSizes(mImage);
+		lKernel.run(true);
+		
+		if (even)
+			mImage2.copyTo(mImage, true);
+		else
+			mImage1.copyTo(mImage, true);
+	}
+	
+	/**
+	 * will calculate the square of the difference of every
+	 * pixel between the two images
+	 * @param lProgram
+	 */
+	public void squareDiff(ClearCLProgram lProgram)
+	{
+		ClearCLKernel lKernel = lProgram.createKernel("compare");
+	    lKernel.setArgument("image1", mImage1);
+	    lKernel.setArgument("image2", mImage2);
+	    lKernel.setArgument("result", mImage);
+	    lKernel.setGlobalSizes(mImage1);
+	    lKernel.run(true);
+	}
+	
+	/**
+	 * sums up every value in a Buffer
+	 * @param lBuffer
+	 * @return the sum of the buffer
+	 */
 	public float sumUpBuffer(OffHeapMemory lBuffer) {
 		mEnd.writeTo(lBuffer, true);
 	    float lDiff = 0;

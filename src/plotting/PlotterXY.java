@@ -18,12 +18,20 @@ import javafx.stage.Stage;
  * @author Raddock
  *
  */
-public class PlotterXY extends Application implements Runnable{
+public class PlotterXY extends Application implements Runnable
+{
 	
+	/**
+	 * stores several series of data
+	 */
 	XYChart.Series<Number, Number>[] mSeries;
 	
+	/**
+	 * the amount of Y-series in the plot
+	 */
 	int plotSize;
  
+	
 	/**
 	 * creates a plotter for the given number of series
 	 * 
@@ -81,7 +89,8 @@ public class PlotterXY extends Application implements Runnable{
     	    lLineChart.setTitle(plotTitle);
     	    
     	    if (Tags.length!=plotSize)
-    	    	System.out.println("Plotter set for "+plotSize+" but "+Tags.length+" Tags are supplied...");
+    	    	System.out.println
+    	    	("Plotter set for "+plotSize+" but "+Tags.length+" Tags are supplied...");
     	    
     	    for (int i=0;i<plotSize;i++)
     	    	{mSeries[i] = new XYChart.Series<Number, Number>();
@@ -112,7 +121,8 @@ public class PlotterXY extends Application implements Runnable{
     public void plotFullDataSetXY(float x, float[] data)
     {
     	if (data.length != plotSize)
-	    	System.out.println("Plotter set for "+plotSize+" but "+data.length+" values are supplied...");
+	    	System.out.println
+	    	("Plotter set for "+plotSize+" but "+data.length+" values are supplied...");
     	
     	final CountDownLatch lCountDownLatch = new CountDownLatch(1);
     	
