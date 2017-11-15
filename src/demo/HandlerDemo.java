@@ -72,9 +72,9 @@ public class HandlerDemo {
 		FastFusionMemoryPool lMemoryPool = FastFusionMemoryPool.getInstance(lHandler.mContext,
                                                  							100 * 1024 * 1024, true);
 		@SuppressWarnings("unused")
-		//ClearCLImageViewer lCameraImageViewer = lSimulator.openViewerForCameraImage(0);
+		ClearCLImageViewer lCameraImageViewer = lSimulator.openViewerForCameraImage(0);
 		
-		//lSimulator.render(true);
+		lSimulator.render(true);
 		    
 		String[][] Tags = new String[lNumberOfDetectionArms][lNumberOfIlluminationArms];
 		
