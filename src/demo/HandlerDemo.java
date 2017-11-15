@@ -1,6 +1,5 @@
 package demo;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.junit.Test;
@@ -8,15 +7,7 @@ import org.junit.Test;
 import Kernels.KernelTest;
 import clearcl.ClearCLImage;
 import clearcl.enums.ImageChannelDataType;
-import clearcl.io.RawWriter;
-import clearcl.io.TiffWriter;
 import clearcl.viewer.ClearCLImageViewer;
-import clearcontrol.stack.OffHeapPlanarStack;
-import clearcontrol.stack.StackInterface;
-import clearcontrol.stack.sourcesink.sink.RawFileStackSink;
-import coremem.buffers.ContiguousBuffer;
-import coremem.enums.NativeTypeEnum;
-import coremem.offheap.OffHeapMemory;
 import fastfuse.FastFusionEngine;
 import fastfuse.FastFusionMemoryPool;
 import fastfuse.stackgen.StackGenerator;
@@ -70,6 +61,8 @@ public class HandlerDemo {
                                                              		lPhantomWidth,
                                                              		lPhantomHeight,
                                                              		lPhantomDepth);
+		
+		System.out.println("DrosoSim is done");
 			  
 		StackGenerator lStackGenerator = new StackGenerator(lSimulator);
 		
@@ -79,45 +72,49 @@ public class HandlerDemo {
 		FastFusionMemoryPool lMemoryPool = FastFusionMemoryPool.getInstance(lHandler.mContext,
                                                  							100 * 1024 * 1024, true);
 		@SuppressWarnings("unused")
-		ClearCLImageViewer lCameraImageViewer = lSimulator.openViewerForCameraImage(0);
+		//ClearCLImageViewer lCameraImageViewer = lSimulator.openViewerForCameraImage(0);
 		
-		lSimulator.render(true);
+		//lSimulator.render(true);
 		    
-		lFastFusionEngine.addTask(new AverageTask("C0L0",
-                    								"C0L1",
-                    								"C0L2",
-                    								"C0L3",
-                    								"C0"));
-		lFastFusionEngine.addTask(new AverageTask("C1L0",
-                    								"C1L1",
-                    								"C1L2",
-                    								"C1L3",
-                    								"C1"));
+		String[][] Tags = new String[lNumberOfDetectionArms][lNumberOfIlluminationArms];
+		
+		for (int c=0;c<lNumberOfDetectionArms;c++)
+			for (int i=0;i<lNumberOfIlluminationArms;i++)
+			{
+				Tags[c][i]=(String)("C"+c+"L"+i);
+			}
+		
+		for (int c=0;c<lNumberOfDetectionArms;c++)
+			{
+				lFastFusionEngine.addTask(new AverageTask(  Tags[c][0], Tags[c][1],
+															Tags[c][2], Tags[c][3],
+															(String)("C"+c) )       );
+			}
+			
+		
 		lFastFusionEngine.addTask(new AverageTask("C0", "C1", "fused"));
 		lFastFusionEngine.addTask(new MemoryReleaseTask("fused","C0L0",
-													"C0L1",
-													"C0L2",
-													"C0L3",
-													"C0",
-													"C1L0",
-													"C1L1",
-													"C1L2",
-													"C1L3",
-													"C1"));
+														"C0L1","C0L2",
+														"C0L3","C0",
+														"C1L0","C1L1",
+														"C1L2","C1L3",
+														"C1"));
 		
 		lStackGenerator.setCenteredROI(lSize, lSize);
 
-		lStackGenerator.setLightSheetHeight(50f);
-		lStackGenerator.setLightSheetIntensity(50f);
+		lStackGenerator.setLightSheetHeight(500f);
+		lStackGenerator.setLightSheetIntensity(10f);
 
 		int blubb = 0;
-		while (blubb<2)
+		while (blubb<1)
 		{
-			for (int c = 0; c < 2; c++)
-				for (int l = 0; l < 4; l++)
+			for (int c = 0; c < lNumberOfDetectionArms; c++)
+				for (int l = 0; l < lNumberOfIlluminationArms; l++)
 			    {
 					String lKey = String.format("C%dL%d", c, l);
 	
+					System.out.print("now generating stacks");
+					
 			        lStackGenerator.generateStack(c, l, -lSize/2f, lSize/2f, lSize);
 	
 			        lFastFusionEngine.passImage(lKey,lStackGenerator.getStack());
@@ -127,54 +124,7 @@ public class HandlerDemo {
 			
 			lFastFusionEngine.getImage("fused").copyTo(lImage, true);
 			
-			/**
-			final OffHeapMemory cache = OffHeapMemory.allocateBytes(testImage.getSizeInBytes());
-			
-			testImage.writeTo(cache, true);
-			
-			System.out.println(cache.getByte(10));
-			//lViewImage.setImage(lFastFusionEngine.getImage("fused"));
-			
-			System.out.println("is showing "+lViewImage.isShowing());
-			
-			lFastFusionEngine.getImage("fused").copyTo(lImage, true);
-			
-			OffHeapMemory cache2 = OffHeapMemory.allocateBytes(lImage.getSizeInBytes());
-			
-			testImage.writeTo(cache2, true);
-			
-			System.out.println(cache2.getByte(10));
-			*/
-			
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
-			
-			//RawWriter writer = new RawWriter(NativeTypeEnum.UnsignedInt, 1, 0);
-			
-			//File rootFile=new File("/Users/madolph/Desktop/test.raw");
-			
-			//writer.write(lImage, rootFile);
-			
-			//System.out.println("something"+rootFile.exists());
-			
-			/**
-			// save stack to disk
-			File rootFolder=new File("/Users/madolph/Desktop");
-			
-			new Thread()
-			{
-				@Override
-				public void run(){
-				OffHeapPlanarStack stack= new OffHeapPlanarStack(cache, true, NativeTypeEnum.UnsignedInt, 1, new long[]{16,16,16});
-				RawFileStackSink sink = new RawFileStackSink();
-				sink.setLocation(rootFolder, "T");
-				sink.appendStack(stack);
-				try {
-					sink.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}}
-			}.start();
-			*/
 			
 			blubb ++;
 		}
