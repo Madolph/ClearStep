@@ -59,17 +59,17 @@ public class Handler implements timeStepAdapter{
 	// Generation
 	public ClearCLProgram mProgram2;
 	
+	/**
+	 * creates a new Handler for dynamic time-stepping
+	 * @param Context if null, new context will be created
+	 */
 	public Handler(ClearCLContext Context)
 	{
+		// TODO add option to choose the predictor
+		String Pred = "StDev";
 		
-	}
-	
-	public Handler()
-	{
-		// add option to choose the predictor
-		boolean StDev = true;
-		
-		if (mContext==null)
+		// create new Context of null was given
+		if (Context == null)
 		{
 			mClearCLBackendInterface = ClearCLBackends.getBestBackend();
 			mClearCL = new ClearCL(mClearCLBackendInterface);
@@ -78,13 +78,20 @@ public class Handler implements timeStepAdapter{
 
 			mContext = mFastestGPUDevice.createContext();
 		}
+		else 
+			mContext=Context;
 		
 		mCalc = new Calculator(mContext);
 		
-		if (StDev)
+		switch (Pred)
+		{
+		case "StDev":
 			mPred = new PredictorStDev();
-		else
+		case "HoltWinters":
 			mPred = new PredictorHoltWinters();
+		default:
+			mPred = new PredictorStDev();
+		}
 		
 		mTimeStepper = new TimeStepper(0.5f, 0.2f, 1f, 0.1f);
 		
@@ -92,23 +99,26 @@ public class Handler implements timeStepAdapter{
 		mDuration = 3600;
 	}
 	
-	public boolean checkInitialization()
+	public void createProgram(ImageChannelDataType DataType) throws IOException
 	{
-		boolean initialzed = false;
-		if (mContext!=null)
-			initialzed = true;
-		return initialzed;
-	}
-	
-	public void passContext(ClearCLContext Context)
-	{
-		mContext = Context;
+		mProgram1 = mContext.createProgram(KernelTest.class, "Calculator.cl");
+		mProgram1.addDefine("CONSTANT", "1");
+		switch (DataType)
+		{
+		case Float: 
+			mProgram1.addDefine("READ_IMAGE", "read_imagef");
+			break;
+		case UnsignedInt16:
+			mProgram1.addDefine("READ_IMAGE", "read_imageui");
+		default:
+			mProgram1.addDefine("READ_IMAGE", "read_imagef");
+			break;
+		}
+		
 	}
 	
 	public void processImage(ClearCLImage image, float time)
-	{
-		boolean ready = checkInitialization();
-		
+	{	
 		float diff = mCalc.cacheAndCompare(image, mProgram1, (int)image.getHeight());
 		boolean StDev = true;
 		float metric;
@@ -126,6 +136,7 @@ public class Handler implements timeStepAdapter{
 	}
 	
 	/**
+	 * TODO should be removed when tests are moved to the demo-class
 	 * Initializes all the Classes and ClearCL-Overhead
 	 * to use the Handler as the executing class that calls the simulation
 	 * and then handles images
@@ -304,5 +315,4 @@ public class Handler implements timeStepAdapter{
 		}
 		
 	}
-
 }

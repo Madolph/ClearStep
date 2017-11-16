@@ -24,7 +24,7 @@ public class HandlerDemo {
 	@Test
 	public void createAndMeasureSimbryoStack() throws Exception
 	{
-		Handler lHandler = new Handler();
+		Handler lHandler = new Handler(null);
 		
 		boolean StDev = true;
 		
@@ -138,7 +138,7 @@ public class HandlerDemo {
 	@Test
 	public void SimpleSimStepper() throws IOException, InterruptedException
 	{
-		Handler lHandler = new Handler();
+		Handler lHandler = new Handler(null);
 		
 		boolean StDev = true;
 		
@@ -147,7 +147,9 @@ public class HandlerDemo {
 		lHandler.InitializeModules(StDev);
 		
 		lHandler.mProgram1 = lHandler.mContext.createProgram(KernelTest.class, "Calculator.cl");
+		// do any dependent definitions here
 		lHandler.mProgram1.addDefine("CONSTANT", "1");
+		lHandler.mProgram1.addDefine("READ_IMAGE", "read_imagef");
 		lHandler.mProgram1.buildAndLog();
 		
 		lHandler.mProgram2 = lHandler.mContext.createProgram(KernelTest.class, "Simulator.cl");

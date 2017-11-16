@@ -73,7 +73,7 @@ void Sum3D (__read_only image3d_t image,
       {
         const int4 pos = origin + (int4){lx,ly,lz,0};
      
-        float value = read_imagef(image, pos).x;
+        float value = (float)READ_IMAGE(image, pos).x;
 
         sum = sum + value;
       }

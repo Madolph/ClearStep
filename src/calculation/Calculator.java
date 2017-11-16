@@ -2,6 +2,7 @@ package calculation;
 
 import static java.lang.Math.pow;
 
+import java.io.IOException;
 import clearcl.ClearCLBuffer;
 import clearcl.ClearCLContext;
 import clearcl.ClearCLImage;
@@ -59,6 +60,7 @@ public class Calculator {
 	 * @param lProgram
 	 * @param lSize
 	 * @return
+	 * @throws IOException 
 	 */
 	public float cacheAndCompare(ClearCLImage lImage, ClearCLProgram lProgram, int lSize)
 	{
@@ -108,6 +110,7 @@ public class Calculator {
 	 * @param lProgram 	The OpenCL-Program
 	 * @param lSize 	The Size of the images
 	 * @return 			The metric of change between the images
+	 * @throws IOException 
 	 */
 	public float compareImages(ClearCLProgram lProgram, int lSize)
 	{
@@ -150,6 +153,7 @@ public class Calculator {
 	/**
 	 * sums up the values of an image into a much smaller buffer
 	 * @param lProgram
+	 * @throws IOException 
 	 */
 	public void sumUpImageToBuffer(ClearCLProgram lProgram)
 	{
