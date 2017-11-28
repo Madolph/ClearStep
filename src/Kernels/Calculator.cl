@@ -166,4 +166,52 @@ void cleanNoise (__read_only image3d_t image1,
 	uint4 result = (uint4){res,0,0,0};
 	
 	WRITE_IMAGE(cache, pos, result);
+}	
+
+
+__kernel 
+void meanFilter (__read_only image3d_t image1, 
+			 	 __write_only image3d_t cache)
+{
+	const int width  = get_image_width(image1);
+	const int height = get_image_height(image1);
+	const int depth  = get_image_depth(image1);
+
+
+	int x = get_global_id(0); 
+	int y = get_global_id(1);
+	int z = get_global_id(2);
+
+	int4 pos = (int4){x,y,z,0};
+	
+	const sampler_t sampler = 
+					CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MIRRORED_REPEAT | CLK_FILTER_NEAREST;
+	
+	uint matrix [27] = {};
+	
+	for (int d3=0; d3<3; d3++)
+	{
+		for (int d2=0; d2<3; d2++)
+		{
+			for (int d1=0; d1<3; d1++)
+			{
+				int index = d1+d2*3+d3*9;
+				Readvector val = READ_IMAGE(image1, sampler, (pos-(int4){1,1,1,0}+(int4){d1,d2,d3,0}));
+				matrix [index] = val.x;
+			}
+		}
+	}
+	
+	uint res = 0;
+	
+	for (int c=0;c>27;c++)
+	{
+		res = res+matrix[c];
+	}
+	
+	res = res/27;
+	
+	uint4 result = (uint4){res,0,0,0};
+	
+	WRITE_IMAGE(cache, pos, result);
 }

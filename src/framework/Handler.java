@@ -145,8 +145,6 @@ public class Handler implements timeStepAdapter{
 	 */
 	public void InitializeModules(boolean StDev) throws IOException
 	{
-		Simulator lSim = new Simulator();
-		
 		mClearCLBackendInterface = ClearCLBackends.getBestBackend();
 		  mClearCL = new ClearCL(mClearCLBackendInterface);
 		  {
@@ -156,7 +154,8 @@ public class Handler implements timeStepAdapter{
 			  mContext = mFastestGPUDevice.createContext();
 		  }
 		
-		lSim = new Simulator();
+		@SuppressWarnings("unused")
+		Simulator lSim = new Simulator();
 		mCalc = new Calculator(mContext);
 		
 		if (StDev)
