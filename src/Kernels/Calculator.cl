@@ -187,7 +187,7 @@ void meanFilter (__read_only image3d_t image1,
 	const sampler_t sampler = 
 					CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MIRRORED_REPEAT | CLK_FILTER_NEAREST;
 	
-	uint matrix [27] = {};
+	uint res = 0;
 	
 	for (int d3=0; d3<3; d3++)
 	{
@@ -197,16 +197,9 @@ void meanFilter (__read_only image3d_t image1,
 			{
 				int index = d1+d2*3+d3*9;
 				Readvector val = READ_IMAGE(image1, sampler, (pos-(int4){1,1,1,0}+(int4){d1,d2,d3,0}));
-				matrix [index] = val.x;
+				res = res+val.x;
 			}
 		}
-	}
-	
-	uint res = 0;
-	
-	for (int c=0;c>27;c++)
-	{
-		res = res+matrix[c];
 	}
 	
 	res = res/27;
