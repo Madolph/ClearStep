@@ -186,16 +186,20 @@ public class KernelTest {
 	{
 		Handler lHandler = new Handler(null);
 		
-		lHandler.mProgram1 = lHandler.mContext.createProgram(KernelTest.class, "Calculator.cl");
+		lHandler.mProgram1 = lHandler.mContext.createProgram(KernelTest.class, "Noise.cl");
 		lHandler.mProgram1.addDefine("CONSTANT", "1");
 		lHandler.mProgram1.addDefine("READ_IMAGE", "read_imageui");
 		lHandler.mProgram1.addDefine("WRITE_IMAGE", "write_imageui");
-		lHandler.mProgram1.addDefine("Readvector", "uint4");
+		lHandler.mProgram1.addDefine("VECTORTYPE", "uint4");
+		
+		String define = assembleKernel();
+		
+		lHandler.mProgram1.addDefine("DO_ALL_THE_STUFF", define);
 		lHandler.mProgram1.buildAndLog();
 			  
 		// now that this is done, we initialize the time and create two images that will
 		// be filled by the simulator during the run	  
-		int lSize = 128;
+		int lSize = 64;
 			  
 		int lPhantomWidth = lSize;
 		int lPhantomHeight = lPhantomWidth;
@@ -208,10 +212,10 @@ public class KernelTest {
 		ClearCLImage lImage2 = lHandler.mContext.createSingleChannelImage(ImageChannelDataType.UnsignedInt16, 
 				lSize, lSize, lSize);
 			  
-		ClearCLImageViewer lView = ClearCLImageViewer.view(lImage);
+		ClearCLImageViewer lView = ClearCLImageViewer.view(lImage, "rawNoise");
 		
 		@SuppressWarnings("unused")
-		ClearCLImageViewer lView2 = ClearCLImageViewer.view(lImage2);
+		ClearCLImageViewer lView2 = ClearCLImageViewer.view(lImage2, "cleaned");
 		
 		int lNumberOfDetectionArms = 2;
 		int lNumberOfIlluminationArms = 4;
@@ -226,8 +230,6 @@ public class KernelTest {
                                                              		lPhantomWidth,
                                                              		lPhantomHeight,
                                                              		lPhantomDepth);
-		
-		System.out.println("DrosoSim is done");
 			  
 		StackGenerator lStackGenerator = new StackGenerator(lSimulator);
 		
@@ -273,8 +275,6 @@ public class KernelTest {
 				for (int l = 0; l < lNumberOfIlluminationArms; l++)
 			    {
 					String lKey = String.format("C%dL%d", c, l);
-	
-					System.out.print("now generating stacks");
 					
 			        lStackGenerator.generateStack(c, l, -lSize/2f, lSize/2f, lSize);
 	
@@ -289,11 +289,20 @@ public class KernelTest {
 			
 			blubb ++;
 		}
-		ClearCLKernel lKernel = lHandler.mProgram1.createKernel("meanFilter");
+		
+		System.out.println("we created the stack");
+		
+		ClearCLKernel lKernel = lHandler.mProgram1.createKernel("cleanNoise");
 		lKernel.setArgument("image1", lImage);
 		lKernel.setArgument("cache", lImage2);
 		lKernel.setGlobalSizes(lImage);
+		
+		System.out.println("we created the kernel");
+		
 		lKernel.run(true);
+		
+		
+		System.out.println("we ran the kernel");
 		
 		lImage2.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
 		
@@ -301,5 +310,67 @@ public class KernelTest {
 		lSimulator.close();
 		lStackGenerator.close();
 	}
+	
+	public String assembleKernel()
+	{
+		String variable = new String("");
+		
+		variable = (variable+"uint val = read_imageui(image1, sampler, (pos+(int4){1,1,1,0})).x;");
+		
+		variable = (variable+"uint ceil = 0;");
+		
+		int dist = 3;
+		
+		int count = dist*dist*dist; //27 is our case
+		
+		int meanVol=13;
+		
+		for (int d3=0; d3<dist; d3++)
+		{
+			for (int d2=0; d2<dist; d2++)
+			{
+				for (int d1=0; d1<dist; d1++)
+				{
+					int i = (d1+d2*3+d3*9);
+					// float m[i]=image[neighbor]-image[position]
+					variable = (variable+"uint m"+i+" = read_imageui(image1, sampler, (pos+(int4){"+d1+","+d2+","+d3+",0})).x - val;");
+					// save highest value as ceiling
+					variable = (variable+"if (m"+i+">ceil) { ceil=m"+i+"; }");
+				}
+			}
+		}
+		
+		variable = (variable+"bool cross = false;");
+		
+		for (int i=0;i<meanVol;i++)
+		{
+			// create array c[] and fill it with ceiling
+			variable = (variable+"uint c"+i+" = ceil; cross = false;");
+			for (int u=0;u<count;u++)
+			{
+				// for every c[], go through m[] and find the smallest, save it and then set it to ceiling in m[]
+				variable = (variable+"if (m"+u+"<c"+i+") { c"+i+"=m"+u+";}");
+			}
+			for (int u=0;u<count;u++)
+			{
+				// cross out m[] with the last set value
+				variable = (variable+"if (m"+u+"==c"+i+" && !cross) { m"+u+"=ceil; cross=true; }");
+			}
+		}
+		
+		variable = (variable+"uint mean = 0;");
+		
+		for (int i=0;i<meanVol;i++)
+		{
+			variable = (variable+"mean = mean+c"+i+";");
+		}
+		
+		variable = (variable+"mean = mean/"+meanVol+";");
+		
+		//System.out.println(variable);
+		
+		return variable;
+	}
+	
 	
 }
