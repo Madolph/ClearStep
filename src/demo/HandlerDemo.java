@@ -14,7 +14,8 @@ import fastfuse.stackgen.StackGenerator;
 import fastfuse.tasks.AverageTask;
 import fastfuse.tasks.MemoryReleaseTask;
 import framework.Handler;
-import plotting.Plotter;
+import plotting.PlotterXY;
+import prediction.PredictorHoltWinters;
 import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscopeSimulatorDrosophila;
 import simulation.Simulator;
 
@@ -32,11 +33,12 @@ public class HandlerDemo {
 		
 		lHandler.mProgram1 = lHandler.mContext.createProgram(KernelTest.class, "Calculator.cl");
 		lHandler.mProgram1.addDefine("CONSTANT", "1");
+		lHandler.mProgram1.addDefine("READ_IMAGE", "read_imagef");
 		lHandler.mProgram1.buildAndLog();
 			  
 		// now that this is done, we initialize the time and create two images that will
 		// be filled by the simulator during the run	  
-		int lSize = 128;
+		int lSize = 512;
 			  
 		int lPhantomWidth = lSize;
 		int lPhantomHeight = lPhantomWidth;
@@ -70,7 +72,7 @@ public class HandlerDemo {
 		
 		@SuppressWarnings("unused")
 		FastFusionMemoryPool lMemoryPool = FastFusionMemoryPool.getInstance(lHandler.mContext,
-                                                 							100 * 1024 * 1024, true);
+                                                 							512 * 1024 * 1024, true);
 		
 		//opens the viewer to see what the simulated camera sees
 		@SuppressWarnings("unused")
@@ -156,43 +158,67 @@ public class HandlerDemo {
 		lHandler.mProgram2.addDefine("CONSTANT", "1");
 		lHandler.mProgram2.buildAndLog();
 		
-		Plotter Plotter = new Plotter();
-		Plotter.initializePlotSimpleSimStepper(lHandler.mFxOn);
+		lHandler.mProgram3 = lHandler.mContext.createProgram(KernelTest.class, "Noise.cl");
+		lHandler.mProgram3.addDefine("CONSTANT", "1");
+		lHandler.mProgram3.addDefine("READ_IMAGE", "read_imagef");
+		lHandler.mProgram3.addDefine("WRITE_IMAGE", "write_imagef");
+		lHandler.mProgram3.addDefine("DATA", "float4");
+		lHandler.mProgram3.buildAndLog();
+		
+		PlotterXY Plotter = new PlotterXY(3);
+		String[] Titles = new String[3];
+		Titles[0] = "timestep";
+		Titles[1] = "prediction";
+		Titles[2] = "average";
+		Plotter.initializePlotter(lHandler.mFxOn, "Flummi-Demo", "Plot", "time", Titles, 1000, 1000);
 		
 		int lSize = 128;
 		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
 		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
 		float time=0;
+		float[] data = new float[3];
 		while (time<(lHandler.mDuration*1000))  
 		{
 			float currStep = lHandler.mTimeStepper.mStep;
 			System.out.println("current time is: "+time+" with step: "+currStep);
 			  
-			lSim.generatePic(lHandler.mContext, lHandler.mProgram2, time, lImage, lSize, false);
+			lSim.generatePic(lHandler.mContext, lHandler.mProgram2, time, lImage, lSize, true);
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
 			lHandler.mCalc.CachePic(lImage, lHandler.mContext, lSize);
 			if (lHandler.mCalc.filled)
 			{			  
-				float diff = lHandler.mCalc.compareImages(lHandler.mProgram1, lSize);
+				float diff = lHandler.mCalc.compareImages(lHandler.mProgram1, lHandler.mProgram3, lSize);
 				float metric;
-				if (StDev)
-				{
-					metric = lHandler.mPred.predict(diff, time);
-				}
-				else
-				{
-					metric = lHandler.mPred.predict(diff, time);
-				}
+				metric = lHandler.mPred.predict(diff, time);
 				float step = lHandler.mTimeStepper.computeNextStep(metric);  
 				
-				Plotter.plotDataSimpleSimStepper(time,
-						step/100,
-						lHandler.mPred.prediction,
-						lHandler.mPred.average);
+				data[0] = step/100;
+				data[1] = lHandler.mPred.prediction;
+				data[2] = lHandler.mPred.average;
+				Plotter.plotFullDataSetXY(time, data);
 			}
 			time += currStep;
 			Thread.sleep((long) currStep);
 		}  
 		lViewImage.waitWhileShowing();
+	}
+	
+	@Test
+	public void PredictorDemo()
+	{
+		PredictorHoltWinters lPred = new PredictorHoltWinters();
+		float time = 1;
+		int i = 0;
+		float res;
+		float val=0;
+		while (i<100)
+		{		
+			res = lPred.predict(val, time);
+			val++;
+			System.out.println(res);
+			i++;
+			time += 1;
+		}
+		
 	}
 }

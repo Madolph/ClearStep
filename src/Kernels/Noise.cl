@@ -15,6 +15,7 @@
 // (check method: myprogram.getSourceCode())
 #include "blu/tada.cl"
 
+/**
 __kernel
 void cleanNoiseAssembled (__read_only image3d_t image1, 
 			 	 __write_only image3d_t cache)
@@ -38,9 +39,10 @@ void cleanNoiseAssembled (__read_only image3d_t image1,
 	
 		 	 	
 }
+*/
 
 __kernel 
-void cleanNoise (__read_only image3d_t image1, 
+void cleanNoise(__read_only image3d_t image1, 
 			 	 __write_only image3d_t cache)
 {
 	const int width  = get_image_width(image1);
@@ -117,12 +119,12 @@ void cleanNoise (__read_only image3d_t image1,
 	}
 	res = (res/17)+val;
 	
-	uint4 result = (uint4){res,0,0,0};
+	DATA result = (DATA){res,0,0,0};
 	
 	WRITE_IMAGE(cache, pos, result);
 }	
 
-
+/**
 __kernel 
 void meanFilter (__read_only image3d_t image1, 
 			 	 __write_only image3d_t cache)
@@ -162,3 +164,4 @@ void meanFilter (__read_only image3d_t image1,
 	
 	WRITE_IMAGE(cache, pos, result);
 }
+*/

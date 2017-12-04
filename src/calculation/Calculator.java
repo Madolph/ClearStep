@@ -62,11 +62,11 @@ public class Calculator {
 	 * @return
 	 * @throws IOException 
 	 */
-	public float cacheAndCompare(ClearCLImage lImage, ClearCLProgram lProgram, int lSize)
+	public float cacheAndCompare(ClearCLImage lImage, ClearCLProgram lProgram, ClearCLProgram lProgram2, int lSize)
 	{
 		float result = 0;
 		CachePic(lImage, mContext, lSize);
-		result = compareImages(lProgram, lSize);
+		result = compareImages(lProgram, lProgram2, lSize);
 		return result;
 	}
 	
@@ -112,7 +112,7 @@ public class Calculator {
 	 * @return 			The metric of change between the images
 	 * @throws IOException 
 	 */
-	public float compareImages(ClearCLProgram lProgram, int lSize)
+	public float compareImages(ClearCLProgram lProgram, ClearCLProgram lProgram2, int lSize)
 	{
 		
 		
@@ -134,7 +134,7 @@ public class Calculator {
 	    
 		boolean noise = false;
 		if (noise)
-			cleanNoise(lProgram);
+			cleanNoise(lProgram2);
 	    
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    sumUpImageToBuffer(lProgram);
@@ -171,12 +171,12 @@ public class Calculator {
 	 */
 	public void cleanNoise(ClearCLProgram lProgram)
 	{
-		ClearCLKernel lKernel = lProgram.createKernel("noiseSweep");
-		lKernel.setArgument("result", mImage);
+		ClearCLKernel lKernel = lProgram.createKernel("cleanNoise");
+		lKernel.setArgument("image1", mImage);
 		if (even)
-			lKernel.setArgument("clean", mImage2);
+			lKernel.setArgument("cache", mImage2);
 		else
-			lKernel.setArgument("clean", mImage1);
+			lKernel.setArgument("cache", mImage1);
 		lKernel.setGlobalSizes(mImage);
 		lKernel.run(true);
 		
@@ -212,6 +212,7 @@ public class Calculator {
 	    for (int i = 0; i < mEnd.getLength(); i++)
 	    {
 	    	float lFloatAligned = lBuffer.getFloatAligned(i);
+	    	System.out.println("Partial Value is: "+lFloatAligned);
 	    	lDiff += lFloatAligned;
 	    }
 		return lDiff;
