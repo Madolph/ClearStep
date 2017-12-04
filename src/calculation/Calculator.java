@@ -100,7 +100,7 @@ public class Calculator {
 			System.out.println("image2 set");
 		}
 		if (mImage1 != null && mImage2 !=null)
-			filled = true;
+			{ filled = true; }
 	}
 	
 	/**
@@ -134,7 +134,7 @@ public class Calculator {
 	    
 		boolean noise = false;
 		if (noise)
-			cleanNoise(lProgram2);
+			{ cleanNoise(lProgram2); }
 	    
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    sumUpImageToBuffer(lProgram);
@@ -174,16 +174,16 @@ public class Calculator {
 		ClearCLKernel lKernel = lProgram.createKernel("cleanNoise");
 		lKernel.setArgument("image1", mImage);
 		if (even)
-			lKernel.setArgument("cache", mImage2);
+			{ lKernel.setArgument("cache", mImage2); }
 		else
-			lKernel.setArgument("cache", mImage1);
+			{ lKernel.setArgument("cache", mImage1); }
 		lKernel.setGlobalSizes(mImage);
 		lKernel.run(true);
 		
 		if (even)
-			mImage2.copyTo(mImage, true);
+			{ mImage2.copyTo(mImage, true); }
 		else
-			mImage1.copyTo(mImage, true);
+			{ mImage1.copyTo(mImage, true); }
 	}
 	
 	/**
@@ -211,9 +211,9 @@ public class Calculator {
 	    float lDiff = 0;
 	    for (int i = 0; i < mEnd.getLength(); i++)
 	    {
-	    	float lFloatAligned = lBuffer.getFloatAligned(i);
-	    	System.out.println("Partial Value is: "+lFloatAligned);
-	    	lDiff += lFloatAligned;
+	    		float lFloatAligned = lBuffer.getFloatAligned(i);
+	    		System.out.println("Partial Value is: "+lFloatAligned);
+	    		lDiff += lFloatAligned;
 	    }
 		return lDiff;
 	}
