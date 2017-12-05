@@ -64,13 +64,7 @@ public class KernelTest {
 	@Test
 	public void testNoiseCleaner() throws Exception
 	{
-		Handler lHandler = new Handler(null);
-		
-		lHandler.mProgram1 = lHandler.mContext.createProgram(KernelTest.class, "Calculator.cl");
-		lHandler.mProgram1.addDefine("CONSTANT", "1");
-		lHandler.mProgram1.addDefine("READ_IMAGE", "read_imageui");
-		lHandler.mProgram1.addDefine("WRITE_IMAGE", "write_imageui");
-		lHandler.mProgram1.buildAndLog();
+		Handler lHandler = new Handler(null, ImageChannelDataType.UnsignedInt16);
 			  
 		// now that this is done, we initialize the time and create two images that will
 		// be filled by the simulator during the run	  
@@ -168,7 +162,7 @@ public class KernelTest {
 			
 			blubb ++;
 		}
-		ClearCLKernel lKernel = lHandler.mProgram1.createKernel("cleanNoise");
+		ClearCLKernel lKernel = lHandler.noiseCleaner.createKernel("cleanNoise");
 		lKernel.setArgument("image1", lImage);
 		lKernel.setArgument("cache", lImage2);
 		lKernel.setGlobalSizes(lImage);
@@ -184,18 +178,18 @@ public class KernelTest {
 	@Test
 	public void testMeanCleaner() throws Exception
 	{
-		Handler lHandler = new Handler(null);
+		Handler lHandler = new Handler(null, ImageChannelDataType.UnsignedInt16);
 		
-		lHandler.mProgram1 = lHandler.mContext.createProgram(KernelTest.class, "Noise.cl");
-		lHandler.mProgram1.addDefine("CONSTANT", "1");
-		lHandler.mProgram1.addDefine("READ_IMAGE", "read_imageui");
-		lHandler.mProgram1.addDefine("WRITE_IMAGE", "write_imageui");
-		lHandler.mProgram1.addDefine("VECTORTYPE", "uint4");
+		lHandler.noiseCleaner = lHandler.mContext.createProgram(KernelTest.class, "Noise.cl");
+		lHandler.noiseCleaner.addDefine("CONSTANT", "1");
+		lHandler.noiseCleaner.addDefine("READ_IMAGE", "read_imageui");
+		lHandler.noiseCleaner.addDefine("WRITE_IMAGE", "write_imageui");
+		lHandler.noiseCleaner.addDefine("VECTORTYPE", "uint4");
 		
 		String define = assembleKernel();
 		
-		lHandler.mProgram1.addDefine("DO_ALL_THE_STUFF", define);
-		lHandler.mProgram1.buildAndLog();
+		lHandler.noiseCleaner.addDefine("DO_ALL_THE_STUFF", define);
+		lHandler.noiseCleaner.buildAndLog();
 			  
 		// now that this is done, we initialize the time and create two images that will
 		// be filled by the simulator during the run	  
@@ -292,7 +286,7 @@ public class KernelTest {
 		
 		System.out.println("we created the stack");
 		
-		ClearCLKernel lKernel = lHandler.mProgram1.createKernel("cleanNoise");
+		ClearCLKernel lKernel = lHandler.noiseCleaner.createKernel("cleanNoise");
 		lKernel.setArgument("image1", lImage);
 		lKernel.setArgument("cache", lImage2);
 		lKernel.setGlobalSizes(lImage);

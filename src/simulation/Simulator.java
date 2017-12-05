@@ -2,7 +2,6 @@ package simulation;
 
 import java.util.Random;
 
-import clearcl.ClearCLContext;
 import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
 import clearcl.ClearCLProgram;
@@ -25,6 +24,8 @@ public class Simulator {
 			mPosition[i]=0;
 	}
 	
+	public ClearCLKernel sim;
+	
 	/**
 	 * creates two pictures that depend on the time
 	 * 
@@ -34,7 +35,7 @@ public class Simulator {
 	 * @param lImage1 	Storage for the generated image
 	 * @param lSize 	The size of the images
 	 */
-	public void generatePic(ClearCLContext lContext, ClearCLProgram lProgram, 
+	public void generatePic(ClearCLProgram lProgram, 
 			float time, ClearCLImage lImage1, int lSize, boolean noise)
 	{ 
 	    computePosition(time);
@@ -42,26 +43,25 @@ public class Simulator {
 	    float random = 0;
 	    
 	    if (noise)
-	    	random = (float)16.807*(lRandom.nextFloat());
+	    		{ random = (float)16.807*(lRandom.nextFloat()); }
 	    
 	    boolean vibrate = false;
 	    
 	    float vibration = 0;
 	    
 	    if (vibrate)
-	    	vibration = (lRandom.nextFloat()-0.5f)*4;
+	    		{ vibration = (lRandom.nextFloat()-0.5f)*4; }
 	    
-	    //ClearCLKernel lKernel = lProgram.createKernel("sphere");
-	    ClearCLKernel lKernel = lProgram.createKernel("noisySphere");
-	    lKernel.setGlobalSizes(lImage1);
-	    lKernel.setArgument("image", lImage1);
-	    lKernel.setArgument("cx", ((lSize/2)+mPosition[0]));
-	    lKernel.setArgument("cy", ((lSize/2)+mPosition[1])+vibration);
-	    lKernel.setArgument("cz", ((lSize/2)+mPosition[2]));
-	    lKernel.setArgument("r", 0.25f);
-	    lKernel.setArgument("p1", random);
+	    sim = lProgram.createKernel("noisySphere");
+	    sim.setGlobalSizes(lImage1);
+	    sim.setArgument("image", lImage1);
+	    sim.setArgument("cx", ((lSize/2)+mPosition[0]));
+	    sim.setArgument("cy", ((lSize/2)+mPosition[1])+vibration);
+	    sim.setArgument("cz", ((lSize/2)+mPosition[2]));
+	    sim.setArgument("r", 0.25f);
+	    sim.setArgument("p1", random);
 	    
-	    lKernel.run(true);      
+	    sim.run(true);      
 	}
 	
 	/**

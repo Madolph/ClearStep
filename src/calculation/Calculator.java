@@ -39,6 +39,12 @@ public class Calculator {
 	 */
 	boolean even = false;
 	
+	ClearCLProgram calcProgram;
+	
+	ClearCLProgram noiseCleaner;
+	
+	ClearCLKernel compare, clean, sum;
+	
 	/**
 	 * stores whether or not the calculator currently has two images stored
 	 */
@@ -49,11 +55,21 @@ public class Calculator {
 	ClearCLBuffer mEnd;
 	ClearCLContext mContext;
 
-	public Calculator(ClearCLContext pContext) {
+	public Calculator(ClearCLContext pContext, ClearCLProgram Calc, ClearCLProgram Noise) {
+		calcProgram = Calc;
+		noiseCleaner = Noise;
+		createKernels();
 		mContext = pContext;
 		mEnd = mContext.createBuffer(NativeTypeEnum.Float, (int) pow(mReductionFactor, 3));
 	}
 
+	public void createKernels()
+	{
+		compare = calcProgram.createKernel("compare");
+		clean = noiseCleaner.createKernel("cleanNoise");
+		sum = calcProgram.createKernel("Sum3D");
+	}
+	
 	/** 
 	 * saves an image to Cache and then compares two cached images, if possible
 	 * @param lImage
@@ -157,11 +173,10 @@ public class Calculator {
 	 */
 	public void sumUpImageToBuffer(ClearCLProgram lProgram)
 	{
-		ClearCLKernel lKernel = lProgram.createKernel("Sum3D");
-	    lKernel.setArgument("image", mImage);
-	    lKernel.setArgument("result", mEnd);
-	    lKernel.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
-	    lKernel.run(true);
+	    sum.setArgument("image", mImage);
+	    sum.setArgument("result", mEnd);
+	    sum.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
+	    sum.run(true);
 	}
 	
 	/**
@@ -171,14 +186,13 @@ public class Calculator {
 	 */
 	public void cleanNoise(ClearCLProgram lProgram)
 	{
-		ClearCLKernel lKernel = lProgram.createKernel("cleanNoise");
-		lKernel.setArgument("image1", mImage);
+		clean.setArgument("image1", mImage);
 		if (even)
-			{ lKernel.setArgument("cache", mImage2); }
+			{ clean.setArgument("cache", mImage2); }
 		else
-			{ lKernel.setArgument("cache", mImage1); }
-		lKernel.setGlobalSizes(mImage);
-		lKernel.run(true);
+			{ clean.setArgument("cache", mImage1); }
+		clean.setGlobalSizes(mImage);
+		clean.run(true);
 		
 		if (even)
 			{ mImage2.copyTo(mImage, true); }
@@ -193,12 +207,11 @@ public class Calculator {
 	 */
 	public void squareDiff(ClearCLProgram lProgram)
 	{
-		ClearCLKernel lKernel = lProgram.createKernel("compare");
-	    lKernel.setArgument("image1", mImage1);
-	    lKernel.setArgument("image2", mImage2);
-	    lKernel.setArgument("result", mImage);
-	    lKernel.setGlobalSizes(mImage1);
-	    lKernel.run(true);
+	    compare.setArgument("image1", mImage1);
+	    compare.setArgument("image2", mImage2);
+	    compare.setArgument("result", mImage);
+	    compare.setGlobalSizes(mImage1);
+	    compare.run(true);
 	}
 	
 	/**

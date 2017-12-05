@@ -15,7 +15,6 @@ import clearcl.enums.ImageChannelDataType;
 import prediction.Predictor;
 import prediction.PredictorHoltWinters;
 import prediction.PredictorStDev;
-import simulation.Simulator;
 import timestepping.TimeStepper;
 
 public class Handler implements timeStepAdapter{
@@ -47,35 +46,33 @@ public class Handler implements timeStepAdapter{
 	public ClearCL mClearCL;
 	public ClearCLBackendInterface mClearCLBackendInterface;
 	// Calculation
-	public ClearCLProgram mProgram1;
+	public ClearCLProgram calculations;
 	// Generation
-	public ClearCLProgram mProgram2;
+	public ClearCLProgram simulation;
 	// NoiseHandling
-	public ClearCLProgram mProgram3;
+	public ClearCLProgram noiseCleaner;
 	
 	/**
 	 * creates a new Handler for dynamic time-stepping
 	 * @param Context if null, new context will be created
+	 * @throws IOException 
 	 */
-	public Handler(ClearCLContext Context)
+	public Handler(ClearCLContext Context, ImageChannelDataType DataType) throws IOException
 	{
 		// TODO add option to choose the predictor
 		String Pred = "StDev";
 		
-		// create new Context of null was given
+		// create new Context if null was given
 		if (Context == null)
 		{
 			mClearCLBackendInterface = ClearCLBackends.getBestBackend();
 			mClearCL = new ClearCL(mClearCLBackendInterface);
 			mFastestGPUDevice = mClearCL.getFastestGPUDeviceForImages();
-			System.out.println(mFastestGPUDevice);
 
 			mContext = mFastestGPUDevice.createContext();
 		}
 		else 
-			mContext=Context;
-		
-		mCalc = new Calculator(mContext);
+			{ mContext=Context; }
 		
 		switch (Pred)
 		{
@@ -89,31 +86,68 @@ public class Handler implements timeStepAdapter{
 		
 		mTimeStepper = new TimeStepper(0.5f, 0.2f, 1f, 0.1f);
 		
+		createSimProgram();
+		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram(DataType));
+		
 		// might not be necessary
 		mDuration = 3600;
 	}
 	
-	public void createCalcProgram(ImageChannelDataType DataType) throws IOException
+	public ClearCLProgram createCalcProgram(ImageChannelDataType DataType) throws IOException
 	{
-		mProgram1 = mContext.createProgram(KernelTest.class, "Calculator.cl");
-		mProgram1.addDefine("CONSTANT", "1");
+		calculations = mContext.createProgram(KernelTest.class, "Calculator.cl");
 		switch (DataType)
 		{
 		case Float: 
-			mProgram1.addDefine("READ_IMAGE", "read_imagef");
+			calculations.addDefine("READ_IMAGE", "read_imagef");
 			break;
 		case UnsignedInt16:
-			mProgram1.addDefine("READ_IMAGE", "read_imageui");
+			calculations.addDefine("READ_IMAGE", "read_imageui");
 		default:
-			mProgram1.addDefine("READ_IMAGE", "read_imagef");
+			calculations.addDefine("READ_IMAGE", "read_imagef");
 			break;
 		}
+		calculations.buildAndLog();
+		
+		return calculations;
+		
+	}
+	
+	public void createSimProgram() throws IOException
+	{
+		simulation=mContext.createProgram(KernelTest.class, "Simulator.cl");
+		simulation.buildAndLog();
+	}
+	
+	public ClearCLProgram createNoiseHandlerProgram(ImageChannelDataType DataType) throws IOException
+	{
+		noiseCleaner= mContext.createProgram(KernelTest.class, "Noise.cl");
+		switch (DataType)
+		{
+		case Float: 
+			noiseCleaner.addDefine("READ_IMAGE", "read_imagef");
+			noiseCleaner.addDefine("WRITE_IMAGE", "write_imagef");
+			noiseCleaner.addDefine("DATA", "float4");
+			break;
+		case UnsignedInt16:
+			noiseCleaner.addDefine("READ_IMAGE", "read_imageui");
+			noiseCleaner.addDefine("WRITE_IMAGE", "write_imageui");
+			noiseCleaner.addDefine("DATA", "uint4");
+		default:
+			noiseCleaner.addDefine("READ_IMAGE", "read_imagef");
+			noiseCleaner.addDefine("WRITE_IMAGE", "write_imagef");
+			noiseCleaner.addDefine("DATA", "float4");
+			break;
+		}
+		
+		noiseCleaner.buildAndLog();
+		return noiseCleaner;
 		
 	}
 	
 	public void processImage(ClearCLImage image, float time)
 	{	
-		float diff = mCalc.cacheAndCompare(image, mProgram1, mProgram3, (int)image.getHeight());
+		float diff = mCalc.cacheAndCompare(image, calculations, noiseCleaner, (int)image.getHeight());
 		boolean StDev = true;
 		float metric;
 		if (StDev)
@@ -127,36 +161,5 @@ public class Handler implements timeStepAdapter{
 		float step = mTimeStepper.computeNextStep(metric);
 		
 		System.out.println("Timestep is: "+step);
-	}
-	
-	/**
-	 * TODO should be removed when tests are moved to the demo-class
-	 * Initializes all the Classes and ClearCL-Overhead
-	 * to use the Handler as the executing class that calls the simulation
-	 * and then handles images
-	 * @throws IOException
-	 * @param StDev specifies the used predictor
-	 */
-	public void InitializeModules(boolean StDev) throws IOException
-	{
-		mClearCLBackendInterface = ClearCLBackends.getBestBackend();
-		  mClearCL = new ClearCL(mClearCLBackendInterface);
-		  {
-			  mFastestGPUDevice = mClearCL.getFastestGPUDeviceForImages();
-			  System.out.println(mFastestGPUDevice);
-
-			  mContext = mFastestGPUDevice.createContext();
-		  }
-		
-		@SuppressWarnings("unused")
-		Simulator lSim = new Simulator();
-		mCalc = new Calculator(mContext);
-		
-		if (StDev)
-			mPred = new PredictorStDev();
-		else
-			mPred = new PredictorHoltWinters();
-		
-		mTimeStepper = new TimeStepper(0.5f, 0.2f, 1f, 0.1f);	
 	}
 }

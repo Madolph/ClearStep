@@ -16,7 +16,7 @@
 #include "blu/tada.cl" 
 
 __kernel 
-void noisySphere   (__write_only image3d_t image,
+void noisySphere(__write_only image3d_t image,
                		float cx,
                		float cy,
                		float cz,

@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import Kernels.KernelTest;
 import clearcl.ClearCLImage;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
@@ -25,16 +24,7 @@ public class HandlerDemo {
 	@Test
 	public void createAndMeasureSimbryoStack() throws Exception
 	{
-		Handler lHandler = new Handler(null);
-		
-		boolean StDev = true;
-		
-		lHandler.InitializeModules(StDev);
-		
-		lHandler.mProgram1 = lHandler.mContext.createProgram(KernelTest.class, "Calculator.cl");
-		lHandler.mProgram1.addDefine("CONSTANT", "1");
-		lHandler.mProgram1.addDefine("READ_IMAGE", "read_imagef");
-		lHandler.mProgram1.buildAndLog();
+		Handler lHandler = new Handler(null, ImageChannelDataType.UnsignedInt16);
 			  
 		// now that this is done, we initialize the time and create two images that will
 		// be filled by the simulator during the run	  
@@ -140,30 +130,9 @@ public class HandlerDemo {
 	@Test
 	public void SimpleSimStepper() throws IOException, InterruptedException
 	{
-		Handler lHandler = new Handler(null);
-		
-		boolean StDev = true;
+		Handler lHandler = new Handler(null, ImageChannelDataType.Float);
 		
 		Simulator lSim = new Simulator();
-		
-		lHandler.InitializeModules(StDev);
-		
-		lHandler.mProgram1 = lHandler.mContext.createProgram(KernelTest.class, "Calculator.cl");
-		// do any dependent definitions here
-		lHandler.mProgram1.addDefine("CONSTANT", "1");
-		lHandler.mProgram1.addDefine("READ_IMAGE", "read_imagef");
-		lHandler.mProgram1.buildAndLog();
-		
-		lHandler.mProgram2 = lHandler.mContext.createProgram(KernelTest.class, "Simulator.cl");
-		lHandler.mProgram2.addDefine("CONSTANT", "1");
-		lHandler.mProgram2.buildAndLog();
-		
-		lHandler.mProgram3 = lHandler.mContext.createProgram(KernelTest.class, "Noise.cl");
-		lHandler.mProgram3.addDefine("CONSTANT", "1");
-		lHandler.mProgram3.addDefine("READ_IMAGE", "read_imagef");
-		lHandler.mProgram3.addDefine("WRITE_IMAGE", "write_imagef");
-		lHandler.mProgram3.addDefine("DATA", "float4");
-		lHandler.mProgram3.buildAndLog();
 		
 		PlotterXY Plotter = new PlotterXY(3);
 		String[] Titles = new String[3];
@@ -182,12 +151,12 @@ public class HandlerDemo {
 			float currStep = lHandler.mTimeStepper.mStep;
 			System.out.println("current time is: "+time+" with step: "+currStep);
 			  
-			lSim.generatePic(lHandler.mContext, lHandler.mProgram2, time, lImage, lSize, true);
+			lSim.generatePic(lHandler.simulation, time, lImage, lSize, false);
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
 			lHandler.mCalc.CachePic(lImage, lHandler.mContext, lSize);
 			if (lHandler.mCalc.filled)
 			{			  
-				float diff = lHandler.mCalc.compareImages(lHandler.mProgram1, lHandler.mProgram3, lSize);
+				float diff = lHandler.mCalc.compareImages(lHandler.calculations, lHandler.noiseCleaner, lSize);
 				float metric;
 				metric = lHandler.mPred.predict(diff, time);
 				float step = lHandler.mTimeStepper.computeNextStep(metric);  
