@@ -32,7 +32,7 @@ public class Calculator {
 	/**
 	 * The "Image" that stores the values of calculation
 	 */
-	ClearCLImage mImage;
+	public ClearCLImage mImage;
 	
 	/**
 	 * stores whether the last image received was an even or uneven capture
@@ -67,6 +67,7 @@ public class Calculator {
 	{
 		compare = calcProgram.createKernel("compare");
 		clean = noiseCleaner.createKernel("cleanNoise");
+		//clean = noiseCleaner.createKernel("meanFilter");
 		sum = calcProgram.createKernel("Sum3D");
 	}
 	
@@ -146,6 +147,7 @@ public class Calculator {
 														lSize,
 														lSize);
 		}
+		
 		squareDiff(calc);
 	    
 		boolean noise = true;

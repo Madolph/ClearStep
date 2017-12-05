@@ -144,14 +144,16 @@ public class HandlerDemo {
 		int lSize = 128;
 		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
 		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
+		ClearCLImageViewer compPic = ClearCLImageViewer.view(lImage);
 		float time=0;
 		float[] data = new float[3];
+		
 		while (time<(lHandler.mDuration*1000))  
 		{
 			float currStep = lHandler.mTimeStepper.mStep;
 			System.out.println("current time is: "+time+" with step: "+currStep);
 			  
-			lSim.generatePic(lHandler.simulation, time, lImage, lSize, false);
+			lSim.generatePic(lHandler.simulation, time, lImage, lSize, true);
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
 			lHandler.mCalc.CachePic(lImage, lHandler.mContext, lSize);
 			if (lHandler.mCalc.filled)
@@ -159,7 +161,9 @@ public class HandlerDemo {
 				float diff = lHandler.mCalc.compareImages(lHandler.calculations, lHandler.noiseCleaner, lSize);
 				float metric;
 				metric = lHandler.mPred.predict(diff, time);
-				float step = lHandler.mTimeStepper.computeNextStep(metric);  
+				float step = lHandler.mTimeStepper.computeNextStep(metric);
+				
+				compPic.setImage(lHandler.mCalc.mImage);
 				
 				data[0] = step/100;
 				data[1] = lHandler.mPred.prediction;
