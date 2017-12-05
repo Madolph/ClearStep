@@ -12,7 +12,7 @@ public class PredictorStDev extends Predictor {
 	/**
 	 * An Array that saves the last 10 deviations
 	 */
-	public float[][] mDev = new float[5][2];
+	public float[][] mDev = new float[10][2];
 	
 	/**
 	 * The current Standard-Deviation

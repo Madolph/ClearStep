@@ -123,12 +123,12 @@ public class Calculator {
 	 * compares two images and responds with a metric that
 	 * relates to the change between the two
 	 *
-	 * @param lProgram 	The OpenCL-Program
+	 * @param calc 	The OpenCL-Program
 	 * @param lSize 	The Size of the images
 	 * @return 			The metric of change between the images
 	 * @throws IOException 
 	 */
-	public float compareImages(ClearCLProgram lProgram, ClearCLProgram lProgram2, int lSize)
+	public float compareImages(ClearCLProgram calc, ClearCLProgram noiseClean, int lSize)
 	{
 		
 		
@@ -146,14 +146,14 @@ public class Calculator {
 														lSize,
 														lSize);
 		}
-		squareDiff(lProgram);
+		squareDiff(calc);
 	    
-		boolean noise = false;
+		boolean noise = true;
 		if (noise)
-			{ cleanNoise(lProgram2); }
+			{ cleanNoise(); }
 	    
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
-	    sumUpImageToBuffer(lProgram);
+	    sumUpImageToBuffer(calc);
 
 	    // fill Buffer
 	    OffHeapMemory lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
@@ -184,7 +184,7 @@ public class Calculator {
 	 * and will be overwritten here)
 	 * @param lProgram
 	 */
-	public void cleanNoise(ClearCLProgram lProgram)
+	public void cleanNoise()
 	{
 		clean.setArgument("image1", mImage);
 		if (even)
