@@ -178,6 +178,53 @@ public class HandlerDemo {
 	}
 	
 	@Test
+	public void SimpleSimStepperV2() throws IOException, InterruptedException
+	{
+		Handler lHandler = new Handler(null, ImageChannelDataType.Float);
+		
+		Simulator lSim = new Simulator();
+		
+		PlotterXY Plotter = new PlotterXY(3);
+		String[] Titles = new String[3];
+		Titles[0] = "timestep";
+		Titles[1] = "prediction";
+		Titles[2] = "average";
+		Plotter.initializePlotter(lHandler.mFxOn, "Flummi-Demo", "Plot", "time", Titles, 1000, 1000);
+		
+		int lSize = 128;
+		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
+		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
+		ClearCLImageViewer compPic = ClearCLImageViewer.view(lImage);
+
+		float time=0;
+		float[] data = new float[3];
+		
+		while (time<(lHandler.mDuration*1000))  
+		{
+			float currStep = lHandler.mTimeStepper.mStep;
+			System.out.println("current time is: "+time+" with step: "+currStep);
+			  
+			lSim.generatePic(lHandler.simulation, time, lImage, lSize, true);
+			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
+			lHandler.processImage(lImage, time);
+			
+			if (lHandler.mCalc.filled)
+			{
+				compPic.setImage(lHandler.mCalc.mImage);
+				
+				data[0] = lHandler.mTimeStepper.mStep/100;
+				data[1] = lHandler.mPred.prediction;
+				data[2] = lHandler.mPred.average;
+				Plotter.plotFullDataSetXY(time, data);
+			}
+			
+			time += currStep;
+			Thread.sleep((long) currStep);
+		}  
+		lViewImage.waitWhileShowing();
+	}
+	
+	@Test
 	public void PredictorDemo()
 	{
 		PredictorHoltWinters lPred = new PredictorHoltWinters();

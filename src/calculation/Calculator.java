@@ -48,7 +48,7 @@ public class Calculator {
 	/**
 	 * stores whether or not the calculator currently has two images stored
 	 */
-	public boolean filled;
+	public boolean filled = false;
 
 	int mReductionFactor = 16;
 
@@ -83,7 +83,8 @@ public class Calculator {
 	{
 		float result = 0;
 		CachePic(lImage, mContext, lSize);
-		result = compareImages(lProgram, lProgram2, lSize);
+		if (filled)
+			{ result = compareImages(lProgram, lProgram2, lSize); }
 		return result;
 	}
 	

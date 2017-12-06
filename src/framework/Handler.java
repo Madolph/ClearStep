@@ -148,18 +148,21 @@ public class Handler implements timeStepAdapter{
 	public void processImage(ClearCLImage image, float time)
 	{	
 		float diff = mCalc.cacheAndCompare(image, calculations, noiseCleaner, (int)image.getHeight());
-		boolean StDev = true;
-		float metric;
-		if (StDev)
+		if (mCalc.filled)
 		{
-			metric = mPred.predict(diff, time);
-		}
-		else
-		{
-			metric = mPred.predict(diff, time);
-		}
-		float step = mTimeStepper.computeNextStep(metric);
+			boolean StDev = true;
+			float metric;
+			if (StDev)
+			{
+				metric = mPred.predict(diff, time);
+			}
+			else
+			{
+				metric = mPred.predict(diff, time);
+			}
+			float step = mTimeStepper.computeNextStep(metric);
 		
-		System.out.println("Timestep is: "+step);
+			System.out.println("Timestep is: "+step);
+		}
 	}
 }
