@@ -84,7 +84,7 @@ public class Handler implements timeStepAdapter{
 			mPred = new PredictorStDev();
 		}
 		
-		mTimeStepper = new TimeStepper(0.5f, 0.2f, 1f, 0.1f);
+		mTimeStepper = new TimeStepper(1f, 0.7f, 2f, 0.1f);
 		
 		createSimProgram();
 		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram(DataType));
@@ -145,7 +145,7 @@ public class Handler implements timeStepAdapter{
 		
 	}
 	
-	public void processImage(ClearCLImage image, float time)
+	public void processImage(ClearCLImage image, float time, float step)
 	{	
 		float diff = mCalc.cacheAndCompare(image, calculations, noiseCleaner, (int)image.getHeight());
 		if (mCalc.filled)
@@ -160,7 +160,7 @@ public class Handler implements timeStepAdapter{
 			{
 				metric = mPred.predict(diff, time);
 			}
-			float step = mTimeStepper.computeNextStep(metric);
+			step = mTimeStepper.computeNextStep(metric);
 		
 			System.out.println("Timestep is: "+step);
 		}

@@ -202,17 +202,18 @@ public class HandlerDemo {
 		while (time<(lHandler.mDuration*1000))  
 		{
 			float currStep = lHandler.mTimeStepper.mStep;
+			float step = currStep;
 			System.out.println("current time is: "+time+" with step: "+currStep);
 			  
 			lSim.generatePic(lHandler.simulation, time, lImage, lSize, true);
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
-			lHandler.processImage(lImage, time);
+			lHandler.processImage(lImage, time, step);
 			
 			if (lHandler.mCalc.filled)
 			{
 				compPic.setImage(lHandler.mCalc.mImage);
 				
-				data[0] = lHandler.mTimeStepper.mStep/100;
+				data[0] = step/100;
 				data[1] = lHandler.mPred.prediction;
 				data[2] = lHandler.mPred.average;
 				Plotter.plotFullDataSetXY(time, data);

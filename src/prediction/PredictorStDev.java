@@ -44,6 +44,8 @@ public class PredictorStDev extends Predictor {
 	 */
 	public float mCurrentSigma;
 	
+	public Setable mSigmaMetric = new Setable();
+	
 	/**
 	 * creates an instance of memory and sets the array of deviations and timepoints to 0
 	 */
@@ -71,10 +73,17 @@ public class PredictorStDev extends Predictor {
 			//{ mCurrentSigma=((mDev[0][0]-mMean)/mStDev); }
 			{ mCurrentSigma = (float)((mDev[0][0]-mMean.val)/mStDev); }
 		
-		mCurrentSigma /= 3;
+		if (mSigmaMetric.set)
+			{ mSigmaMetric.val = (mSigmaMetric.val*3+mCurrentSigma)/4; }
+		else
+			{ mSigmaMetric.val = mCurrentSigma; }
+		
+		mSigmaMetric.val /= 3;
+		//mCurrentSigma /= 3;
 		setPlotValues();
 		System.out.println("Sigma is: "+mCurrentSigma+" / StDev: "+mStDev);
-		return mCurrentSigma;
+		//return mCurrentSigma;
+		return mSigmaMetric.val;
 	}
 	
 	/**
@@ -171,7 +180,8 @@ public class PredictorStDev extends Predictor {
 	public void setPlotValues()
 	{
 		value = mDev[0][0];
-		prediction = mCurrentSigma;
+		//prediction = mCurrentSigma;
+		prediction = mSigmaMetric.val;
 		average = mMean.val;
 		System.out.println("value: "+value+" / prediction: "+prediction+" / average: "+average);
 	}
