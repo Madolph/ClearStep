@@ -213,7 +213,7 @@ public class HandlerDemo {
 			{
 				compPic.setImage(lHandler.mCalc.mImage);
 				
-				data[0] = step/100;
+				data[0] = step/200;
 				data[1] = lHandler.mPred.prediction;
 				data[2] = lHandler.mPred.average;
 				Plotter.plotFullDataSetXY(time, data);

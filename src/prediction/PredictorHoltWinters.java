@@ -53,7 +53,7 @@ public class PredictorHoltWinters extends Predictor {
 	{
 		phi = 0.8f;
 		alpha = 0.8f;
-		gamma = 0.8f;
+		gamma = 0.5f;
 	}
 	
 	@Override
@@ -97,7 +97,7 @@ public class PredictorHoltWinters extends Predictor {
 	public void setPlotValues()
 	{
 		average = SN/1000;
-		prediction = TN/10;
+		prediction = TN/100;
 	}
 	
 	public float computeNormTrend()
