@@ -1,14 +1,12 @@
 package prediction;
 
-public class Predictor {
+public abstract class Predictor {
 	
 	public float value;
 	public float prediction;
 	public float average;
 	
-	public float predict(float diff, float time) {
-		return 0;
-	}
+	public abstract float predict(float value, float time);
 	
 	public void setPlotValues()
 	{

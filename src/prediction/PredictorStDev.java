@@ -58,6 +58,7 @@ public class PredictorStDev extends Predictor {
 		}
 	}
 	
+	@Override
 	public float predict(float diff, float time)
 	{
 		rearrangeDev();

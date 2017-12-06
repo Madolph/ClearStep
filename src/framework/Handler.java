@@ -60,7 +60,7 @@ public class Handler implements timeStepAdapter{
 	public Handler(ClearCLContext Context, ImageChannelDataType DataType) throws IOException
 	{
 		// TODO add option to choose the predictor
-		String Pred = "StDev";
+		String Pred = "HoltWinters";
 		
 		// create new Context if null was given
 		if (Context == null)
@@ -78,10 +78,13 @@ public class Handler implements timeStepAdapter{
 		{
 		case "StDev":
 			mPred = new PredictorStDev();
+			break;
 		case "HoltWinters":
 			mPred = new PredictorHoltWinters();
+			break;
 		default:
 			mPred = new PredictorStDev();
+			break;
 		}
 		
 		mTimeStepper = new TimeStepper(1f, 0.7f, 2f, 0.1f);
@@ -150,16 +153,8 @@ public class Handler implements timeStepAdapter{
 		float diff = mCalc.cacheAndCompare(image, calculations, noiseCleaner, (int)image.getHeight());
 		if (mCalc.filled)
 		{
-			boolean StDev = true;
 			float metric;
-			if (StDev)
-			{
-				metric = mPred.predict(diff, time);
-			}
-			else
-			{
-				metric = mPred.predict(diff, time);
-			}
+			metric = mPred.predict(diff, time);
 			step = mTimeStepper.computeNextStep(metric);
 		
 			System.out.println("Timestep is: "+step);
