@@ -65,7 +65,7 @@ public class PredictorStDev extends Predictor {
 		calcStDevAdapt();
 		// Check if the new value is outside the Standard deviation
 		if (mStDev==0)
-			// No deviation means Sigma has to be zero (would devide by = otherwise)
+			// No deviation means Sigma has to be zero (would divide by 0 otherwise)
 			{ mCurrentSigma = 0; }
 		else
 			//{ mCurrentSigma=((mDev[0][0]-mMean)/mStDev); }
