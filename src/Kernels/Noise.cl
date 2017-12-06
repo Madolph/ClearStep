@@ -45,19 +45,14 @@ void cleanNoise(__read_only image3d_t image1,
 		{
 			for (int d1=0; d1<3; d1++)
 			{
-				if (d1!=1 || d2!=1 || d3!=1)
+				int index = d1+d2*3+d3*9;
+				matrix[index] = (float)READ_IMAGE(image1, sampler, (pos-(int4){1,1,1,0}+(int4){d1,d2,d3,0})).x;
+				matrix[index] = fabs(matrix[index] - val);
+				if (matrix[index]>ceil)
 				{
-					int index = d1+d2*3+d3*9;
-					matrix[index] = (float)READ_IMAGE(image1, sampler, (pos-(int4){1,1,1,0}+(int4){d1,d2,d3,0})).x;
-					matrix[index] = fabs(matrix[index] - val);
-					if (matrix[index]>ceil)
-					{
-						//save the highest deviation
-						ceil = matrix[index];
-					}
+					//save the highest deviation
+					ceil = matrix[index];
 				}
-				else
-				{ ; } //13 is the point itself
 			}
 		}
 	}

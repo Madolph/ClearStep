@@ -145,6 +145,7 @@ public class HandlerDemo {
 		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(ImageChannelDataType.Float, lSize, lSize, lSize);
 		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
 		ClearCLImageViewer compPic = ClearCLImageViewer.view(lImage);
+
 		float time=0;
 		float[] data = new float[3];
 		

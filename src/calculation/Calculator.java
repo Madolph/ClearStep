@@ -196,10 +196,23 @@ public class Calculator {
 		clean.setGlobalSizes(mImage);
 		clean.run(true);
 		
+		//do another sweep so that mImage is the computational result again
+		
+		if (even)
+		{ 	clean.setArgument("image1", mImage2); }
+		else
+		{ 	clean.setArgument("image1", mImage1); }
+		clean.setArgument("cache", mImage);
+		
+		clean.setGlobalSizes(mImage);
+		clean.run(true);
+		
+		
+		/**
 		if (even)
 			{ mImage2.copyTo(mImage, true); }
 		else
-			{ mImage1.copyTo(mImage, true); }
+			{ mImage1.copyTo(mImage, true); } */
 	}
 	
 	/**
@@ -225,11 +238,7 @@ public class Calculator {
 		mEnd.writeTo(lBuffer, true);
 	    float lDiff = 0;
 	    for (int i = 0; i < mEnd.getLength(); i++)
-	    {
-	    		float lFloatAligned = lBuffer.getFloatAligned(i);
-	    		System.out.println("Partial Value is: "+lFloatAligned);
-	    		lDiff += lFloatAligned;
-	    }
+	    		{ lDiff += lBuffer.getFloatAligned(i); }
 		return lDiff;
 	}
 }
