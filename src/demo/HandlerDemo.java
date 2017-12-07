@@ -205,7 +205,7 @@ public class HandlerDemo {
 			float step = currStep;
 			System.out.println("current time is: "+time+" with step: "+currStep);
 			  
-			lSim.generatePic(lHandler.simulation, time, lImage, lSize, true);
+			lSim.generatePic(lHandler.simulation, time, lImage, lSize, false);
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
 			lHandler.processImage(lImage, time, step);
 			

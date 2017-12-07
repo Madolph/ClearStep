@@ -75,7 +75,7 @@ public class PredictorStDev extends Predictor {
 			{ mCurrentSigma = (float)((mDev[0][0]-mMean.val)/mStDev); }
 		
 		if (mSigmaMetric.set)
-			{ mSigmaMetric.val = (mSigmaMetric.val*3+mCurrentSigma)/4; }
+			{ mSigmaMetric.val = (mSigmaMetric.val*9+mCurrentSigma)/10; }
 		else
 			{ mSigmaMetric.val = mCurrentSigma; }
 		
@@ -152,7 +152,11 @@ public class PredictorStDev extends Predictor {
 		mStDev = (float) Math.sqrt(lGap);			
 	}
 	
+	//TODO rethink the regression, how data is added and removed 
+	//TODO make lRegress a field
+	
 	private double[] adaptMeanRegress(){
+		
 		SimpleRegression  lRegress = new SimpleRegression();
 		for (int i=0;i<mDev.length;i++)
 			{

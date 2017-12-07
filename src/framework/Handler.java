@@ -60,7 +60,7 @@ public class Handler implements timeStepAdapter{
 	public Handler(ClearCLContext Context, ImageChannelDataType DataType) throws IOException
 	{
 		// TODO add option to choose the predictor
-		String Pred = "HoltWinters";
+		String Pred = "StDev";
 		
 		// create new Context if null was given
 		if (Context == null)
