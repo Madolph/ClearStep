@@ -90,8 +90,10 @@ public class Handler implements timeStepAdapter{
 			mPred = new PredictorStDev();
 			break;
 		}
-		
-		mTimeStepper = new TimeStepper(1f, 1f, 2f, 0.1f);
+		// for our little demo
+		//mTimeStepper = new TimeStepper(1f, 1f, 2f, 0.1f);
+		//reasonable for the microscope
+		mTimeStepper = new TimeStepper(60f, 20f, Float.MAX_VALUE, 0.1f);
 		
 		createSimProgram();
 		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram(DataType));
