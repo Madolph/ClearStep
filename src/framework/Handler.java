@@ -14,6 +14,7 @@ import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import prediction.Predictor;
 import prediction.PredictorHoltWinters;
+import prediction.PredictorRegression;
 import prediction.PredictorStDev;
 import timestepping.TimeStepper;
 
@@ -60,7 +61,7 @@ public class Handler implements timeStepAdapter{
 	public Handler(ClearCLContext Context, ImageChannelDataType DataType) throws IOException
 	{
 		// TODO add option to choose the predictor
-		String Pred = "StDev";
+		String Pred = "Regression";
 		
 		// create new Context if null was given
 		if (Context == null)
@@ -82,12 +83,15 @@ public class Handler implements timeStepAdapter{
 		case "HoltWinters":
 			mPred = new PredictorHoltWinters();
 			break;
+		case "Regression":
+			mPred = new PredictorRegression();
+			break;
 		default:
 			mPred = new PredictorStDev();
 			break;
 		}
 		
-		mTimeStepper = new TimeStepper(1f, 0.7f, 2f, 0.1f);
+		mTimeStepper = new TimeStepper(1f, 1f, 2f, 0.1f);
 		
 		createSimProgram();
 		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram(DataType));
@@ -153,9 +157,8 @@ public class Handler implements timeStepAdapter{
 		float diff = mCalc.cacheAndCompare(image, calculations, noiseCleaner, (int)image.getHeight());
 		if (mCalc.filled)
 		{
-			float metric;
-			metric = mPred.predict(diff, time);
-			step = mTimeStepper.computeNextStep(metric);
+			float metric = mPred.predict(diff, time);
+			mTimeStepper.computeNextStep(metric, step);
 		
 			System.out.println("Timestep is: "+step);
 		}

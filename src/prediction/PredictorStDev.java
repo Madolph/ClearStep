@@ -37,7 +37,7 @@ public class PredictorStDev extends Predictor {
 	/**
 	 * decides whether the mean should be reset every step or always keep a part of its information
 	 */
-	float mMeanStiff = (float) 0.0;
+	float mMeanStiff = (float) 0.25;
 	
 	/**
 	 * the current Sigma
@@ -45,6 +45,8 @@ public class PredictorStDev extends Predictor {
 	public float mCurrentSigma;
 	
 	public Setable mSigmaMetric = new Setable();
+	
+	SimpleRegression  mRegress = new SimpleRegression();
 	
 	/**
 	 * creates an instance of memory and sets the array of deviations and timepoints to 0
@@ -88,46 +90,6 @@ public class PredictorStDev extends Predictor {
 	}
 	
 	/**
-	 * saves the supplied difference to the array, after shifting all the values,
-	 * so that only the 10 newest ones are stored. Also checks if the array has
-	 * been initialized yet and if not, does so. Then is calculates some metrics
-	 * and answers, if it is necessary to compute a new step
-	 * 
-	 * @param diff	The difference-metric that is saved as a new deviation
-	 * @param time	The currently used timestep
-	 * @return True if a new step needs to be calculated
-	 */
-	public boolean saveAndCheckDiff(float diff, float time)
-	{
-		rearrangeDev();
-		mDev[0][0]= (diff)/(time-mDev[1][1]);
-		mDev[0][1]= time;
-		
-		// check if the whole array is filled with data
-		if (mDev[mDev.length-1][1]==0)
-		{
-			System.out.println("Data not yet set");
-			return false;
-		}
-		
-		calcStDevAdapt();
-		// Check if the new value is outside the Standard deviation
-		if (mStDev==0)
-			// No deviation means Sigma has to be zero (would devide by = otherwise)
-			{ mCurrentSigma=0; }
-		else
-			//{ mCurrentSigma=((mDev[0][0]-mMean)/mStDev); }
-			{ mCurrentSigma= (float)((mDev[0][0]-mMean.val)/mStDev); }
-		
-		setPlotValues();
-		System.out.println("Sigma is: "+mCurrentSigma+" / StDev: "+mStDev);
-		if (mCurrentSigma>mSensitivity || mCurrentSigma<-mSensitivity)
-		{ return true; }
-		else
-		{ return false; }
-	}
-	
-	/**
 	 * Just shifts the values of the array.
 	 * Loses the oldest value along the way.
 	 */
@@ -157,15 +119,15 @@ public class PredictorStDev extends Predictor {
 	
 	private double[] adaptMeanRegress(){
 		
-		SimpleRegression  lRegress = new SimpleRegression();
+		mRegress.clear();
 		for (int i=0;i<mDev.length;i++)
 			{
-			lRegress.addData(mDev[i][1], mDev[i][0]);
+			mRegress.addData(mDev[i][1], mDev[i][0]);
 			}
 		double[] lMeanCache = new double[mDev.length];
 		for (int i=0;i<lMeanCache.length;i++)
 		{
-			lMeanCache[i] = lRegress.predict((double)mDev[i][1]);
+			lMeanCache[i] = mRegress.predict((double)mDev[i][1]);
 		}
 		
 		float lMean=0;

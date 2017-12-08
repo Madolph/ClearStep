@@ -79,8 +79,9 @@ public class TimeStepper {
 			mStep = mMinStep;
 	}
 	
-	public float computeNextStep(float metric)
+	public void computeNextStep(float metric, float step)
 	{
+		mStep = step;
 		limitMetric(metric);
 		mStep=mNeutralStep+(-metric*mSpan);
 		
@@ -98,75 +99,7 @@ public class TimeStepper {
 		
 		// over time, the step will get back to the original step
 		mStep =(mNeutralStep*mRollback) + (mStep*(1-mRollback));
-			
-		return mStep;
-	}
-	
-	/**
-	 * calculates the new Timestep
-	 * 
-	 * @param diff the metric of image-change
-	 * @return the newly computed timestep
-	 */
-	public float computeStep(float diff, float time)
-	{
-		boolean calcStep = mInfo.saveAndCheckDiff(diff, time);
-		if (!calcStep)
-		{
-			// do nothing if the current change is within the current Area of error or calc isnt set up
-			;
-		}
-		else
-		{
-			// calculate new Step when necessary
-			// first, check, if the Sigma is at the limit
-			boolean stepSet=false;
-			if (mInfo.mCurrentSigma>=3)
-			{
-				mStep = mNeutralStep-mSpan;
-				stepSet=true;
-			}
-			if (mInfo.mCurrentSigma<=-3)
-			{
-				mStep = mNeutralStep+mSpan;
-				stepSet=true;
-			}
-			if (!stepSet)
-			{
-				mStep=mNeutralStep-(mInfo.mCurrentSigma*(mSpan/3));
-			}
-		}
 		
-		if (mStep>mMaxStep)
-			mStep = mMaxStep;
-		if (mStep<mMinStep)
-			mStep = mMinStep;
-		
-		if (fluid)
-		{
-			float lDummy = (float) 0.9;
-			if (!mStepSmooth.set)
-			{
-				mStepSmooth.val = mStep;
-				mStepSmooth.set= true;
-			}
-			else 
-				mStepSmooth.val = mStepSmooth.val*(lDummy)+mStep*(1-lDummy);
-			
-			mStep = mStepSmooth.val;
-		}	
-		else
-			assignStep();
-		
-		// over time, the step will get back to the original step
-		mStep =((mNeutralStep*mRollback) + (mStep*(1-mRollback)));
-			
-		return mStep;
-	}
-	
-	public void assignStep()
-	{
-		int lStep = (int) ((mStep-mMinStep)/mSpan);
-		mStep = mMinStep+(lStep*mSpan);
+		step = mStep;
 	}
 }
