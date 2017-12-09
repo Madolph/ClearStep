@@ -5,6 +5,7 @@ import java.util.Random;
 import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
 import clearcl.ClearCLProgram;
+import clearcl.enums.ImageChannelDataType;
 
 /**
  * Simulates a simple moving Dot
@@ -15,16 +16,20 @@ import clearcl.ClearCLProgram;
 public class Simulator {
 	
 	float [] mPosition = new float[3];
+	
+	public ImageChannelDataType mDatatype;
 
 	/**
 	 * Initializes the Position-array to zero
 	 */
-	public Simulator(){
+	public Simulator(ImageChannelDataType Datatype){
 		for (int i=0;i<mPosition.length;i++)
 			mPosition[i]=0;
+		mDatatype = Datatype;
 	}
 	
 	public ClearCLKernel sim;
+	
 	
 	/**
 	 * creates two pictures that depend on the time

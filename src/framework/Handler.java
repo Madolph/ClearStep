@@ -91,11 +91,11 @@ public class Handler implements timeStepAdapter{
 			break;
 		}
 		// for our little demo
-		//mTimeStepper = new TimeStepper(1f, 1f, 2f, 0.1f);
+		mTimeStepper = new TimeStepper(1f, 1f, 2f, 0.1f);
 		//reasonable for the microscope
-		mTimeStepper = new TimeStepper(60f, 20f, Float.MAX_VALUE, 0.1f);
+		//mTimeStepper = new TimeStepper(60f, 20f, Float.MAX_VALUE, 0.1f);
 		
-		createSimProgram();
+		createSimProgram(DataType);
 		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram(DataType));
 		
 		// might not be necessary
@@ -122,9 +122,23 @@ public class Handler implements timeStepAdapter{
 		
 	}
 	
-	public void createSimProgram() throws IOException
+	public void createSimProgram(ImageChannelDataType DataType) throws IOException
 	{
 		simulation=mContext.createProgram(KernelTest.class, "Simulator.cl");
+		switch (DataType)
+		{
+		case Float: 
+			simulation.addDefine("WRITE_IMAGE", "write_imagef");
+			simulation.addDefine("DATA", "float4");
+			break;
+		case UnsignedInt16:
+			simulation.addDefine("WRITE_IMAGE", "write_imageui");
+			simulation.addDefine("DATA", "uint4");
+		default:
+			simulation.addDefine("WRITE_IMAGE", "write_imagef");
+			simulation.addDefine("DATA", "float4");
+			break;
+		}
 		simulation.buildAndLog();
 	}
 	

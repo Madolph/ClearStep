@@ -1,4 +1,3 @@
-
 // You can include other resources
 // Path relative to class OCLlib, the package is found automatically (first in class path if several exist)
 #include [OCLlib] "linear/matrix.cl" 
@@ -44,12 +43,12 @@ void noisySphere(__write_only image3d_t image,
   
   		float d = fast_length((pos-cen)/dim);
   
-  		float value = (float)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
+  		float value = (uint)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
   
-  		float random = (float) (fmod(cache,n)/n)*5;
+  		float random = (uint) (fmod(cache,n)/n)*5;
   
   		if (value==0)
-  			write_imagef (image, (int4){x,y,z,0}, (float4){random,0,0,0});
+  			WRITE_IMAGE (image, (int4){x,y,z,0}, (DATA){random,0,0,0});
   		else
-  			write_imagef (image, (int4){x,y,z,0}, (float4){value,0,0,0});
+  			WRITE_IMAGE (image, (int4){x,y,z,0}, (DATA){value,0,0,0});
 	}	
