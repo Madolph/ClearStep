@@ -70,7 +70,6 @@ public class Calculator {
 	{
 		compare = calcProgram.createKernel("compare");
 		clean = noiseCleaner.createKernel("cleanNoise");
-		//clean = noiseCleaner.createKernel("meanFilter");
 		sum = calcProgram.createKernel("Sum3D");
 		convert = calcProgram.createKernel("convert");
 	}
@@ -251,16 +250,27 @@ public class Calculator {
 	
 	public void convert(ClearCLImage lImage)
 	{
-		System.out.println("Converting image-data to float now");
+		System.out.println(lImage.isFloat());
+		
 		if (mImage == null)
 		{
 			mImage =
 					mContext.createSingleChannelImage(ImageChannelDataType.Float,
-														lImage.getDimensions());
+													lImage.getDimensions());
 		}
-		convert.setArgument("source", lImage);
-		convert.setArgument("cache", mImage);
-		convert.setGlobalSizes(lImage);
-		convert.run(true);
+		
+		if (!lImage.isFloat())
+		{
+			System.out.println("Converting image-data to float now");
+			convert.setArgument("source", lImage);
+			convert.setArgument("cache", mImage);
+			convert.setGlobalSizes(lImage);
+			convert.run(true);
+		}
+		else
+		{
+			System.out.println("Its already in float");
+			lImage.copyTo(mImage, true);
+		}
 	}
 }

@@ -146,8 +146,8 @@ public class HandlerDemo {
 		
 		int lSize = 128;
 		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(Datatype, lSize, lSize, lSize);
-		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
-		ClearCLImageViewer compPic = ClearCLImageViewer.view(lImage);
+		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage, "Flummi");
+		ClearCLImageViewer compPic = ClearCLImageViewer.view(lImage, "difference-map");
 
 		float time=0;
 		float[] data = new float[3];
@@ -156,7 +156,7 @@ public class HandlerDemo {
 		{
 			float currStep = lHandler.mTimeStepper.mStep;
 			float step = currStep;
-			System.out.println("current time is: "+time+" with step: "+currStep);
+			System.out.println("current time is: "+time+" with step: "+currStep/1000+"s");
 			  
 			lSim.generatePic(time, lImage, lSize, true);
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
