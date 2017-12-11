@@ -152,7 +152,7 @@ public class HandlerDemo {
 
 		float time=0;
 		float[] data = new float[3];
-		float Duration = 40;
+		float Duration = 120;
 		
 		while (time<(Duration*1000))  
 		{

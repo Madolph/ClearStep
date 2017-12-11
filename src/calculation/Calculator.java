@@ -12,6 +12,7 @@ import clearcl.ClearCLProgram;
 import clearcl.enums.ImageChannelDataType;
 import coremem.enums.NativeTypeEnum;
 import coremem.offheap.OffHeapMemory;
+import framework.Setable;
 
 /**
  * This class can store two images and computes a metric for pixel-wise difference between the two
@@ -76,6 +77,10 @@ public class Calculator {
 	 * The Context stored by the Calculator
 	 */
 	ClearCLContext mContext;
+	
+	Setable mResult = new Setable();
+	
+	float mResultSmooth;
 
 	/**
 	 * constructs a Calculator
@@ -118,7 +123,16 @@ public class Calculator {
 		CachePic(lSize);
 		if (filled)
 			{ result = compareImages(calcProgram, noiseCleaner, lSize); }
-		return result;
+		if (mResult.set)
+		{
+			mResult.val = mResult.val*mResultSmooth+result*(1-mResultSmooth);
+		}
+		else
+		{
+			mResult.val=result;
+			mResult.set=true;
+		}
+		return mResult.val;
 	}
 	
 	/**

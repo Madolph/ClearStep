@@ -125,7 +125,9 @@ public class Handler implements timeStepAdapter{
 		float diff = mCalc.cacheAndCompare(image, (int)image.getHeight());
 		if (mCalc.filled)
 		{
+			System.out.println("diff= "+diff);
 			float metric = mPred.predict(diff, time);
+			System.out.println("metric= "+metric);
 			mTimeStepper.computeNextStep(metric, step);
 		
 			System.out.println("Timestep is: "+step);
