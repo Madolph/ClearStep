@@ -43,9 +43,9 @@ void noisySphere(__write_only image3d_t image,
   
   		float d = fast_length((pos-cen)/dim);
   
-  		float value = (uint)( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
+  		float value = ( (100.0f*pow(fabs(r-d),0.5f))*((d<r)?1:0) );
   
-  		float random = (uint) (fmod(cache,n)/n)*5;
+  		float random = (fmod(cache,n)/n)*5;
   
   		if (value==0)
   			WRITE_IMAGE (image, (int4){x,y,z,0}, (DATA){random,0,0,0});

@@ -8,6 +8,7 @@ import clearcl.ClearCLContext;
 import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
 import clearcl.ClearCLProgram;
+import clearcl.enums.ImageChannelDataType;
 import coremem.enums.NativeTypeEnum;
 import coremem.offheap.OffHeapMemory;
 
@@ -43,7 +44,7 @@ public class Calculator {
 	
 	ClearCLProgram noiseCleaner;
 	
-	ClearCLKernel compare, clean, sum;
+	ClearCLKernel compare, clean, sum, convert;
 	
 	/**
 	 * stores whether or not the calculator currently has two images stored
@@ -52,7 +53,7 @@ public class Calculator {
 
 	int mReductionFactor = 16;
 
-	ClearCLBuffer mEnd;
+	public ClearCLBuffer mEnd;
 	ClearCLContext mContext;
 
 	public Calculator(ClearCLContext pContext, ClearCLProgram Calc, ClearCLProgram Noise) {
@@ -69,6 +70,7 @@ public class Calculator {
 		clean = noiseCleaner.createKernel("cleanNoise");
 		//clean = noiseCleaner.createKernel("meanFilter");
 		sum = calcProgram.createKernel("Sum3D");
+		convert = calcProgram.createKernel("convert");
 	}
 	
 	/** 
@@ -79,12 +81,13 @@ public class Calculator {
 	 * @return
 	 * @throws IOException 
 	 */
-	public float cacheAndCompare(ClearCLImage lImage, ClearCLProgram lProgram, ClearCLProgram lProgram2, int lSize)
+	public float cacheAndCompare(ClearCLImage lImage, int lSize)
 	{
+		convert(lImage);
 		float result = 0;
-		CachePic(lImage, mContext, lSize);
+		CachePic(lSize);
 		if (filled)
-			{ result = compareImages(lProgram, lProgram2, lSize); }
+			{ result = compareImages(calcProgram, noiseCleaner, lSize); }
 		return result;
 	}
 	
@@ -95,15 +98,15 @@ public class Calculator {
 	 * @param lContext	The OpenCL-Context
 	 * @param lSize		The image-size to initialize an empty image if necessary
 	 */
-	public void CachePic(ClearCLImage lImage, ClearCLContext lContext, int lSize)
+	public void CachePic(int lSize)
 	{
 		if (!even)
 		{
 			if (mImage1==null)
 				// creates an empty picture if the cache is null
-				{ mImage1 = lContext.createSingleChannelImage(lImage.getChannelDataType(), lSize, lSize, lSize); }
+				{ mImage1 = mContext.createSingleChannelImage(mImage.getChannelDataType(), lSize, lSize, lSize); }
 					
-			lImage.copyTo(mImage1, false);
+			mImage.copyTo(mImage1, true);
 			even=true;
 			System.out.println("image1 set");
 		}
@@ -111,9 +114,9 @@ public class Calculator {
 		{
 			if (mImage2==null)
 				// creates an empty picture if the cache is null
-				{ mImage2 = lContext.createSingleChannelImage(lImage.getChannelDataType(), lSize, lSize, lSize); }
+				{ mImage2 = mContext.createSingleChannelImage(mImage.getChannelDataType(), lSize, lSize, lSize); }
 			
-			lImage.copyTo(mImage2, false);
+			mImage.copyTo(mImage2, true);
 			even=false;
 			System.out.println("image2 set");
 		}
@@ -140,23 +143,24 @@ public class Calculator {
 			return 0f;
 		}
 		// creates a temporary image to store the pixel-wise difference
+		/**
 		if (mImage == null || mImage.getWidth() != lSize)
 		{
 			mImage =
-					mContext.createSingleChannelImage(mImage1.getChannelDataType(),
+					mContext.createSingleChannelImage(ImageChannelDataType.Float,
 														lSize,
 														lSize,
 														lSize);
-		}
+		}*/
 		
-		squareDiff(calc);
+		squareDiff();
 	    
 		boolean noise = true;
 		if (noise)
 			{ cleanNoise(); }
 	    
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
-	    sumUpImageToBuffer(calc);
+	    sumUpImageToBuffer();
 
 	    // fill Buffer
 	    OffHeapMemory lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
@@ -174,7 +178,7 @@ public class Calculator {
 	 * @param lProgram
 	 * @throws IOException 
 	 */
-	public void sumUpImageToBuffer(ClearCLProgram lProgram)
+	public void sumUpImageToBuffer()
 	{
 	    sum.setArgument("image", mImage);
 	    sum.setArgument("result", mEnd);
@@ -221,7 +225,7 @@ public class Calculator {
 	 * pixel between the two images
 	 * @param lProgram
 	 */
-	public void squareDiff(ClearCLProgram lProgram)
+	public void squareDiff()
 	{
 	    compare.setArgument("image1", mImage1);
 	    compare.setArgument("image2", mImage2);
@@ -241,5 +245,20 @@ public class Calculator {
 	    for (int i = 0; i < mEnd.getLength(); i++)
 	    		{ lDiff += lBuffer.getFloatAligned(i); }
 		return lDiff;
+	}
+	
+	public void convert(ClearCLImage image)
+	{
+		System.out.println("Converting image-data to float now");
+		if (mImage == null)
+		{
+			mImage =
+					mContext.createSingleChannelImage(ImageChannelDataType.Float,
+														image.getDimensions());
+		}
+		convert.setArgument("image", image);
+		convert.setArgument("cache", mImage);
+		convert.setGlobalSizes(image);
+		convert.run(true);
 	}
 }

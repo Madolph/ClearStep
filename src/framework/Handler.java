@@ -48,8 +48,6 @@ public class Handler implements timeStepAdapter{
 	public ClearCLBackendInterface mClearCLBackendInterface;
 	// Calculation
 	public ClearCLProgram calculations;
-	// Generation
-	public ClearCLProgram simulation;
 	// NoiseHandling
 	public ClearCLProgram noiseCleaner;
 	
@@ -94,9 +92,7 @@ public class Handler implements timeStepAdapter{
 		mTimeStepper = new TimeStepper(1f, 1f, 2f, 0.1f);
 		//reasonable for the microscope
 		//mTimeStepper = new TimeStepper(60f, 20f, Float.MAX_VALUE, 0.1f);
-		
-		createSimProgram(DataType);
-		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram(DataType));
+		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram());
 		
 		// might not be necessary
 		mDuration = 3600;
@@ -112,6 +108,7 @@ public class Handler implements timeStepAdapter{
 			break;
 		case UnsignedInt16:
 			calculations.addDefine("READ_IMAGE", "read_imageui");
+			break;
 		default:
 			calculations.addDefine("READ_IMAGE", "read_imagef");
 			break;
@@ -122,47 +119,9 @@ public class Handler implements timeStepAdapter{
 		
 	}
 	
-	public void createSimProgram(ImageChannelDataType DataType) throws IOException
-	{
-		simulation=mContext.createProgram(KernelTest.class, "Simulator.cl");
-		switch (DataType)
-		{
-		case Float: 
-			simulation.addDefine("WRITE_IMAGE", "write_imagef");
-			simulation.addDefine("DATA", "float4");
-			break;
-		case UnsignedInt16:
-			simulation.addDefine("WRITE_IMAGE", "write_imageui");
-			simulation.addDefine("DATA", "uint4");
-		default:
-			simulation.addDefine("WRITE_IMAGE", "write_imagef");
-			simulation.addDefine("DATA", "float4");
-			break;
-		}
-		simulation.buildAndLog();
-	}
-	
-	public ClearCLProgram createNoiseHandlerProgram(ImageChannelDataType DataType) throws IOException
+	public ClearCLProgram createNoiseHandlerProgram() throws IOException
 	{
 		noiseCleaner= mContext.createProgram(KernelTest.class, "Noise.cl");
-		switch (DataType)
-		{
-		case Float: 
-			noiseCleaner.addDefine("READ_IMAGE", "read_imagef");
-			noiseCleaner.addDefine("WRITE_IMAGE", "write_imagef");
-			noiseCleaner.addDefine("DATA", "float4");
-			break;
-		case UnsignedInt16:
-			noiseCleaner.addDefine("READ_IMAGE", "read_imageui");
-			noiseCleaner.addDefine("WRITE_IMAGE", "write_imageui");
-			noiseCleaner.addDefine("DATA", "uint4");
-		default:
-			noiseCleaner.addDefine("READ_IMAGE", "read_imagef");
-			noiseCleaner.addDefine("WRITE_IMAGE", "write_imagef");
-			noiseCleaner.addDefine("DATA", "float4");
-			break;
-		}
-		
 		noiseCleaner.buildAndLog();
 		return noiseCleaner;
 		
@@ -170,7 +129,7 @@ public class Handler implements timeStepAdapter{
 	
 	public void processImage(ClearCLImage image, float time, float step)
 	{	
-		float diff = mCalc.cacheAndCompare(image, calculations, noiseCleaner, (int)image.getHeight());
+		float diff = mCalc.cacheAndCompare(image, (int)image.getHeight());
 		if (mCalc.filled)
 		{
 			float metric = mPred.predict(diff, time);

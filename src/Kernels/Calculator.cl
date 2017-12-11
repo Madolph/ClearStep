@@ -15,16 +15,26 @@
 // (check method: myprogram.getSourceCode())
 #include "blu/tada.cl"
 
+__kernel
+void convert(__read_only image3d_t image,
+			 __write_only image3d_t cache)
+{
+	int x = get_global_id(0); 
+	int y = get_global_id(1);
+	int z = get_global_id(2);
+
+	int4 pos = (int4){x,y,z,0};
+	
+	float val = (float)READ_IMAGE(image, pos).x;
+	
+	write_imagef(cache, pos, (float4){val,0,0,0});
+}
+
 __kernel 
 void compare(__read_only image3d_t image1, 
 			 __read_only image3d_t image2, 
 			 __write_only image3d_t result)
 {
-	const int width  = get_image_width(image1);
-	const int height = get_image_height(image1);
-	const int depth  = get_image_depth(image1);
-
-
 	int x = get_global_id(0); 
 	int y = get_global_id(1);
 	int z = get_global_id(2);
@@ -73,7 +83,7 @@ void Sum3D (__read_only image3d_t image,
       {
         const int4 pos = origin + (int4){lx,ly,lz,0};
      
-        float value = (float)READ_IMAGE(image, pos).x;
+        float value = read_imagef(image, pos).x;
 
         sum = sum + value;
       }

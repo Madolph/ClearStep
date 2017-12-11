@@ -1,7 +1,10 @@
 package simulation;
 
+import java.io.IOException;
 import java.util.Random;
 
+import Kernels.KernelTest;
+import clearcl.ClearCLContext;
 import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
 import clearcl.ClearCLProgram;
@@ -17,19 +20,47 @@ public class Simulator {
 	
 	float [] mPosition = new float[3];
 	
-	public ImageChannelDataType mDatatype;
+	public ImageChannelDataType mDataType;
+	
+	public ClearCLProgram simulation;
+	
+	ClearCLContext mContext;
 
 	/**
 	 * Initializes the Position-array to zero
+	 * @throws IOException 
 	 */
-	public Simulator(ImageChannelDataType Datatype){
+	public Simulator(ImageChannelDataType Datatype, ClearCLContext Context) throws IOException{
 		for (int i=0;i<mPosition.length;i++)
 			mPosition[i]=0;
-		mDatatype = Datatype;
+		mDataType = Datatype;
+		mContext = Context;
+		createSimProgram();
 	}
 	
 	public ClearCLKernel sim;
 	
+	public void createSimProgram() throws IOException
+	{
+		simulation=mContext.createProgram(KernelTest.class, "Simulator.cl");
+		switch (mDataType)
+		{
+		case Float:
+			simulation.addDefine("WRITE_IMAGE", "write_imagef");
+			simulation.addDefine("DATA", "float4");
+			break;
+		case UnsignedInt16:
+			simulation.addDefine("WRITE_IMAGE", "write_imageui");
+			simulation.addDefine("DATA", "uint4");
+			break;
+		default:
+			simulation.addDefine("WRITE_IMAGE", "write_imagef");
+			simulation.addDefine("DATA", "float4");
+			break;
+		}
+		
+		simulation.buildAndLog();
+	}
 	
 	/**
 	 * creates two pictures that depend on the time
@@ -40,8 +71,7 @@ public class Simulator {
 	 * @param lImage1 	Storage for the generated image
 	 * @param lSize 	The size of the images
 	 */
-	public void generatePic(ClearCLProgram lProgram, 
-			float time, ClearCLImage lImage1, int lSize, boolean noise)
+	public void generatePic(float time, ClearCLImage lImage1, int lSize, boolean noise)
 	{ 
 	    computePosition(time);
 	    Random lRandom = new Random();
@@ -57,7 +87,7 @@ public class Simulator {
 	    if (vibrate)
 	    		{ vibration = (lRandom.nextFloat()-0.5f)*4; }
 	    
-	    sim = lProgram.createKernel("noisySphere");
+	    sim = simulation.createKernel("noisySphere");
 	    sim.setGlobalSizes(lImage1);
 	    sim.setArgument("image", lImage1);
 	    sim.setArgument("cx", ((lSize/2)+mPosition[0]));
@@ -66,7 +96,7 @@ public class Simulator {
 	    sim.setArgument("r", 0.25f);
 	    sim.setArgument("p1", random);
 	    
-	    sim.run(true);      
+	    sim.run(true);   
 	}
 	
 	/**

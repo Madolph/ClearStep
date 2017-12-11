@@ -128,63 +128,14 @@ public class HandlerDemo {
 	}
 	
 	@Test
-	public void SimpleSimStepper() throws IOException, InterruptedException
-	{
-		ImageChannelDataType Datatype = ImageChannelDataType.Float;
-		
-		Handler lHandler = new Handler(null, ImageChannelDataType.Float);
-		
-		Simulator lSim = new Simulator(Datatype);
-		
-		PlotterXY Plotter = new PlotterXY(3);
-		String[] Titles = new String[3];
-		Titles[0] = "timestep";
-		Titles[1] = "prediction";
-		Titles[2] = "average";
-		Plotter.initializePlotter(lHandler.mFxOn, "Flummi-Demo", "Plot", "time", Titles, 1000, 1000);
-		
-		int lSize = 128;
-		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(Datatype, lSize, lSize, lSize);
-		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage);
-		ClearCLImageViewer compPic = ClearCLImageViewer.view(lImage);
-
-		float time=0;
-		float[] data = new float[3];
-		
-		while (time<(lHandler.mDuration*1000))  
-		{
-			float currStep = lHandler.mTimeStepper.mStep;
-			float step = currStep;
-			System.out.println("current time is: "+time+" with step: "+currStep);
-			  
-			lSim.generatePic(lHandler.simulation, time, lImage, lSize, true);
-			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
-			lHandler.processImage(lImage, time, step);
-			
-			if (lHandler.mCalc.filled)
-			{
-				compPic.setImage(lHandler.mCalc.mImage);
-				
-				data[0] = step/200;
-				data[1] = lHandler.mPred.prediction;
-				data[2] = lHandler.mPred.average;
-				Plotter.plotFullDataSetXY(time, data);
-			}
-			
-			time += currStep;
-			Thread.sleep((long) currStep);
-		}  
-		lViewImage.waitWhileShowing();
-	}
-	
-	@Test
-	public void SimpleStepperInt16() throws IOException, InterruptedException
+	public void SimpleStepper() throws IOException, InterruptedException
 	{
 		ImageChannelDataType Datatype = ImageChannelDataType.UnsignedInt16;
+		//ImageChannelDataType Datatype = ImageChannelDataType.Float;
 		
 		Handler lHandler = new Handler(null, Datatype);
 		
-		Simulator lSim = new Simulator(Datatype);
+		Simulator lSim = new Simulator(Datatype, lHandler.mContext);
 		
 		PlotterXY Plotter = new PlotterXY(3);
 		String[] Titles = new String[3];
@@ -207,7 +158,7 @@ public class HandlerDemo {
 			float step = currStep;
 			System.out.println("current time is: "+time+" with step: "+currStep);
 			  
-			lSim.generatePic(lHandler.simulation, time, lImage, lSize, true);
+			lSim.generatePic(time, lImage, lSize, true);
 			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
 			lHandler.processImage(lImage, time, step);
 			
