@@ -323,17 +323,6 @@ apply from: 'gradle/install-git-hooks.gradle'
 // SPOTLESS:
 
 spotless {
-    java {
-        //licenseHeader '/* Licensed under Apache-2.0 */' // License header
- 
-        importOrder(['java', 'javax', 'com', 'org'])
-
-        removeUnusedImports() // removes any unused imports
-
-        eclipseFormatFile 'codeformat.eclipse.xml'  
-    }
-}
-
 
 //***********************************************************************************
 // FINDBUGS:

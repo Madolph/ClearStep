@@ -2,27 +2,13 @@ package Kernels;
 
 import java.io.IOException;
 
-import clearcl.ClearCL;
-import clearcl.ClearCLContext;
-import clearcl.ClearCLDevice;
+
 import clearcl.ClearCLImage;
-import clearcl.ClearCLKernel;
-import clearcl.ClearCLProgram;
-import clearcl.backend.ClearCLBackendInterface;
-import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
 import coremem.offheap.OffHeapMemory;
-import fastfuse.FastFusionEngine;
-import fastfuse.FastFusionMemoryPool;
-import fastfuse.stackgen.StackGenerator;
-import fastfuse.tasks.AverageTask;
-import fastfuse.tasks.MemoryReleaseTask;
 import framework.Handler;
-
 import org.junit.Test;
-
-import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscopeSimulatorDrosophila;
 import simulation.Simulator;
 
 public class KernelTest {
