@@ -179,20 +179,39 @@ public class HandlerDemo {
 	}
 	
 	@Test
-	public void PredictorDemo()
+	public void PredictorDemo() throws InterruptedException
 	{
 		PredictorHoltWinters lPred = new PredictorHoltWinters();
+		int amount = 3;
 		float time = 1;
 		int i = 0;
+		@SuppressWarnings("unused")
 		float res;
 		float val=0;
+		
+		String[] Tags = new String[amount];
+		Tags[0]="Value";
+		Tags[1]="Series-Level";
+		Tags[2]="Trend";
+		
+		PlotterXY plot = new PlotterXY(amount);
+		plot.initializePlotter(false, "HoltWinters", "demoPlot", "time", Tags, 1000, 1000);
+		
 		while (i<100)
 		{		
 			res = lPred.predict(val, time);
 			val++;
-			System.out.println(res);
 			i++;
-			time += 1;
+			time ++;
+			
+			float[] data = new float[amount];
+			data[0] = val;
+			data[1] = lPred.SN;
+			data[2] = lPred.TN*50;
+			
+			plot.plotFullDataSetXY(time, data);
+			
+			Thread.sleep(1000);
 		}
 		
 	}

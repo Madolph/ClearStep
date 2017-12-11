@@ -89,9 +89,9 @@ public class Handler implements timeStepAdapter{
 			break;
 		}
 		// for our little demo
-		//mTimeStepper = new TimeStepper(1f, 1f, 2f, 0.1f);
+		mTimeStepper = new TimeStepper(1f, 1f, 2f, 0.1f);
 		//reasonable for the microscope
-		mTimeStepper = new TimeStepper(60f, 20f, Float.MAX_VALUE, 0.1f);
+		//mTimeStepper = new TimeStepper(60f, 20f, Float.MAX_VALUE, 0.1f);
 		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram());
 		
 		// might not be necessary
@@ -129,6 +129,7 @@ public class Handler implements timeStepAdapter{
 	
 	public void processImage(ClearCLImage image, float time, float step)
 	{	
+		//System.out.println(image.getHeight()+" // "+(int)image.getHeight());
 		float diff = mCalc.cacheAndCompare(image, (int)image.getHeight());
 		if (mCalc.filled)
 		{

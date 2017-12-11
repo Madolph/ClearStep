@@ -53,7 +53,7 @@ public class PredictorHoltWinters extends Predictor {
 	{
 		phi = 0.8f;
 		alpha = 0.8f;
-		gamma = 0.5f;
+		gamma = 0.8f;
 	}
 	
 	@Override
@@ -84,22 +84,33 @@ public class PredictorHoltWinters extends Predictor {
 		
 		shiftValues();
 		setPlotValues();
-		normTrend *= 10;
+		//normTrend *= 10;
 		return normTrend;
 	}
 	
 	public void adjustvalue(float value, float time) 
 	{
+		System.out.println("last time was: "+lastTime);
 		value = value/(time-lastTime);
 		lastTime = time;
+		System.out.println("time is: "+lastTime);
 	}
 
+	/**
+	 * pastes some values to fields in the abstract superclass so they can be accessed from outside
+	 */
 	public void setPlotValues()
 	{
 		average = SN/1000;
 		prediction = TN/100;
 	}
 	
+	/**
+	 * computes the current trend of the series and then divides it by the the mean of the last
+	 * and the current series-level to acquire a relative trend
+	 * 
+	 * @return
+	 */
 	public float computeNormTrend()
 	{
 		if ((SP+SN)/2==0)
@@ -121,6 +132,7 @@ public class PredictorHoltWinters extends Predictor {
 	public void setTrend()
 	{
 		TN=EN-SP;
+		
 		TP=TN;
 	}
 	

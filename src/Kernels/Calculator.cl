@@ -16,7 +16,7 @@
 #include "blu/tada.cl"
 
 __kernel
-void convert(__read_only image3d_t image,
+void convert(__read_only image3d_t source,
 			 __write_only image3d_t cache)
 {
 	int x = get_global_id(0); 
@@ -25,7 +25,7 @@ void convert(__read_only image3d_t image,
 
 	int4 pos = (int4){x,y,z,0};
 	
-	float val = (float)READ_IMAGE(image, pos).x;
+	float val = (float)READ_IMAGE(source, pos).x;
 	
 	write_imagef(cache, pos, (float4){val,0,0,0});
 }

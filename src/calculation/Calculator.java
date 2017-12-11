@@ -46,6 +46,8 @@ public class Calculator {
 	
 	ClearCLKernel compare, clean, sum, convert;
 	
+	
+	
 	/**
 	 * stores whether or not the calculator currently has two images stored
 	 */
@@ -247,18 +249,18 @@ public class Calculator {
 		return lDiff;
 	}
 	
-	public void convert(ClearCLImage image)
+	public void convert(ClearCLImage lImage)
 	{
 		System.out.println("Converting image-data to float now");
 		if (mImage == null)
 		{
 			mImage =
 					mContext.createSingleChannelImage(ImageChannelDataType.Float,
-														image.getDimensions());
+														lImage.getDimensions());
 		}
-		convert.setArgument("image", image);
+		convert.setArgument("source", lImage);
 		convert.setArgument("cache", mImage);
-		convert.setGlobalSizes(image);
+		convert.setGlobalSizes(lImage);
 		convert.run(true);
 	}
 }

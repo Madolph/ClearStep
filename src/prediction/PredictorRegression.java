@@ -28,7 +28,7 @@ public class PredictorRegression extends Predictor {
 	/**
 	 * coefficient that decides how strongly the new value will influence the series-level
 	 */
-	float mSeriesSmooth = 0.75f;
+	float mSeriesSmooth = 1f;
 	
 	/**
 	 * the current offset from the regression divided by the root of the MSE
@@ -38,7 +38,7 @@ public class PredictorRegression extends Predictor {
 	/**
 	 * coefficient to determine how much the offset will be smoothed with previous information
 	 */
-	public float mOffsetSmooth = 0.75f;
+	public float mOffsetSmooth = 1f;
 	
 	/**
 	 * the smoothed offset that will be used for further calculation
