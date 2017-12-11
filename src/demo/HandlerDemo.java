@@ -2,8 +2,6 @@ package demo;
 
 import java.io.IOException;
 
-import org.junit.Test;
-
 import clearcl.ClearCLImage;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
@@ -13,6 +11,9 @@ import fastfuse.stackgen.StackGenerator;
 import fastfuse.tasks.AverageTask;
 import fastfuse.tasks.MemoryReleaseTask;
 import framework.Handler;
+
+import org.junit.Test;
+
 import plotting.PlotterXY;
 import prediction.PredictorHoltWinters;
 import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscopeSimulatorDrosophila;
@@ -151,8 +152,9 @@ public class HandlerDemo {
 
 		float time=0;
 		float[] data = new float[3];
+		float Duration = 40;
 		
-		while (time<(lHandler.mDuration*1000))  
+		while (time<(Duration*1000))  
 		{
 			float currStep = lHandler.mTimeStepper.mStep;
 			float step = currStep;

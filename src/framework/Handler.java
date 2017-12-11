@@ -33,11 +33,6 @@ public class Handler implements timeStepAdapter{
 	public TimeStepper mTimeStepper;
 	
 	/**
-	 * duration of the Test in seconds
-	 */
-	public float mDuration;
-	
-	/**
 	 * stores whether or not JFx has been initialized
 	 */
 	public boolean mFxOn = false;
@@ -93,9 +88,6 @@ public class Handler implements timeStepAdapter{
 		//reasonable for the microscope
 		//mTimeStepper = new TimeStepper(60f, 20f, Float.MAX_VALUE, 0.1f);
 		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram());
-		
-		// might not be necessary
-		mDuration = 3600;
 	}
 	
 	public ClearCLProgram createCalcProgram(ImageChannelDataType DataType) throws IOException

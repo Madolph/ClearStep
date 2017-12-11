@@ -2,8 +2,6 @@ package Kernels;
 
 import java.io.IOException;
 
-import org.junit.Test;
-
 import clearcl.ClearCL;
 import clearcl.ClearCLContext;
 import clearcl.ClearCLDevice;
@@ -21,6 +19,9 @@ import fastfuse.stackgen.StackGenerator;
 import fastfuse.tasks.AverageTask;
 import fastfuse.tasks.MemoryReleaseTask;
 import framework.Handler;
+
+import org.junit.Test;
+
 import simbryo.synthoscopy.microscope.lightsheet.drosophila.LightSheetMicroscopeSimulatorDrosophila;
 import simulation.Simulator;
 

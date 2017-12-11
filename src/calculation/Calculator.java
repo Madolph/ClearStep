@@ -3,6 +3,7 @@ package calculation;
 import static java.lang.Math.pow;
 
 import java.io.IOException;
+
 import clearcl.ClearCLBuffer;
 import clearcl.ClearCLContext;
 import clearcl.ClearCLImage;

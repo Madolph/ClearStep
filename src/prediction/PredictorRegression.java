@@ -1,8 +1,8 @@
 package prediction;
 
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-
 import framework.Setable;
+
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 /**
  * saves a value to a memory of the last 10 values and computes
