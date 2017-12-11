@@ -41,32 +41,60 @@ public class Calculator {
 	 */
 	boolean even = false;
 	
+	/**
+	 * the program to be used for calculation-kernels
+	 */
 	ClearCLProgram calcProgram;
 	
+	/**
+	 * the program to create kernels handling noise
+	 */
 	ClearCLProgram noiseCleaner;
 	
+	/**
+	 * Kernels
+	 */
 	ClearCLKernel compare, clean, sum, convert;
-	
-	
 	
 	/**
 	 * stores whether or not the calculator currently has two images stored
 	 */
 	public boolean filled = false;
 
+	/**
+	 * specifies the amount of blocks created in the kernel that sums up
+	 * the computational image
+	 */
 	int mReductionFactor = 16;
 
+	/**
+	 * The Buffer used when summing up
+	 */
 	public ClearCLBuffer mEnd;
+	
+	/**
+	 * The Context stored by the Calculator
+	 */
 	ClearCLContext mContext;
 
-	public Calculator(ClearCLContext pContext, ClearCLProgram Calc, ClearCLProgram Noise) {
-		calcProgram = Calc;
-		noiseCleaner = Noise;
+	/**
+	 * constructs a Calculator
+	 * 
+	 * @param pContext	the ClearCLContext
+	 * @param lCalc		the program for calculations
+	 * @param lNoise		the program to handle noise
+	 */
+	public Calculator(ClearCLContext pContext, ClearCLProgram lCalc, ClearCLProgram lNoise) {
+		calcProgram = lCalc;
+		noiseCleaner = lNoise;
 		createKernels();
 		mContext = pContext;
 		mEnd = mContext.createBuffer(NativeTypeEnum.Float, (int) pow(mReductionFactor, 3));
 	}
 
+	/**
+	 * creates the kernels from the saved programs
+	 */
 	public void createKernels()
 	{
 		compare = calcProgram.createKernel("compare");

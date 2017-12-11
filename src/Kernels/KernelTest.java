@@ -13,6 +13,14 @@ import simulation.Simulator;
 
 public class KernelTest {
 	
+	
+	/**
+	 * creates two images with a similar kernel, but one is created with floats and one
+	 * is created with unsignedInt16 (short) and then converted to float
+	 * 
+	 * @throws InterruptedException
+	 * @throws IOException
+	 */
 	@Test
 	public void TestConvert() throws InterruptedException, IOException
 	{	
