@@ -8,6 +8,8 @@ import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
 import coremem.offheap.OffHeapMemory;
 import framework.Handler;
+import framework.Setable;
+
 import org.junit.Test;
 import simulation.Simulator;
 
@@ -61,5 +63,19 @@ public class KernelTest {
 		lViewImage.waitWhileShowing();
 	}
 	
+	@Test
+	public void testDeepShallow()
+	{
+		float x1=10;
+		float x2=x1;
+		x2=x2-5;
+		System.out.println("x1="+x1+" and x2="+x2);
+		
+		Setable X1=new Setable();
+		X1.val = 10;
+		Setable X2=X1;
+		X2.val = X2.val-5;
+		System.out.println("X1="+X1.val+" and X2="+X2.val);
+	}
 	
 }
