@@ -116,13 +116,17 @@ public class Calculator {
 	 * @return
 	 * @throws IOException 
 	 */
-	public float cacheAndCompare(ClearCLImage lImage, int lSize)
+	public float cacheAndCompare(ClearCLImage lImage)
 	{
 		convert(lImage);
 		float result = 0;
-		CachePic(lSize);
+		CachePic();
 		if (filled)
-			{ result = compareImages(calcProgram, noiseCleaner, lSize); }
+		{ 
+			System.out.println("Calc is filled");
+			result = compareImages(calcProgram, noiseCleaner); 
+			System.out.println("images are compared");
+		}
 		if (mResult.set)
 		{
 			mResult.val = mResult.val*mResultSmooth+result*(1-mResultSmooth);
@@ -142,13 +146,13 @@ public class Calculator {
 	 * @param lContext	The OpenCL-Context
 	 * @param lSize		The image-size to initialize an empty image if necessary
 	 */
-	public void CachePic(int lSize)
+	public void CachePic()
 	{
 		if (!even)
 		{
 			if (mImage1==null)
 				// creates an empty picture if the cache is null
-				{ mImage1 = mContext.createSingleChannelImage(mImage.getChannelDataType(), lSize, lSize, lSize); }
+				{ mImage1 = mContext.createSingleChannelImage(mImage.getChannelDataType(), mImage.getDimensions()); }
 					
 			mImage.copyTo(mImage1, true);
 			even=true;
@@ -158,7 +162,7 @@ public class Calculator {
 		{
 			if (mImage2==null)
 				// creates an empty picture if the cache is null
-				{ mImage2 = mContext.createSingleChannelImage(mImage.getChannelDataType(), lSize, lSize, lSize); }
+				{ mImage2 = mContext.createSingleChannelImage(mImage.getChannelDataType(), mImage.getDimensions()); }
 			
 			mImage.copyTo(mImage2, true);
 			even=false;
@@ -177,43 +181,32 @@ public class Calculator {
 	 * @return 			The metric of change between the images
 	 * @throws IOException 
 	 */
-	public float compareImages(ClearCLProgram calc, ClearCLProgram noiseClean, int lSize)
+	public float compareImages(ClearCLProgram calc, ClearCLProgram noiseClean)
 	{
-		
-		
-		if (!filled)
-		{
-			System.out.println("Calculator is not set up");
-			return 0f;
-		}
-		// creates a temporary image to store the pixel-wise difference
-		/**
-		if (mImage == null || mImage.getWidth() != lSize)
-		{
-			mImage =
-					mContext.createSingleChannelImage(ImageChannelDataType.Float,
-														lSize,
-														lSize,
-														lSize);
-		}*/
-		
+		System.out.println("calling squareDiff");
 		squareDiff();
-	    
+		
+		System.out.println("cleaning Noise now");
 		boolean noise = true;
 		if (noise)
 			{ cleanNoise(); }
 	    
+		System.out.println("cleaned Noise");
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    sumUpImageToBuffer();
 
+	    System.out.println("summed to Buffer");
 	    // fill Buffer
 	    OffHeapMemory lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
 
 	    // copy the array from the kernel to a buffer and sum everything up
 	    float lSum = sumUpBuffer(lBuffer);	
+	    
+	    System.out.println("Buffer summed up");
 	    lSum = (float) Math.sqrt(lSum);
 	    System.out.println("Difference is: "+ lSum);
 	    
+	    System.out.println("comparison done");
 		return lSum;
 	}
 
@@ -224,9 +217,11 @@ public class Calculator {
 	 */
 	public void sumUpImageToBuffer()
 	{
+		System.out.println("setting up the SumUp kernel");
 	    sum.setArgument("image", mImage);
 	    sum.setArgument("result", mEnd);
 	    sum.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
+	    System.out.println("running the SumUp kernel");
 	    sum.run(true);
 	}
 	
@@ -271,10 +266,12 @@ public class Calculator {
 	 */
 	public void squareDiff()
 	{
+		System.out.println("--> setting arguments");
 	    compare.setArgument("image1", mImage1);
 	    compare.setArgument("image2", mImage2);
 	    compare.setArgument("result", mImage);
 	    compare.setGlobalSizes(mImage1);
+	    System.out.println("--> running compare");
 	    compare.run(true);
 	}
 	

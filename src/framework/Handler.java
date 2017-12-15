@@ -122,7 +122,7 @@ public class Handler implements timeStepAdapter{
 	public void processImage(ClearCLImage image, float time, float step)
 	{	
 		//System.out.println(image.getHeight()+" // "+(int)image.getHeight());
-		float diff = mCalc.cacheAndCompare(image, (int)image.getHeight());
+		float diff = mCalc.cacheAndCompare(image);
 		if (mCalc.filled)
 		{
 			System.out.println("diff= "+diff);
