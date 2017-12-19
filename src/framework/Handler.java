@@ -130,7 +130,7 @@ public class Handler implements timeStepAdapter{
 			System.out.println("metric= "+metric);
 			mTimeStepper.computeNextStep(metric, step);
 		
-			System.out.println("Timestep is: "+step);
+			System.out.println("Timestep is: "+mTimeStepper.mStep);
 		}
 	}
 }

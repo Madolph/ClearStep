@@ -99,7 +99,5 @@ public class TimeStepper {
 		
 		// over time, the step will get back to the original step
 		mStep =(mNeutralStep*mRollback) + (mStep*(1-mRollback));
-		
-		step = mStep;
 	}
 }
