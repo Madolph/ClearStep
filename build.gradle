@@ -197,7 +197,7 @@ dependencies
     compile ('net.clearvolume:clearcl:0.4.6')     {transitive= true; changing= true}
     
     // EasyPlot:
-    compile ('NeatoPlot:EasyPlot:unspecified') {transitive= true; changing= true}
+    compile ('NeatoPlot:EasyPlot:0.1.0-RH') {transitive= true; changing= true}
     
     // Clear*:
     compile ('net.clearvolume:clearvolume:[1.4.1, 1.5.0[')   {transitive= true; changing= true}
@@ -311,11 +311,11 @@ publishing {
     }
 }
 
-apply from: 'gradle/bintrayUpload.gradle'
 
 //***********************************************************************************
 // GIT HOOKS:
 
+apply from: 'gradle/bintrayUpload.gradle'
 apply from: 'gradle/install-git-hooks.gradle'
 
 
