@@ -131,7 +131,7 @@ public class HandlerDemo {
 	@Test
 	public void SimpleStepper() throws IOException, InterruptedException
 	{
-		ImageChannelDataType Datatype = ImageChannelDataType.UnsignedInt16;
+		ImageChannelDataType Datatype = ImageChannelDataType.Float;
 		//ImageChannelDataType Datatype = ImageChannelDataType.Float;
 		
 		Handler lHandler = new Handler(null, Datatype);

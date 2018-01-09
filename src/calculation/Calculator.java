@@ -25,12 +25,12 @@ public class Calculator {
 	/**
 	 * The first image that is stored by the calculator
 	 */
-	ClearCLImage mImage1=null;
+	public ClearCLImage mImage1=null;
 	
 	/**
 	 * The second image that is stored by the calculator
 	 */
-	ClearCLImage mImage2=null;
+	public ClearCLImage mImage2=null;
 	
 	/**
 	 * The "Image" that stores the values of calculation
@@ -78,9 +78,7 @@ public class Calculator {
 	 */
 	ClearCLContext mContext;
 	
-	Setable mResult = new Setable();
-	
-	float mResultSmooth;
+	public float mResult;
 
 	/**
 	 * constructs a Calculator
@@ -120,23 +118,17 @@ public class Calculator {
 	{
 		convert(lImage);
 		float result = 0;
-		CachePic();
+		cachePic();
 		if (filled)
 		{ 
 			System.out.println("Calc is filled");
-			result = compareImages(calcProgram, noiseCleaner); 
+			result = compareImages(); 
 			System.out.println("images are compared");
 		}
-		if (mResult.set)
-		{
-			mResult.val = mResult.val*mResultSmooth+result*(1-mResultSmooth);
-		}
-		else
-		{
-			mResult.val=result;
-			mResult.set=true;
-		}
-		return mResult.val;
+		
+		mResult = result;
+		
+		return mResult;
 	}
 	
 	/**
@@ -146,7 +138,7 @@ public class Calculator {
 	 * @param lContext	The OpenCL-Context
 	 * @param lSize		The image-size to initialize an empty image if necessary
 	 */
-	public void CachePic()
+	public void cachePic()
 	{
 		if (!even)
 		{
@@ -181,7 +173,7 @@ public class Calculator {
 	 * @return 			The metric of change between the images
 	 * @throws IOException 
 	 */
-	public float compareImages(ClearCLProgram calc, ClearCLProgram noiseClean)
+	public float compareImages()
 	{
 		System.out.println("calling squareDiff");
 		squareDiff();
@@ -189,7 +181,7 @@ public class Calculator {
 		System.out.println("cleaning Noise now");
 		boolean noise = true;
 		if (noise)
-			{ cleanNoise(); }
+			{ cleanNoise(0); }
 	    
 		System.out.println("cleaned Noise");
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
@@ -230,33 +222,37 @@ public class Calculator {
 	 * and will be overwritten here)
 	 * @param lProgram
 	 */
-	public void cleanNoise()
+	public void cleanNoise(int sweeps)
 	{
-		clean.setArgument("image1", mImage);
-		if (even)
-			{ clean.setArgument("cache", mImage2); }
-		else
-			{ clean.setArgument("cache", mImage1); }
-		clean.setGlobalSizes(mImage);
-		clean.run(true);
-		
-		//do another sweep so that mImage is the computational result again
-		
-		if (even)
-		{ 	clean.setArgument("image1", mImage2); }
-		else
-		{ 	clean.setArgument("image1", mImage1); }
-		clean.setArgument("cache", mImage);
-		
-		clean.setGlobalSizes(mImage);
-		clean.run(true);
-		
-		
-		/**
-		if (even)
-			{ mImage2.copyTo(mImage, true); }
-		else
-			{ mImage1.copyTo(mImage, true); } */
+		int i = 0;
+		while (i < sweeps)
+		{
+			clean.setArgument("image1", mImage);
+			if (even)
+				{ clean.setArgument("cache", mImage2); }
+			else
+				{ clean.setArgument("cache", mImage1); }
+			clean.setGlobalSizes(mImage);
+			clean.run(true);
+			
+			//do another sweep so that mImage is the computational result again
+			
+			/*if (even)
+			{ 	mImage2.copyTo(mImage, true); }
+			else
+			{ 	mImage1.copyTo(mImage, true); }*/
+			
+			
+			if (even)
+			{ 	clean.setArgument("image1", mImage2); }
+			else
+			{ 	clean.setArgument("image1", mImage1); }
+			clean.setArgument("cache", mImage);
+			
+			clean.setGlobalSizes(mImage);
+			clean.run(true);
+			i += 1;
+		}
 	}
 	
 	/**

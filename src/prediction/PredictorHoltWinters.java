@@ -102,7 +102,7 @@ public class PredictorHoltWinters extends Predictor {
 	public void setPlotValues()
 	{
 		average = SN/1000;
-		prediction = TN/100;
+		prediction = normTrend;
 	}
 	
 	/**
@@ -117,6 +117,8 @@ public class PredictorHoltWinters extends Predictor {
 			normTrend=0;
 		else
 			normTrend = TN/((SP+SN)/2);
+		
+		normTrend = normTrend;
 		
 		System.out.println("Trend is: "+TN+" normalized to: "+normTrend);
 		return normTrend;

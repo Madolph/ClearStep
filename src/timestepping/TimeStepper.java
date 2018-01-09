@@ -10,8 +10,6 @@ public class TimeStepper {
 	 */
 	public PredictorStDev mInfo= new PredictorStDev();
 	
-	Setable mStepSmooth = new Setable();
-	
 	boolean fluid;
 	
 	/**
@@ -37,14 +35,16 @@ public class TimeStepper {
 	/**
 	 * Determines how slowly the neutral step changes
 	 */
-	public float mRollback = (float) 0.01;
+	public float mRollback = (float) 0.1;
 	
 	/**
 	 * The currently chosen timestep
 	 */
 	public float mStep;
 	
-	public float smoothing = 0.9f;
+	Setable mStepSmooth = new Setable();
+	
+	public float smoothing = 0.75f;
 	
 	/**
 	 * Create a new Timestepper
@@ -83,7 +83,7 @@ public class TimeStepper {
 	{
 		mStep = step;
 		limitMetric(metric);
-		mStep=mNeutralStep+(-metric*mSpan);
+		mStep=mStep+(-metric*mSpan);
 		
 		limitStep();
 		
@@ -93,7 +93,9 @@ public class TimeStepper {
 			mStepSmooth.set= true;
 		}
 		else 
+		{
 			mStepSmooth.val = mStepSmooth.val*(smoothing)+mStep*(1-smoothing);
+		}
 			
 		mStep = mStepSmooth.val;	
 		
