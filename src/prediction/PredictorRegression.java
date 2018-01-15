@@ -10,7 +10,11 @@ import framework.Setable;
  * saves a value to a memory of the last 10 values and computes
  * a measure of current trend of the values
  */
-public class PredictorRegression extends Predictor {
+public class PredictorRegression 	extends 
+									Predictor
+									implements
+									PredictorInterface
+{
 	
 	/**
 	 * An Array that saves the last 10 deviations
@@ -87,7 +91,7 @@ public class PredictorRegression extends Predictor {
 		if (mAvgOffset.set)
 			{ mAvgOffset.val = mAvgOffset.val*mOffsetSmooth+mCurrOffset*(1-mOffsetSmooth); }
 		else
-			{ mAvgOffset.val = mCurrOffset; }
+			{ mAvgOffset.val = mCurrOffset; } // need to be set true for smoothing to happen
 		
 		setPlotValues();
 		System.out.println("Sigma is: "+mCurrOffset+" / StDev: "+mRMSE);

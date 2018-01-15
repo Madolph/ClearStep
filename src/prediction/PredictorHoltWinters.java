@@ -1,6 +1,10 @@
 package prediction;
 
-public class PredictorHoltWinters extends Predictor {
+public class PredictorHoltWinters 	extends 
+									Predictor
+									implements
+									PredictorInterface
+{
 
 	/**
 	 * Entry-new
@@ -117,8 +121,6 @@ public class PredictorHoltWinters extends Predictor {
 			normTrend=0;
 		else
 			normTrend = TN/((SP+SN)/2);
-		
-		normTrend = normTrend;
 		
 		System.out.println("Trend is: "+TN+" normalized to: "+normTrend);
 		return normTrend;

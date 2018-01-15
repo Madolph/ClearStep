@@ -1,14 +1,8 @@
 package timestepping;
 
 import framework.Setable;
-import prediction.PredictorStDev;
 
 public class TimeStepper {
-	
-	/**
-	 * The Memory that stores the deviations and their stochastic values
-	 */
-	public PredictorStDev mInfo= new PredictorStDev();
 	
 	boolean fluid;
 	
@@ -44,7 +38,7 @@ public class TimeStepper {
 	
 	Setable mStepSmooth = new Setable();
 	
-	public float smoothing = 0.75f;
+	public float smoothing = 0.25f;
 	
 	/**
 	 * Create a new Timestepper

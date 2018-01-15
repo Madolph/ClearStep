@@ -12,7 +12,6 @@ import clearcl.ClearCLProgram;
 import clearcl.enums.ImageChannelDataType;
 import coremem.enums.NativeTypeEnum;
 import coremem.offheap.OffHeapMemory;
-import framework.Setable;
 
 /**
  * This class can store two images and computes a metric for pixel-wise difference between the two
@@ -20,7 +19,9 @@ import framework.Setable;
  * @author Raddock
  *
  */
-public class Calculator {
+public class Calculator	implements
+						CalculatorInterface
+{
 	
 	/**
 	 * The first image that is stored by the calculator
@@ -181,7 +182,7 @@ public class Calculator {
 		System.out.println("cleaning Noise now");
 		boolean noise = true;
 		if (noise)
-			{ cleanNoise(0); }
+			{ cleanNoise(1); }
 	    
 		System.out.println("cleaned Noise");
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
@@ -237,20 +238,21 @@ public class Calculator {
 			
 			//do another sweep so that mImage is the computational result again
 			
-			/*if (even)
+			if (even)
 			{ 	mImage2.copyTo(mImage, true); }
 			else
-			{ 	mImage1.copyTo(mImage, true); }*/
+			{ 	mImage1.copyTo(mImage, true); }
 			
 			
-			if (even)
+			/*if (even)
 			{ 	clean.setArgument("image1", mImage2); }
 			else
 			{ 	clean.setArgument("image1", mImage1); }
 			clean.setArgument("cache", mImage);
 			
 			clean.setGlobalSizes(mImage);
-			clean.run(true);
+			clean.run(true);*/
+			
 			i += 1;
 		}
 	}

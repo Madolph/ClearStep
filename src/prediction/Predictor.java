@@ -1,6 +1,7 @@
 package prediction;
 
-public abstract class Predictor {
+public abstract class Predictor implements 
+								PredictorInterface {
 	
 	public float value;
 	public float prediction;
@@ -8,9 +9,6 @@ public abstract class Predictor {
 	
 	public abstract float predict(float value, float time);
 	
-	public void setPlotValues()
-	{
-		
-	}
+	public abstract void setPlotValues();
 
 }

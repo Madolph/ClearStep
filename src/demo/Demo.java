@@ -16,9 +16,7 @@ import org.junit.Test;
 
 import clearcl.ClearCLImage;
 import clearcl.enums.ImageChannelDataType;
-import clearcl.viewer.ClearCLImageViewer;
 import framework.Handler;
-import plotting.PlotterXY;
 import simulation.Simulator;
 
 public class Demo {
@@ -31,9 +29,9 @@ public class Demo {
 		
 		Handler lHandler = new Handler(null, Datatype);
 		
-		int lSizex = 64;
-		int lSizey = 64;
-		int lSizez = 64;
+		int lSizex = 256;
+		int lSizey = 256;
+		int lSizez = 256;
 		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(Datatype, lSizex, lSizey, lSizez);
 		float[][][] lImage2 = new float[lSizex+2][lSizey+2][lSizez+2];
 		  
@@ -46,8 +44,9 @@ public class Demo {
 		
 		lHandler.mCalc.convert(lImage);
 		
-		long runTime = System.currentTimeMillis();
 		lHandler.mCalc.mImage1=lHandler.mContext.createSingleChannelImage(Datatype, lSizex, lSizey, lSizez);
+		
+		long runTime = System.currentTimeMillis();
 		lHandler.mCalc.cleanNoise(1);
 		runTime = runTime-System.currentTimeMillis();
 		System.out.println("---------->runTime1 is:"+runTime*-1);
@@ -131,17 +130,17 @@ public class Demo {
 	@Test
 	public void noiseTest() throws IOException, InterruptedException
 	{
-		ImageChannelDataType Datatype = ImageChannelDataType.UnsignedInt16;
+		ImageChannelDataType Datatype = ImageChannelDataType.Float;
 		//ImageChannelDataType Datatype = ImageChannelDataType.Float;
 		
 		Handler lHandler = new Handler(null, Datatype);
 		
 		Simulator lSim = new Simulator(Datatype, lHandler.mContext);
 		
-		PlotterXY Plotter = new PlotterXY(1);
+		/*PlotterXY Plotter = new PlotterXY(1);
 		String[] Titles = new String[1];
 		Titles[0] = "Root-Square-Error";
-		//Plotter.initializePlotter(lHandler.mFxOn, "Noise-demo", "No Handling", "time [s]", Titles, 1000, 1000);
+		Plotter.initializePlotter(lHandler.mFxOn, "Noise-demo", "No Handling", "time [s]", Titles, 1000, 1000);*/
 		
 		int lSize = 256;
 		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(Datatype, lSize, lSize, lSize);
@@ -161,7 +160,7 @@ public class Demo {
 			float step = 1000;
 			System.out.println("current time is: "+time);
 			  
-			lSim.generatePic(time%9000, lImage, lSize, false);
+			lSim.generatePic(time%9000, lImage, lSize, true);
 			
 			lHandler.mCalc.convert(lImage);
 			lHandler.mCalc.cachePic();

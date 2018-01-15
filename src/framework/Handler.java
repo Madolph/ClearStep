@@ -15,10 +15,10 @@ import clearcl.enums.ImageChannelDataType;
 import prediction.Predictor;
 import prediction.PredictorHoltWinters;
 import prediction.PredictorRegression;
-import prediction.PredictorStDev;
 import timestepping.TimeStepper;
 
-public class Handler implements timeStepAdapter{
+public class Handler 	implements 
+						timeStepAdapter{
 	
 	/**
 	 * The Calculator used for the Test
@@ -70,9 +70,6 @@ public class Handler implements timeStepAdapter{
 		
 		switch (Pred)
 		{
-		case "StDev":
-			mPred = new PredictorStDev();
-			break;
 		case "HoltWinters":
 			mPred = new PredictorHoltWinters();
 			break;

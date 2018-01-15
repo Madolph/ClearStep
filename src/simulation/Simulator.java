@@ -9,6 +9,7 @@ import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
 import clearcl.ClearCLProgram;
 import clearcl.enums.ImageChannelDataType;
+import coremem.offheap.OffHeapMemory;
 
 /**
  * Simulates a simple moving Dot
@@ -75,28 +76,51 @@ public class Simulator {
 	{ 
 	    computePosition(time);
 	    Random lRandom = new Random();
-	    float random = 0;
-	    
-	    if (noise)
-	    		{ random = (float)16.807*(lRandom.nextFloat()); }
-	    
-	    boolean vibrate = false;
-	    
-	    float vibration = 0;
-	    
-	    if (vibrate)
-	    		{ vibration = (lRandom.nextFloat()-0.5f)*4; }
 	    
 	    sim = simulation.createKernel("noisySphere");
 	    sim.setGlobalSizes(lImage1);
 	    sim.setArgument("image", lImage1);
 	    sim.setArgument("cx", ((lSize/2)+mPosition[0]));
-	    sim.setArgument("cy", ((lSize/2)+mPosition[1])+vibration);
+	    sim.setArgument("cy", ((lSize/2)+mPosition[1]));
 	    sim.setArgument("cz", ((lSize/2)+mPosition[2]));
 	    sim.setArgument("r", 0.25f);
-	    sim.setArgument("p1", random);
 	    
 	    sim.run(true);   
+	    
+	    //ByteBuffer lBuffer = ByteBuffer.allocate(lSize*lSize*lSize*4);
+	    
+	    OffHeapMemory lMem = OffHeapMemory.allocateFloats(lSize*lSize*lSize);
+	    
+	    System.out.println("Buffersize: "+lSize*lSize*lSize);
+	    
+	    System.out.println("Buffersize: "+lMem.getSizeInBytes());
+	    
+	    if (noise)
+	    {
+	    	lImage1.writeTo(lMem, true);
+	    	
+	    	System.out.println("image got pasted");
+	    	
+	    	for (int i=0;i<lMem.getSizeInBytes()/4;i++)
+	    	{
+	    		float val = lMem.getFloatAligned(i);
+	    		val = val + (lRandom.nextFloat()*5);
+	    		lMem.setFloatAligned(i, val);
+	    	}
+	    	
+	    	/*
+	    	lImage1.writeTo(lBuffer, true);
+	    	for (int i=0;i<lBuffer.capacity();i++)
+	    	{
+	    		float val = lBuffer.get(i);
+	    		val = val + (lRandom.nextFloat()*5);
+	    		lBuffer.put(i, (byte)val);
+	    	}*/
+	    }
+	    
+	    System.out.println("loop finished");
+	    
+	    lImage1.readFrom(lMem, true);
 	}
 	
 	/**
