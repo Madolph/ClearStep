@@ -22,6 +22,9 @@ import coremem.offheap.OffHeapMemory;
 public class Calculator	implements
 						CalculatorInterface
 {
+	public String mValues1="uncleaned: ";
+	
+	public String mValues2="cleaned: ";
 	
 	/**
 	 * The first image that is stored by the calculator
@@ -176,31 +179,38 @@ public class Calculator	implements
 	 */
 	public float compareImages()
 	{
-		System.out.println("calling squareDiff");
 		squareDiff();
-		
-		System.out.println("cleaning Noise now");
-		boolean noise = true;
-		if (noise)
-			{ cleanNoise(1); }
+		sumUpImageToBuffer();
 	    
-		System.out.println("cleaned Noise");
-	    // runs the kernel for summing up the "difference-Map" block-wise into an array
-	    sumUpImageToBuffer();
-
-	    System.out.println("summed to Buffer");
 	    // fill Buffer
 	    OffHeapMemory lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
 
 	    // copy the array from the kernel to a buffer and sum everything up
-	    float lSum = sumUpBuffer(lBuffer);	
+	    float lSum1 = sumUpBuffer(lBuffer);
 	    
-	    System.out.println("Buffer summed up");
-	    lSum = (float) Math.sqrt(lSum);
-	    System.out.println("Difference is: "+ lSum);
+	    lSum1 = (float) Math.sqrt(lSum1);
+		
+		mValues1=mValues1+lSum1+" ";
+		
+		
+		boolean noise = true;
+		if (noise)
+			{ cleanNoise(1); }
+		
+	    // runs the kernel for summing up the "difference-Map" block-wise into an array
+	    sumUpImageToBuffer();
 	    
-	    System.out.println("comparison done");
-		return lSum;
+	    // fill Buffer
+	    lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
+
+	    // copy the array from the kernel to a buffer and sum everything up
+	    float lSum2 = sumUpBuffer(lBuffer);
+	    
+	    lSum2 = (float) Math.sqrt(lSum2);
+	    
+	    mValues2=mValues2+lSum2+" ";
+	    
+		return lSum2;
 	}
 
 	/**

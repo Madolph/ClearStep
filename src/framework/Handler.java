@@ -1,6 +1,12 @@
 package framework;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 import Kernels.KernelTest;
 import calculation.Calculator;
@@ -128,6 +134,24 @@ public class Handler 	implements
 			mTimeStepper.computeNextStep(metric, step);
 		
 			System.out.println("Timestep is: "+mTimeStepper.mStep);
+		}
+		
+		List<String> lines1 = Arrays.asList(mCalc.mValues1);
+		Path file1 = Paths.get("DataRaw.txt");
+		try {
+			Files.write(file1, lines1, Charset.forName("UTF-8"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		List<String> lines2 = Arrays.asList(mCalc.mValues2);
+		Path file2 = Paths.get("DataClean.txt");
+		try {
+			Files.write(file2, lines2, Charset.forName("UTF-8"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
