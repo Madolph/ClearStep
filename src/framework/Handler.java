@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import Kernels.KernelTest;
+import Kernels.KernelDemo;
 import calculation.Calculator;
 import clearcl.ClearCL;
 import clearcl.ClearCLContext;
@@ -95,7 +95,7 @@ public class Handler 	implements
 	
 	public ClearCLProgram createCalcProgram(ImageChannelDataType DataType) throws IOException
 	{
-		calculations = mContext.createProgram(KernelTest.class, "Calculator.cl");
+		calculations = mContext.createProgram(KernelDemo.class, "Calculator.cl");
 		switch (DataType)
 		{
 		case Float: 
@@ -116,7 +116,7 @@ public class Handler 	implements
 	
 	public ClearCLProgram createNoiseHandlerProgram() throws IOException
 	{
-		noiseCleaner= mContext.createProgram(KernelTest.class, "Noise.cl");
+		noiseCleaner= mContext.createProgram(KernelDemo.class, "Noise.cl");
 		noiseCleaner.buildAndLog();
 		return noiseCleaner;
 		

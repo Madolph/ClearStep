@@ -3,7 +3,7 @@ package simulation;
 import java.io.IOException;
 import java.util.Random;
 
-import Kernels.KernelTest;
+import Kernels.KernelDemo;
 import clearcl.ClearCLContext;
 import clearcl.ClearCLImage;
 import clearcl.ClearCLKernel;
@@ -43,7 +43,7 @@ public class Simulator {
 	
 	public void createSimProgram() throws IOException
 	{
-		simulation=mContext.createProgram(KernelTest.class, "Simulator.cl");
+		simulation=mContext.createProgram(KernelDemo.class, "Simulator.cl");
 		switch (mDataType)
 		{
 		case Float:

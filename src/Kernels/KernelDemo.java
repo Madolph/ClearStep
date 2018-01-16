@@ -13,7 +13,7 @@ import framework.Setable;
 import org.junit.Test;
 import simulation.Simulator;
 
-public class KernelTest {
+public class KernelDemo {
 	
 	
 	/**
@@ -23,7 +23,7 @@ public class KernelTest {
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	@Test
+	/*@Test
 	public void TestConvert() throws InterruptedException, IOException
 	{	
 		Handler lHandler = new Handler(null, ImageChannelDataType.UnsignedInt16);
@@ -61,7 +61,7 @@ public class KernelTest {
 		lSim2.generatePic(0, lImage2, lSize, true);
 		
 		lViewImage.waitWhileShowing();
-	}
+	}*/
 	
 	@Test
 	public void testDeepShallow()
