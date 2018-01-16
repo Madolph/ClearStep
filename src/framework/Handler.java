@@ -87,9 +87,9 @@ public class Handler 	implements
 			break;
 		}
 		// for our little demo
-		mTimeStepper = new TimeStepper(1f, 0.5f, 2f, 0.1f);
+		//mTimeStepper = new TimeStepper(1f, 0.5f, 2f, 0.1f);
 		//reasonable for the microscope
-		//mTimeStepper = new TimeStepper(60f, 20f, Float.MAX_VALUE, 0.1f);
+		mTimeStepper = new TimeStepper(90f, 30f, 150f, 30f);
 		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram());
 	}
 	
