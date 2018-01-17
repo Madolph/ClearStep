@@ -22,22 +22,29 @@ import coremem.offheap.OffHeapMemory;
 public class Calculator	implements
 						CalculatorInterface
 {
+	
+	/**
+	 * created to assembe a String for a simple data-output
+	 */
 	public String mValues1="uncleaned: ";
 	
+	/**
+	 * created to assembe a String for a simple data-output
+	 */
 	public String mValues2="cleaned: ";
 	
 	/**
-	 * The first image that is stored by the calculator
+	 * Image Slot 1 for caching of fused images
 	 */
 	public ClearCLImage mImage1=null;
 	
 	/**
-	 * The second image that is stored by the calculator
+	 * Image Slot 2 for caching of fused images
 	 */
 	public ClearCLImage mImage2=null;
 	
 	/**
-	 * The "Image" that stores the values of calculation
+	 * Image slot mainly used for computational purpose
 	 */
 	public ClearCLImage mImage;
 	

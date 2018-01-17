@@ -23,7 +23,7 @@ public class KernelDemo {
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	/*@Test
+	@Test
 	public void TestConvert() throws InterruptedException, IOException
 	{	
 		Handler lHandler = new Handler(null, ImageChannelDataType.UnsignedInt16);
@@ -34,7 +34,7 @@ public class KernelDemo {
 		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(ImageChannelDataType.UnsignedInt16, lSize, lSize, lSize);
 		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage, "converted to float");
 		
-		lSim.generatePic(0, lImage, lSize, true);
+		lSim.generatePic(0, lImage, lSize, false);
 		lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
 		
 		Thread.sleep(5000);
@@ -61,7 +61,7 @@ public class KernelDemo {
 		lSim2.generatePic(0, lImage2, lSize, true);
 		
 		lViewImage.waitWhileShowing();
-	}*/
+	}
 	
 	@Test
 	public void testDeepShallow()
