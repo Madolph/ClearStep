@@ -29,7 +29,7 @@ public class TimeStepper {
 	/**
 	 * Determines how slowly the neutral step changes
 	 */
-	public float mRollback = (float) 0.1;
+	public float mRollback = (float) 0.05;
 	
 	/**
 	 * The currently chosen timestep
