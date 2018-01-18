@@ -1,6 +1,10 @@
 package demo;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import clearcl.ClearCLImage;
 import clearcl.enums.ImageChannelDataType;
@@ -216,5 +220,53 @@ public class HandlerDemo {
 			Thread.sleep(1000);
 		}
 		
+	}
+	
+	@Test
+	public void runStepperwithTxt() throws IOException
+	{
+		Handler lHandler = new Handler(null, ImageChannelDataType.Float);
+		
+		Path path = FileSystems.getDefault().getPath("./testTxT.txt");
+		byte[] encoded = Files.readAllBytes(path);
+		String text = new String(encoded, "UTF-8");
+		String[] numbers = text.split(" ");
+		float[] values = new float[numbers.length-1];
+		for (int i=1;i<numbers.length;i++)
+		{
+			values[i-1]=Float.parseFloat(numbers[i]);
+		}
+		
+		float time=0;
+		float setStep=90000;
+		String results = "";
+		
+		
+		
+		for (int i=0;i<values.length;i++)
+		{
+			time = time +setStep;
+			float metric = lHandler.mPred.predict(values[i], time);
+			lHandler.mTimeStepper.computeNextStep(metric, setStep);
+			results = results+lHandler.mTimeStepper.mStep+" ";
+		}
+		
+		System.out.println(results);
+		
+		
+	}
+	
+	@Test
+	public void readTxT() throws IOException
+	{
+		Path path = FileSystems.getDefault().getPath("./testTxT.txt");
+		byte[] encoded = Files.readAllBytes(path);
+		String text = new String(encoded, "UTF-8");
+		System.out.println(text);
+		String[] numbers = text.split(" ");
+		for (int i=0;i<numbers.length;i++)
+		{
+			System.out.println(numbers[i]);
+		}
 	}
 }
