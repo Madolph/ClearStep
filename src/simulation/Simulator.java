@@ -89,14 +89,14 @@ public class Simulator {
 	    
 	    //ByteBuffer lBuffer = ByteBuffer.allocate(lSize*lSize*lSize*4);
 	    
-	    OffHeapMemory lMem = OffHeapMemory.allocateFloats(lSize*lSize*lSize);
-	    
-	    System.out.println("Buffersize: "+lSize*lSize*lSize);
-	    
-	    System.out.println("Buffersize: "+lMem.getSizeInBytes());
-	    
 	    if (noise)
 	    {
+	    	OffHeapMemory lMem = OffHeapMemory.allocateFloats(lSize*lSize*lSize);
+	    
+	    	System.out.println("Buffersize: "+lSize*lSize*lSize);
+	    
+	    	System.out.println("Buffersize: "+lMem.getSizeInBytes());
+
 	    	lImage1.writeTo(lMem, true);
 	    	
 	    	System.out.println("image got pasted");
@@ -107,20 +107,11 @@ public class Simulator {
 	    		val = val + (lRandom.nextFloat()*5);
 	    		lMem.setFloatAligned(i, val);
 	    	}
-	    	
-	    	/*
-	    	lImage1.writeTo(lBuffer, true);
-	    	for (int i=0;i<lBuffer.capacity();i++)
-	    	{
-	    		float val = lBuffer.get(i);
-	    		val = val + (lRandom.nextFloat()*5);
-	    		lBuffer.put(i, (byte)val);
-	    	}*/
-	    }
 	    
 	    System.out.println("loop finished");
 	    
 	    lImage1.readFrom(lMem, true);
+	    }
 	}
 	
 	/**
