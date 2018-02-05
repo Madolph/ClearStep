@@ -60,7 +60,7 @@ public class Handler 	implements
 	public Handler(ClearCLContext Context, ImageChannelDataType DataType) throws IOException
 	{
 		// TODO add option to choose the predictor
-		String Pred = "Regression";
+		String Pred = "HoltWinters";
 		
 		// create new Context if null was given
 		if (Context == null)
@@ -87,9 +87,9 @@ public class Handler 	implements
 			break;
 		}
 		// for our little demo
-		//mTimeStepper = new TimeStepper(1f, 0.5f, 2f, 0.1f);
+		mTimeStepper = new TimeStepper(1f, 0.5f, 2f, 0.1f);
 		//reasonable for the microscope
-		mTimeStepper = new TimeStepper(90f, 30f, 150f, 30f);
+		//mTimeStepper = new TimeStepper(90f, 30f, 150f, 30f);
 		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram());
 	}
 	
@@ -136,7 +136,7 @@ public class Handler 	implements
 			System.out.println("Timestep is: "+mTimeStepper.mStep);
 		}
 		
-		List<String> lines1 = Arrays.asList(mCalc.mValues1);
+		/*List<String> lines1 = Arrays.asList(mCalc.mValues1);
 		Path file1 = Paths.get("DataRaw.txt");
 		try {
 			Files.write(file1, lines1, Charset.forName("UTF-8"));
@@ -152,6 +152,6 @@ public class Handler 	implements
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 	}
 }

@@ -1,10 +1,15 @@
 package demo;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
 
 import clearcl.ClearCLImage;
 import clearcl.enums.ImageChannelDataType;
@@ -15,8 +20,6 @@ import fastfuse.stackgen.StackGenerator;
 import fastfuse.tasks.AverageTask;
 import fastfuse.tasks.MemoryReleaseTask;
 import framework.Handler;
-
-import org.junit.Test;
 
 import plotting.PlotterXY;
 import prediction.PredictorHoltWinters;
@@ -158,6 +161,11 @@ public class HandlerDemo {
 		float[] data = new float[3];
 		float Duration = 120;
 		
+		String Steps = "Steps: ";
+		String Track = "Track: ";
+		String Metric = "Metric: ";
+		String Values = "Values: ";
+		
 		while (time<(Duration*1000))  
 		{
 			float currStep = lHandler.mTimeStepper.mStep;
@@ -172,15 +180,33 @@ public class HandlerDemo {
 			{
 				compPic.setImage(lHandler.mCalc.mImage);
 				
-				data[0] = step/200;
+				data[0] = lHandler.mTimeStepper.mStep/200;
+				Steps = Steps+lHandler.mTimeStepper.mStep+" ";
+				
 				data[1] = lHandler.mPred.prediction;
+				Metric = Metric+lHandler.mPred.prediction+" ";
+				
 				data[2] = lHandler.mPred.average;
+				Track = Track+lHandler.mPred.average+" ";
+				
+				Values = Values+lHandler.mPred.value+" ";
 				Plotter.plotFullDataSetXY(time, data);
 			}
 			
 			time += currStep;
-			Thread.sleep((long) currStep);
+			Thread.sleep((long) currStep/5);
 		}  
+		
+		
+		List<String> lines1 = Arrays.asList(Steps, Metric, Track, Values);
+		Path file1 = Paths.get("SimData.txt");
+		try {
+			Files.write(file1, lines1, Charset.forName("UTF-8"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		lViewImage.waitWhileShowing();
 	}
 	
@@ -227,20 +253,21 @@ public class HandlerDemo {
 	{
 		Handler lHandler = new Handler(null, ImageChannelDataType.Float);
 		
-		Path path = FileSystems.getDefault().getPath("./testTxT.txt");
+		Path path = FileSystems.getDefault().getPath("./Data.txt");
 		byte[] encoded = Files.readAllBytes(path);
 		String text = new String(encoded, "UTF-8");
 		String[] numbers = text.split(" ");
 		float[] values = new float[numbers.length-1];
 		for (int i=1;i<numbers.length;i++)
 		{
-			values[i-1]=Float.parseFloat(numbers[i]);
+			values[values.length-i]=Float.valueOf(numbers[i]);
 		}
 		
 		float time=0;
 		float setStep=90000;
-		String results = "";
-		
+		String results = "step: ";
+		String level = "niveau: ";
+		int niveau=10;
 		
 		
 		for (int i=0;i<values.length;i++)
@@ -249,9 +276,41 @@ public class HandlerDemo {
 			float metric = lHandler.mPred.predict(values[i], time);
 			lHandler.mTimeStepper.computeNextStep(metric, setStep);
 			results = results+lHandler.mTimeStepper.mStep+" ";
+			
+			if (lHandler.mTimeStepper.mStep<89000&&lHandler.mTimeStepper.mStep>91000)
+			{
+				;
+			}
+			if (lHandler.mTimeStepper.mStep>91000)
+			{
+				niveau=niveau+1;
+			}
+			if (lHandler.mTimeStepper.mStep<89000)
+			{
+				niveau=niveau-1;
+			}
+			if (lHandler.mTimeStepper.mStep<85000)
+			{
+				niveau=niveau-1;
+			}
+			if (lHandler.mTimeStepper.mStep>95000)
+			{
+				niveau=niveau+1;
+			}
+			
+			level = level+niveau+" ";
 		}
 		
 		System.out.println(results);
+		
+		List<String> lines1 = Arrays.asList(results, level);
+		Path file1 = Paths.get("DataProcessed.txt");
+		try {
+			Files.write(file1, lines1, Charset.forName("UTF-8"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		
 	}

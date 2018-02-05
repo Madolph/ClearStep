@@ -75,7 +75,6 @@ public class Simulator {
 	public void generatePic(float time, ClearCLImage lImage1, int lSize, boolean noise)
 	{ 
 	    computePosition(time);
-	    Random lRandom = new Random();
 	    
 	    sim = simulation.createKernel("noisySphere");
 	    sim.setGlobalSizes(lImage1);
@@ -91,6 +90,8 @@ public class Simulator {
 	    
 	    if (noise)
 	    {
+	    	Random lRandom = new Random();
+	    	
 	    	OffHeapMemory lMem = OffHeapMemory.allocateFloats(lSize*lSize*lSize);
 	    
 	    	System.out.println("Buffersize: "+lSize*lSize*lSize);

@@ -130,6 +130,11 @@ public class Calculator	implements
 		convert(lImage);
 		float result = 0;
 		cachePic();
+		
+		boolean noise = true;
+		if (noise)
+			{ cleanNoise(1); }
+		
 		if (filled)
 		{ 
 			System.out.println("Calc is filled");
@@ -187,35 +192,38 @@ public class Calculator	implements
 	public float compareImages()
 	{
 		squareDiff();
-		sumUpImageToBuffer();
+		
+		//sumUpImageToBuffer();
 	    
 	    // fill Buffer
-	    OffHeapMemory lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
+	    //OffHeapMemory lBuffer1 = OffHeapMemory.allocateFloats(mEnd.getLength());
 
 	    // copy the array from the kernel to a buffer and sum everything up
-	    float lSum1 = sumUpBuffer(lBuffer);
+	    //float lSum1 = sumUpBuffer(lBuffer1);
 	    
-	    lSum1 = (float) Math.sqrt(lSum1);
+	    //lSum1 = (float) Math.sqrt(lSum1);
 		
-		mValues1=mValues1+lSum1+" ";
+		//mValues1=mValues1+lSum1+" ";
 		
 		
-		boolean noise = true;
-		if (noise)
-			{ cleanNoise(1); }
+		//boolean noise = true;
+		//if (noise)
+			//{ cleanNoise(0); }
 		
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    sumUpImageToBuffer();
 	    
 	    // fill Buffer
-	    lBuffer = OffHeapMemory.allocateFloats(mEnd.getLength());
+	    OffHeapMemory lBuffer2 = OffHeapMemory.allocateFloats(mEnd.getLength());
 
 	    // copy the array from the kernel to a buffer and sum everything up
-	    float lSum2 = sumUpBuffer(lBuffer);
+	    float lSum2 = sumUpBuffer(lBuffer2);
 	    
 	    lSum2 = (float) Math.sqrt(lSum2);
 	    
-	    mValues2=mValues2+lSum2+" ";
+	    //mValues2=mValues2+lSum2+" ";
+	    
+	    mValues2 = lSum2+" ";
 	    
 		return lSum2;
 	}
@@ -245,20 +253,35 @@ public class Calculator	implements
 		int i = 0;
 		while (i < sweeps)
 		{
-			clean.setArgument("image1", mImage);
+			if (even)
+			{ clean.setArgument("image1", mImage1); }
+			else
+			{ clean.setArgument("image1", mImage2); }
+			
+			clean.setArgument("cache", mImage);
+			
+			clean.setGlobalSizes(mImage);
+			clean.run(true);
+			
+			/*clean.setArgument("image1", mImage);
 			if (even)
 				{ clean.setArgument("cache", mImage2); }
 			else
 				{ clean.setArgument("cache", mImage1); }
 			clean.setGlobalSizes(mImage);
-			clean.run(true);
+			clean.run(true);*/
 			
 			//do another sweep so that mImage is the computational result again
 			
+			clean.setArgument("image1", mImage);
+			
 			if (even)
-			{ 	mImage2.copyTo(mImage, true); }
+			{ clean.setArgument("cache", mImage1); }
 			else
-			{ 	mImage1.copyTo(mImage, true); }
+			{ clean.setArgument("cache", mImage2); }
+			
+			clean.setGlobalSizes(mImage);
+			clean.run(true);
 			
 			
 			/*if (even)

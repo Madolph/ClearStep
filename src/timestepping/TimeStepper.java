@@ -38,7 +38,7 @@ public class TimeStepper {
 	
 	Setable mStepSmooth = new Setable();
 	
-	public float smoothing = 0.25f;
+	public float smoothing = 0.5f;
 	
 	/**
 	 * Create a new Timestepper
@@ -57,12 +57,14 @@ public class TimeStepper {
 		mMinStep = minStep*1000;
 	}
 
-	public void limitMetric(float metric)
+	public float processMetric(float metric)
 	{
 		if (metric>1)
 			metric=1;
 		if (metric<-1)
 			metric=-1;
+		metric = metric*Math.abs(metric);
+		return metric;
 	}
 	
 	public void limitStep()
@@ -76,7 +78,7 @@ public class TimeStepper {
 	public void computeNextStep(float metric, float step)
 	{
 		mStep = step;
-		limitMetric(metric);
+		metric = processMetric(metric);
 		mStep=mStep+(-metric*mSpan);
 		
 		limitStep();

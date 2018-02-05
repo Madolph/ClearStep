@@ -85,17 +85,22 @@ public class PredictorRegression 	extends
 			// No deviation means Sigma has to be zero (would divide by 0 otherwise)
 			{ mCurrOffset = 0; }
 		else
-			//{ mCurrentSigma=((mDev[0][0]-mMean)/mStDev); }
-			{ mCurrOffset = (float)((mDev[0][0]-mSeriesLevel.val)/mRMSE); }
+			{
+			
+			//mCurrOffset = (float)((mDev[0][0]-(float)mRegress.predict((double)mDev[0][1]))/mRMSE);
+			//mCurrOffset /= 3;
+			mCurrOffset = (float)((mDev[0][0]-mSeriesLevel.val)/mRMSE);
+			}
+		//System.out.println("value is: "+mDev[0][0]+" and prediction would have been: "+mRegress.predict((double)mDev[0][1]));
 		
-		if (mAvgOffset.set)
+		/*if (mAvgOffset.set)
 			{ mAvgOffset.val = mAvgOffset.val*mOffsetSmooth+mCurrOffset*(1-mOffsetSmooth); }
 		else
-			{ mAvgOffset.val = mCurrOffset; } // need to be set true for smoothing to happen
+			{ mAvgOffset.val = mCurrOffset; }*/ // need to be set true for smoothing to happen
 		
 		setPlotValues();
 		System.out.println("Sigma is: "+mCurrOffset+" / StDev: "+mRMSE);
-		return mAvgOffset.val;
+		return mCurrOffset;
 	}
 	
 	/**
@@ -111,6 +116,7 @@ public class PredictorRegression 	extends
 			}
 	}
 	
+	
 	/**
 	 * clear the old regression, sets up a new one and calculates the root of the RMSE
 	 */
@@ -118,10 +124,12 @@ public class PredictorRegression 	extends
 		
 		mRegress.clear();
 		for (int i=0;i<mDev.length;i++)
-			{
-			mRegress.addData(mDev[i][1], mDev[i][0]);
-			}
+		{
+			mRegress.addData(mDev[i][1], mDev[i][0]);		
+		}
+		
 		mRMSE = (float)Math.sqrt(mRegress.getMeanSquareError());
+		
 	}
 	
 	/**
@@ -142,7 +150,8 @@ public class PredictorRegression 	extends
 	public void setPlotValues()
 	{
 		value = mDev[0][0];
-		prediction = mAvgOffset.val;
+		prediction = mCurrOffset;
+		//average = (float)mRegress.predict((double)mDev[0][1]);
 		average = mSeriesLevel.val;
 		System.out.println("value: "+value+" / prediction: "+prediction+" / average: "+average);
 	}

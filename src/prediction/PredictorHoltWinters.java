@@ -63,7 +63,7 @@ public class PredictorHoltWinters 	extends
 	@Override
 	public float predict(float value, float time)
 	{
-		adjustvalue(value, time);
+		value = adjustvalue(value, time);
 		
 		saveEntry(value);
 		
@@ -92,12 +92,13 @@ public class PredictorHoltWinters 	extends
 		return normTrend;
 	}
 	
-	public void adjustvalue(float value, float time) 
+	public float adjustvalue(float value, float time) 
 	{
 		System.out.println("last time was: "+lastTime);
 		value = value/(time-lastTime);
 		lastTime = time;
 		System.out.println("time is: "+lastTime);
+		return value;
 	}
 
 	/**
@@ -105,8 +106,9 @@ public class PredictorHoltWinters 	extends
 	 */
 	public void setPlotValues()
 	{
-		average = SN/1000;
+		average = SN;
 		prediction = normTrend;
+		value=EN;
 	}
 	
 	/**
@@ -120,9 +122,10 @@ public class PredictorHoltWinters 	extends
 		if ((SP+SN)/2==0)
 			normTrend=0;
 		else
-			normTrend = TN/((SP+SN)/2);
+			normTrend = TN/Math.abs((SP+SN)/2);
 		
 		System.out.println("Trend is: "+TN+" normalized to: "+normTrend);
+		normTrend *= 3;
 		return normTrend;
 	}
 	
