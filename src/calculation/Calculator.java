@@ -66,7 +66,7 @@ public class Calculator	implements
 	/**
 	 * Kernels
 	 */
-	ClearCLKernel compare, clean, sum, convert;
+	ClearCLKernel compare, clean, sum, convert, paste;
 	
 	/**
 	 * stores whether or not the calculator currently has two images stored
@@ -115,6 +115,7 @@ public class Calculator	implements
 		clean = noiseCleaner.createKernel("cleanNoise");
 		sum = calcProgram.createKernel("Sum3D");
 		convert = calcProgram.createKernel("convert");
+		paste = calcProgram.createKernel("paste");
 	}
 	
 	/** 
@@ -158,9 +159,10 @@ public class Calculator	implements
 	{
 		if (!even)
 		{
-			if (mImage1==null)
-				// creates an empty picture if the cache is null
-				{ mImage1 = mContext.createSingleChannelImage(mImage.getChannelDataType(), mImage.getDimensions()); }
+			if (mImage1 == null)
+			{
+				mImage1 = mContext.createSingleChannelImage(mImage.getChannelDataType(), mImage.getDimensions());
+			}
 					
 			mImage.copyTo(mImage1, true);
 			even=true;
@@ -168,9 +170,10 @@ public class Calculator	implements
 		}
 		else 
 		{
-			if (mImage2==null)
-				// creates an empty picture if the cache is null
-				{ mImage2 = mContext.createSingleChannelImage(mImage.getChannelDataType(), mImage.getDimensions()); }
+			if (mImage2 == null)
+			{
+				mImage2 = mContext.createSingleChannelImage(mImage.getChannelDataType(), mImage.getDimensions());
+			}
 			
 			mImage.copyTo(mImage2, true);
 			even=false;
@@ -178,6 +181,42 @@ public class Calculator	implements
 		}
 		if (mImage1 != null && mImage2 !=null)
 			{ filled = true; }
+	}
+	
+	public void resize()
+	{
+		long[] dim = mImage.getDimensions();
+		
+		long[] newDim = new long[dim.length];
+		
+		for (int i=0;i<dim.length;i++)
+			{ newDim[i]=dim[i]+(mReductionFactor - (dim[i] % mReductionFactor)); }
+		
+		if (even)
+		{ 
+			mImage2 = mContext.createSingleChannelImage(ImageChannelDataType.Float, newDim); 
+			mImage2.fill(0f, true, true);
+			paste.setArgument("oldDim", mImage);
+			paste.setArgument("newDim", mImage2);
+			paste.setGlobalSizes(dim);
+			paste.run(true);
+			mImage = mContext.createSingleChannelImage(ImageChannelDataType.Float, newDim);
+			mImage2.copyTo(mImage, true);
+		}
+		else
+		{ 
+			mImage1 = mContext.createSingleChannelImage(ImageChannelDataType.Float, newDim); 
+			mImage1.fill(0f, true, true);
+			paste.setArgument("oldDim", mImage);
+			paste.setArgument("newDim", mImage1);
+			paste.setGlobalSizes(dim);
+			paste.run(true);
+			mImage = mContext.createSingleChannelImage(ImageChannelDataType.Float, newDim);
+			mImage1.copyTo(mImage, true);
+		}
+		
+		
+		
 	}
 	
 	/**
@@ -193,22 +232,7 @@ public class Calculator	implements
 	{
 		squareDiff();
 		
-		//sumUpImageToBuffer();
-	    
-	    // fill Buffer
-	    //OffHeapMemory lBuffer1 = OffHeapMemory.allocateFloats(mEnd.getLength());
-
-	    // copy the array from the kernel to a buffer and sum everything up
-	    //float lSum1 = sumUpBuffer(lBuffer1);
-	    
-	    //lSum1 = (float) Math.sqrt(lSum1);
-		
-		//mValues1=mValues1+lSum1+" ";
-		
-		
-		//boolean noise = true;
-		//if (noise)
-			//{ cleanNoise(0); }
+		//resize();
 		
 	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    sumUpImageToBuffer();
@@ -238,6 +262,7 @@ public class Calculator	implements
 		System.out.println("setting up the SumUp kernel");
 	    sum.setArgument("image", mImage);
 	    sum.setArgument("result", mEnd);
+	    
 	    sum.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
 	    System.out.println("running the SumUp kernel");
 	    sum.run(true);
