@@ -4,6 +4,7 @@ build/
 .classpath
 .settings/*
 .gradle
+timelapse
 *.class
 .DS_Store
 hs_err_pid*

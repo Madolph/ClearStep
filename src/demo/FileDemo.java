@@ -30,13 +30,17 @@ public class FileDemo {
 		RawFileStackSource lLocalFileStackSource =
 				new RawFileStackSource(lStackRecycler);
 
-		lLocalFileStackSource.setLocation(new File("/Volumes/myersspimdata/XScope"), "2017-08-09-17-18-17-27-ZFishRun4On09.08.17");
+		lLocalFileStackSource.setLocation( new File("D:/workspace/Microscope/ClearStep") , "timelapse");
 
 		lLocalFileStackSource.update();
 		
-		ClearCLImage image = (ClearCLImage) lLocalFileStackSource.getStack(0);
+		int timepoints = (int) lLocalFileStackSource.getNumberOfStacks();
 		
-		Stepper.processImage(image, 0, 60);
+		for (int i=0;i<timepoints;i++)
+		{
+			float timestep = 60f;
+			Stepper.processImage((ClearCLImage) lLocalFileStackSource.getStack(0), i*timestep, timestep);
+		}
 		
 		lLocalFileStackSource.close();
 	}

@@ -53,7 +53,10 @@ void compare(__read_only image3d_t image1,
 
 __kernel
 void Sum3D (__read_only image3d_t image,
-            __global    float*    result) 
+            __global    float*    result,
+            int blockWidthX,
+            int blockWidthY,
+            int blockWidthZ) 
 {
   const int width   = get_image_width(image);
   const int height  = get_image_height(image);
@@ -67,23 +70,21 @@ void Sum3D (__read_only image3d_t image,
   const int nblocksy = get_global_size(1);
   const int nblocksz = get_global_size(2);
   
-  const int blockwidth   = width/nblocksx;
-  const int blockheight  = height/nblocksy;
-  const int blockdepth   = depth/nblocksz;
+  const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
   
   float sum = 0;
   
-  const int4 origin = (int4){x*blockwidth,y*blockheight,z*blockdepth,0};
+  const int4 origin = (int4){x*blockWidthX,y*blockWidthY,z*blockWidthZ,0};
   
-  for(int lz=0; lz<blockwidth; lz++)
+  for(int lz=0; lz<blockWidthZ; lz++)
   {
-    for(int ly=0; ly<blockheight; ly++)
+    for(int ly=0; ly<blockWidthY; ly++)
     {
-      for(int lx=0; lx<blockdepth; lx++)
+      for(int lx=0; lx<blockWidthX; lx++)
       {
         const int4 pos = origin + (int4){lx,ly,lz,0};
      
-        float value = read_imagef(image, pos).x;
+        float value = read_imagef(image, sampler, pos).x;
 
         sum = sum + value;
       }

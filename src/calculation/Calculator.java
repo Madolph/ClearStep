@@ -66,7 +66,7 @@ public class Calculator	implements
 	/**
 	 * Kernels
 	 */
-	ClearCLKernel compare, clean, sum, convert, paste;
+	ClearCLKernel compare, clean, sum, convert;
 	
 	/**
 	 * stores whether or not the calculator currently has two images stored
@@ -115,7 +115,6 @@ public class Calculator	implements
 		clean = noiseCleaner.createKernel("cleanNoise");
 		sum = calcProgram.createKernel("Sum3D");
 		convert = calcProgram.createKernel("convert");
-		paste = calcProgram.createKernel("paste");
 	}
 	
 	/** 
@@ -183,41 +182,6 @@ public class Calculator	implements
 			{ filled = true; }
 	}
 	
-	public void resize()
-	{
-		long[] dim = mImage.getDimensions();
-		
-		long[] newDim = new long[dim.length];
-		
-		for (int i=0;i<dim.length;i++)
-			{ newDim[i]=dim[i]+(mReductionFactor - (dim[i] % mReductionFactor)); }
-		
-		if (even)
-		{ 
-			mImage2 = mContext.createSingleChannelImage(ImageChannelDataType.Float, newDim); 
-			mImage2.fill(0f, true, true);
-			paste.setArgument("oldDim", mImage);
-			paste.setArgument("newDim", mImage2);
-			paste.setGlobalSizes(dim);
-			paste.run(true);
-			mImage = mContext.createSingleChannelImage(ImageChannelDataType.Float, newDim);
-			mImage2.copyTo(mImage, true);
-		}
-		else
-		{ 
-			mImage1 = mContext.createSingleChannelImage(ImageChannelDataType.Float, newDim); 
-			mImage1.fill(0f, true, true);
-			paste.setArgument("oldDim", mImage);
-			paste.setArgument("newDim", mImage1);
-			paste.setGlobalSizes(dim);
-			paste.run(true);
-			mImage = mContext.createSingleChannelImage(ImageChannelDataType.Float, newDim);
-			mImage1.copyTo(mImage, true);
-		}
-		
-		
-		
-	}
 	
 	/**
 	 * compares two images and responds with a metric that
@@ -262,6 +226,25 @@ public class Calculator	implements
 		System.out.println("setting up the SumUp kernel");
 	    sum.setArgument("image", mImage);
 	    sum.setArgument("result", mEnd);
+	    
+	    long[] realDim=mImage.getDimensions();
+	    int[] blockDim=new int[realDim.length];
+	    
+	    for (int i=0;i<realDim.length;i++)
+	    {
+	    	if (realDim[i]%mReductionFactor!=0)
+	    	{
+	    		blockDim[i]= ((int) realDim[i]/mReductionFactor)+1;
+	    	}
+	    	else
+	    	{
+	    		blockDim[i]= (int) realDim[i]/mReductionFactor;
+	    	}
+	    }
+	    
+	    sum.setArgument("blockWidthX", blockDim[0]);
+	    sum.setArgument("blockWidthY", blockDim[1]);
+	    sum.setArgument("blockWidthZ", blockDim[2]);
 	    
 	    sum.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
 	    System.out.println("running the SumUp kernel");

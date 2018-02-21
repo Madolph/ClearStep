@@ -152,7 +152,7 @@ public class HandlerDemo {
 		Titles[2] = "average";
 		Plotter.initializePlotter(lHandler.mFxOn, "Flummi-Demo", "Plot", "time", Titles, 1000, 1000);
 		
-		int lSize = 128;
+		int lSize = 126;
 		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(Datatype, lSize, lSize, lSize);
 		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage, "Flummi");
 		ClearCLImageViewer compPic = ClearCLImageViewer.view(lImage, "difference-map");
