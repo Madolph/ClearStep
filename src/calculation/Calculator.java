@@ -64,7 +64,7 @@ public class Calculator	implements
 	ClearCLProgram noiseCleaner;
 	
 	/**
-	 * Kernels
+	 * Kernels used by the calculator
 	 */
 	ClearCLKernel compare, clean, sum, convert;
 	
@@ -74,8 +74,7 @@ public class Calculator	implements
 	public boolean filled = false;
 
 	/**
-	 * specifies the amount of blocks created in the kernel that sums up
-	 * the computational image
+	 * specifies the amount of blocks created in the kernel that sums up our image into a buffer
 	 */
 	int mReductionFactor = 16;
 
@@ -85,18 +84,21 @@ public class Calculator	implements
 	public ClearCLBuffer mEnd;
 	
 	/**
-	 * The Context stored by the Calculator
+	 * The Context stored by the calculator
 	 */
 	ClearCLContext mContext;
 	
+	/**
+	 * The final result computed by the calculator
+	 */
 	public float mResult;
 
 	/**
-	 * constructs a Calculator
+	 * constructs the Calculator
 	 * 
-	 * @param pContext	the ClearCLContext
-	 * @param lCalc		the program for calculations
-	 * @param lNoise		the program to handle noise
+	 * @param pContext the ClearCLContext ClearStep runs on
+	 * @param lCalc the program for calculations
+	 * @param lNoise the program to handle noise
 	 */
 	public Calculator(ClearCLContext pContext, ClearCLProgram lCalc, ClearCLProgram lNoise) {
 		calcProgram = lCalc;
@@ -118,12 +120,11 @@ public class Calculator	implements
 	}
 	
 	/** 
-	 * saves an image to Cache and then compares two cached images, if possible
-	 * @param lImage
-	 * @param lProgram
-	 * @param lSize
-	 * @return
-	 * @throws IOException 
+	 * receives an image, converts it to float and cleans noise before caching it and
+	 * running calculations
+	 * 
+	 * @param lImage the image to be processed
+	 * @return the numeric result of the image comparison
 	 */
 	public float cacheAndCompare(ClearCLImage lImage)
 	{
@@ -148,14 +149,11 @@ public class Calculator	implements
 	}
 	
 	/**
-	 * receives an image and stores it into the Cache
-	 * 
-	 * @param image		The image received
-	 * @param lContext	The OpenCL-Context
-	 * @param lSize		The image-size to initialize an empty image if necessary
+	 * moves the converted image into the designated cache
 	 */
 	public void cachePic()
 	{
+		//determine the right cache slot
 		if (!even)
 		{
 			if (mImage1 == null)
@@ -178,6 +176,8 @@ public class Calculator	implements
 			even=false;
 			System.out.println("image2 set");
 		}
+		
+		//check if the cache is set for computation
 		if (mImage1 != null && mImage2 !=null)
 			{ filled = true; }
 	}
@@ -186,19 +186,11 @@ public class Calculator	implements
 	/**
 	 * compares two images and responds with a metric that
 	 * relates to the change between the two
-	 *
-	 * @param calc 	The OpenCL-Program
-	 * @param lSize 	The Size of the images
-	 * @return 			The metric of change between the images
-	 * @throws IOException 
 	 */
 	public float compareImages()
 	{
 		squareDiff();
 		
-		//resize();
-		
-	    // runs the kernel for summing up the "difference-Map" block-wise into an array
 	    sumUpImageToBuffer();
 	    
 	    // fill Buffer
@@ -211,25 +203,28 @@ public class Calculator	implements
 	    
 	    //mValues2=mValues2+lSum2+" ";
 	    
-	    mValues2 = lSum2+" ";
-	    
 		return lSum2;
 	}
 
 	/**
 	 * sums up the values of an image into a much smaller buffer
-	 * @param lProgram
 	 * @throws IOException 
 	 */
 	public void sumUpImageToBuffer()
 	{
 		System.out.println("setting up the SumUp kernel");
+		
+		//set images for the kernel
 	    sum.setArgument("image", mImage);
 	    sum.setArgument("result", mEnd);
 	    
+	    //the actual dimensions
 	    long[] realDim=mImage.getDimensions();
+	    
+	    //new dimensions that are compatible with the reduction factor
 	    int[] blockDim=new int[realDim.length];
 	    
+	    //computes the new dimensions
 	    for (int i=0;i<realDim.length;i++)
 	    {
 	    	if (realDim[i]%mReductionFactor!=0)
@@ -242,11 +237,12 @@ public class Calculator	implements
 	    	}
 	    }
 	    
+	    //set parameters for the kernel
 	    sum.setArgument("blockWidthX", blockDim[0]);
 	    sum.setArgument("blockWidthY", blockDim[1]);
 	    sum.setArgument("blockWidthZ", blockDim[2]);
-	    
 	    sum.setGlobalSizes(mReductionFactor, mReductionFactor, mReductionFactor);
+	    
 	    System.out.println("running the SumUp kernel");
 	    sum.run(true);
 	}
@@ -254,7 +250,7 @@ public class Calculator	implements
 	/**
 	 * cleans the result-image from noise (the older image is used as a cache
 	 * and will be overwritten here)
-	 * @param lProgram
+	 * @param sweeps the amount of noise cleaning sweeps to be applied (performs even counts)
 	 */
 	public void cleanNoise(int sweeps)
 	{
@@ -271,16 +267,6 @@ public class Calculator	implements
 			clean.setGlobalSizes(mImage);
 			clean.run(true);
 			
-			/*clean.setArgument("image1", mImage);
-			if (even)
-				{ clean.setArgument("cache", mImage2); }
-			else
-				{ clean.setArgument("cache", mImage1); }
-			clean.setGlobalSizes(mImage);
-			clean.run(true);*/
-			
-			//do another sweep so that mImage is the computational result again
-			
 			clean.setArgument("image1", mImage);
 			
 			if (even)
@@ -291,24 +277,14 @@ public class Calculator	implements
 			clean.setGlobalSizes(mImage);
 			clean.run(true);
 			
-			
-			/*if (even)
-			{ 	clean.setArgument("image1", mImage2); }
-			else
-			{ 	clean.setArgument("image1", mImage1); }
-			clean.setArgument("cache", mImage);
-			
-			clean.setGlobalSizes(mImage);
-			clean.run(true);*/
-			
-			i += 1;
+			// this method always applies even sweep numbers
+			i += 2;
 		}
 	}
 	
 	/**
 	 * will calculate the square of the difference of every
-	 * pixel between the two images
-	 * @param lProgram
+	 * pixel between the two images and store that information in another image
 	 */
 	public void squareDiff()
 	{
@@ -322,18 +298,26 @@ public class Calculator	implements
 	}
 	
 	/**
-	 * sums up every value in a Buffer
+	 * sums up every value of an image in a Buffer
 	 * @param lBuffer
 	 * @return the sum of the buffer
 	 */
-	public float sumUpBuffer(OffHeapMemory lBuffer) {
+	public float sumUpBuffer(OffHeapMemory lBuffer) 
+	{
 		mEnd.writeTo(lBuffer, true);
 	    float lDiff = 0;
 	    for (int i = 0; i < mEnd.getLength(); i++)
-	    		{ lDiff += lBuffer.getFloatAligned(i); }
+	    { 
+	    	lDiff += lBuffer.getFloatAligned(i); 
+	    }
 		return lDiff;
 	}
 	
+	/**
+	 * converts an image received into float and saves it into a local image slot
+	 * 
+	 * @param lImage the image to be processed
+	 */
 	public void convert(ClearCLImage lImage)
 	{
 		System.out.println(lImage.isFloat());

@@ -1,13 +1,6 @@
 package framework;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-
 import Kernels.KernelDemo;
 import calculation.Calculator;
 import clearcl.ClearCL;
@@ -23,18 +16,26 @@ import prediction.PredictorHoltWinters;
 import prediction.PredictorRegression;
 import timestepping.TimeStepper;
 
+/**
+ * The overlying framework-class that handles all the modules of ClearStep
+ * 
+ * @author Max
+ */
 public class Handler 	implements 
 						timeStepAdapter{
 	
 	/**
-	 * The Calculator used for the Test
+	 * The Calculator of our Stepper
 	 */
 	public Calculator mCalc;
 	
+	/**
+	 * The Predictor of our Stepper 
+	 */
 	public Predictor mPred;
 	
 	/**
-	 * The TimeStepper used for the Test
+	 * The TimeStepper of our Stepper
 	 */
 	public TimeStepper mTimeStepper;
 	
@@ -43,26 +44,45 @@ public class Handler 	implements
 	 */
 	public boolean mFxOn = false;
 	
+	/**
+	 * the Context used for ClearCL-operations
+	 */
 	public ClearCLContext mContext;
+	
+	/**
+	 * the device used for ClearCL-operations
+	 */
 	public ClearCLDevice mFastestGPUDevice;
+	
+	/**
+	 * Necessary for the initiation of ClearCL
+	 */
 	public ClearCL mClearCL;
+	
+	/**
+	 * Necessary for the initiation of ClearCL
+	 */
 	public ClearCLBackendInterface mClearCLBackendInterface;
-	// Calculation
+	
+	/**
+	 * ClearCL program containing kernels for calculation
+	 */
 	public ClearCLProgram calculations;
-	// NoiseHandling
+	
+	/**
+	 * ClearCL program containing kernels for noise cleaning
+	 */
 	public ClearCLProgram noiseCleaner;
 	
 	/**
 	 * creates a new Handler for dynamic time-stepping
-	 * @param Context if null, new context will be created
+	 * @param Context can be null, in which case new context will be created
+	 * @param DataType the DataType of images pasted into the Handler (will be converted to float)
 	 * @throws IOException 
 	 */
 	public Handler(ClearCLContext Context, ImageChannelDataType DataType) throws IOException
-	{
-		// TODO add option to choose the predictor
-		String Pred = "HoltWinters";
-		
-		// create new Context if null was given
+	{	
+		// create a new Context if null was given at creation
 		if (Context == null)
 		{
 			mClearCLBackendInterface = ClearCLBackends.getBestBackend();
@@ -71,8 +91,13 @@ public class Handler 	implements
 
 			mContext = mFastestGPUDevice.createContext();
 		}
+		// take the Context given
 		else 
 			{ mContext=Context; }
+		
+		// The Predictor to be used is controlled here and via the switch statement 
+		String Pred = "HoltWinters";
+		//String: Pred = "Regression";
 		
 		switch (Pred)
 		{
@@ -86,16 +111,29 @@ public class Handler 	implements
 			mPred = new PredictorRegression();
 			break;
 		}
-		// for our little demo
+		
+		// reasonable setup for internal demos
 		mTimeStepper = new TimeStepper(1f, 0.5f, 2f, 0.1f);
-		//reasonable for the microscope
+		
+		//reasonable setup for the microscope
 		//mTimeStepper = new TimeStepper(90f, 30f, 150f, 30f);
+		
+		//creating the Calculator
 		mCalc = new Calculator(mContext, createCalcProgram(DataType), createNoiseHandlerProgram());
 	}
 	
+	/**
+	 * Creates the program that contains the kernels for calculation
+	 * 
+	 * @param DataType The format the received image uses
+	 * @return the program created
+	 * @throws IOException
+	 */
 	public ClearCLProgram createCalcProgram(ImageChannelDataType DataType) throws IOException
 	{
 		calculations = mContext.createProgram(KernelDemo.class, "Calculator.cl");
+		
+		// alter the program according to the datatype of the image received
 		switch (DataType)
 		{
 		case Float: 
@@ -114,6 +152,9 @@ public class Handler 	implements
 		
 	}
 	
+	/**
+	 * Creates the program that contains the kernels for noise handling
+	 */
 	public ClearCLProgram createNoiseHandlerProgram() throws IOException
 	{
 		noiseCleaner= mContext.createProgram(KernelDemo.class, "Noise.cl");
@@ -122,15 +163,28 @@ public class Handler 	implements
 		
 	}
 	
+	/**
+	 * The primary pipeline starts here by pasting an image into the handler
+	 * 
+	 * @param image the image to be saved by the Stepper
+	 * @param time the current time in the imaging run
+	 * @param step the current time step applied during imaging
+	 */
 	public void processImage(ClearCLImage image, float time, float step)
 	{	
-		//System.out.println(image.getHeight()+" // "+(int)image.getHeight());
+		// invokes the Calculator to produce a value
 		float diff = mCalc.cacheAndCompare(image);
+		
+		//check if the Calculator has enough data to work
 		if (mCalc.filled)
 		{
 			System.out.println("diff= "+diff);
+			
+			//invoke the Predictor to produce a metric
 			float metric = mPred.predict(diff, time);
 			System.out.println("metric= "+metric);
+			
+			//invoke the Time Stepper to set the actual time step
 			mTimeStepper.computeNextStep(metric, step);
 		
 			System.out.println("Timestep is: "+mTimeStepper.mStep);
