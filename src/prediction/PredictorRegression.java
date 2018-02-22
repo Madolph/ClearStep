@@ -7,8 +7,7 @@ import framework.Setable;
 
 
 /**
- * saves a value to a memory of the last 10 values and computes
- * a measure of current trend of the values
+ * a predictor that saves the 10 most recent values and estimates the current trend of data
  */
 public class PredictorRegression 	extends 
 									Predictor
@@ -22,19 +21,19 @@ public class PredictorRegression 	extends
 	public float[][] mDev = new float[10][2];
 	
 	/**
-	 * The current Mean-Square-Root
+	 * The current Root mean square error
 	 */
 	float mRMSE;
 	
 	/**
-	 * The current Series-Level (not a primitive value, to enable the functionality of a walking average)
+	 * The current Series-Level
 	 */
 	public Setable mSeriesLevel = new Setable();
 	
 	/**
 	 * coefficient that decides how strongly the new value will influence the series-level
 	 */
-	float mSeriesSmooth = 0.75f;
+	float mSeriesLevelWeighting = 0.75f;
 	
 	/**
 	 * the current offset from the regression divided by the root of the MSE
@@ -42,22 +41,12 @@ public class PredictorRegression 	extends
 	public float mCurrOffset;
 	
 	/**
-	 * coefficient to determine how much the offset will be smoothed with previous information
-	 */
-	public float mOffsetSmooth = 0.75f;
-	
-	/**
-	 * the smoothed offset that will be used for further calculation
-	 */
-	public Setable mAvgOffset = new Setable();
-	
-	/**
-	 * an object that holds data and produces a regression
+	 * an object that receives the cache and produces a regression
 	 */
 	SimpleRegression  mRegress = new SimpleRegression();
 	
 	/**
-	 * sets the array of deviations and timepoints to 0
+	 * creates the predictor and sets initializes all saved values to zero
 	 */
 	public PredictorRegression()
 	{
@@ -70,6 +59,9 @@ public class PredictorRegression 	extends
 	
 	/**
 	 * receives a new value and the corresponding timepoint and then calculates the metric
+	 * @param diff the value to be analyzed
+	 * @param time the corresponding time point
+	 * @return the computed metric
 	 */
 	@Override
 	public float predict(float diff, float time)
@@ -82,21 +74,14 @@ public class PredictorRegression 	extends
 		setSeriesLevel();
 		// Check if the new value is outside the Standard deviation
 		if (mRMSE==0)
-			// No deviation means Sigma has to be zero (would divide by 0 otherwise)
-			{ mCurrOffset = 0; }
+		{
+			// No deviation means sigma has to be zero (would divide by 0 otherwise)
+			mCurrOffset = 0; 
+		}
 		else
-			{
-			
-			//mCurrOffset = (float)((mDev[0][0]-(float)mRegress.predict((double)mDev[0][1]))/mRMSE);
-			//mCurrOffset /= 3;
+		{
 			mCurrOffset = (float)((mDev[0][0]-mSeriesLevel.val)/mRMSE);
-			}
-		//System.out.println("value is: "+mDev[0][0]+" and prediction would have been: "+mRegress.predict((double)mDev[0][1]));
-		
-		/*if (mAvgOffset.set)
-			{ mAvgOffset.val = mAvgOffset.val*mOffsetSmooth+mCurrOffset*(1-mOffsetSmooth); }
-		else
-			{ mAvgOffset.val = mCurrOffset; }*/ // need to be set true for smoothing to happen
+		}
 		
 		setPlotValues();
 		System.out.println("Sigma is: "+mCurrOffset+" / StDev: "+mRMSE);
@@ -118,7 +103,7 @@ public class PredictorRegression 	extends
 	
 	
 	/**
-	 * clear the old regression, sets up a new one and calculates the root of the RMSE
+	 * clears the old regression, sets up a new one and calculates the RMSE
 	 */
 	private void adaptMeanRegress(){
 		
@@ -133,12 +118,12 @@ public class PredictorRegression 	extends
 	}
 	
 	/**
-	 * adjusts the current level of the series... and does so smoothly (oh-yeah)
+	 * adjusts the current level of the series... and does so smoothly
 	 */
 	private void setSeriesLevel()
 	{
 		if (mSeriesLevel.set)
-			mSeriesLevel.val = mDev[0][0]*(mSeriesSmooth)+mSeriesLevel.val*(1-mSeriesSmooth);
+			mSeriesLevel.val = mDev[0][0]*(mSeriesLevelWeighting)+mSeriesLevel.val*(1-mSeriesLevelWeighting);
 		else
 			{ mSeriesLevel.val = mDev[0][0];
 			mSeriesLevel.set = true; }
@@ -151,7 +136,6 @@ public class PredictorRegression 	extends
 	{
 		value1 = mDev[0][0];
 		value2 = mCurrOffset;
-		//average = (float)mRegress.predict((double)mDev[0][1]);
 		value3 = mSeriesLevel.val;
 		System.out.println("value: "+value1+" / prediction: "+value2+" / average: "+value3);
 	}
