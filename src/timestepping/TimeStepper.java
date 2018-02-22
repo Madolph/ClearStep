@@ -7,12 +7,12 @@ public class TimeStepper {
 	boolean fluid;
 	
 	/**
-	 * The step that is used as the center of the step-span
+	 * The step that is used as a start and default value
 	 */
 	public float mNeutralStep;
 	
 	/**
-	 * The span of steps that is available for spontaneous change
+	 * The span of steps that is allowed to spontaneously change
 	 */
 	public float mSpan;
 	
@@ -27,24 +27,30 @@ public class TimeStepper {
 	public float mMinStep;
 	
 	/**
-	 * Determines how slowly the neutral step changes
+	 * Determines how heavily the step will be reset to the neutral step
 	 */
 	public float mRollback = (float) 0.05;
 	
 	/**
-	 * The currently chosen timestep
+	 * The current time step
 	 */
 	public float mStep;
 	
+	/**
+	 * a smoothed representation of the time step to damp fluctuations
+	 */
 	Setable mStepSmooth = new Setable();
 	
+	/**
+	 * weighting coefficient for the smoothed time step
+	 */
 	public float smoothing = 0.5f;
 	
 	/**
 	 * Create a new Timestepper
 	 * 
 	 * @param start		The initially chosen timestep
-	 * @param width		The allowed span of the timestep from the neutral step (which is dynamic)
+	 * @param width		The allowed span of spontaneous change
 	 * @param maxStep	The maximum allowed timestep (static)
 	 * @param minStep	The minimum allowed timestep (static)
 	 */
@@ -57,6 +63,12 @@ public class TimeStepper {
 		mMinStep = minStep*1000;
 	}
 
+	/**
+	 * truncates the metric to an interval between -1 and 1
+	 * 
+	 * @param metric the metric to be truncated and processed
+	 * @return the processed metric
+	 */
 	public float processMetric(float metric)
 	{
 		if (metric>1)
@@ -67,6 +79,9 @@ public class TimeStepper {
 		return metric;
 	}
 	
+	/**
+	 * limits the calculated step to the interval allowed
+	 */
 	public void limitStep()
 	{
 		if (mStep>mMaxStep)
@@ -75,6 +90,12 @@ public class TimeStepper {
 			mStep = mMinStep;
 	}
 	
+	/**
+	 * uses the metric and the current step to compute the length of the next time step
+	 * 
+	 * @param metric the metric used for calculation
+	 * @param step the current time step
+	 */
 	public void computeNextStep(float metric, float step)
 	{
 		mStep = step;
@@ -92,7 +113,7 @@ public class TimeStepper {
 		{
 			mStepSmooth.val = mStepSmooth.val*(smoothing)+mStep*(1-smoothing);
 		}
-			
+		
 		mStep = mStepSmooth.val;	
 		
 		// over time, the step will get back to the original step
