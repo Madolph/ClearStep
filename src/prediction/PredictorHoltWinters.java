@@ -21,6 +21,9 @@ public class PredictorHoltWinters 	extends
 	 */
 	public float TP;
 	
+	/**
+	 * Computed trend divided by the series level
+	 */
 	public float normTrend;
 	
 	/**
@@ -33,26 +36,39 @@ public class PredictorHoltWinters 	extends
 	 */
 	public float SP;
 	
-	public float AN;
-	
-	public float AP;
-	
-	public float BN;
-	
-	public float BP;
-	
+	/**
+	 * true if this isn't the first run
+	 */
 	boolean running = false;
 	
+	/**
+	 * true if a trend has already been computed
+	 */
 	boolean trend = false;
 	
+	/**
+	 * coefficient trend damping
+	 */
 	public float phi;
 	
+	/**
+	 * weight coefficient for series level
+	 */
 	public float alpha;
 	
+	/**
+	 * weight coefficient for trend
+	 */
 	public float gamma;
 	
+	/**
+	 * saves the time the predictor was previously called
+	 */
 	public float lastTime;
 	
+	/**
+	 * creates the predictor and initiates all the coefficients
+	 */
 	public PredictorHoltWinters()
 	{
 		phi = 0.8f;
@@ -92,6 +108,14 @@ public class PredictorHoltWinters 	extends
 		return normTrend;
 	}
 	
+	/**
+	 * divides the value receives by the time span between this and the
+	 * last image
+	 * 
+	 * @param value the value received
+	 * @param time the current time
+	 * @return the adjusted value
+	 */
 	public float adjustvalue(float value, float time) 
 	{
 		System.out.println("last time was: "+lastTime);
@@ -106,16 +130,15 @@ public class PredictorHoltWinters 	extends
 	 */
 	public void setPlotValues()
 	{
-		average = SN;
-		prediction = normTrend;
-		value=EN;
+		value1 = SN;
+		value2 = normTrend;
+		value3 = EN;
 	}
 	
 	/**
-	 * computes the current trend of the series and then divides it by the the mean of the last
-	 * and the current series-level to acquire a relative trend
+	 * computes a trend relative to the current series level
 	 * 
-	 * @return
+	 * @return a relative trend
 	 */
 	public float computeNormTrend()
 	{
@@ -125,10 +148,15 @@ public class PredictorHoltWinters 	extends
 			normTrend = TN/Math.abs((SP+SN)/2);
 		
 		System.out.println("Trend is: "+TN+" normalized to: "+normTrend);
-		normTrend *= 3;
+		//normTrend *= 3;
 		return normTrend;
 	}
 	
+	/**
+	 * performs the first run
+	 * 
+	 * @param value the given value
+	 */
 	public void initialRun(float value)
 	{
 		SN=EN;
@@ -136,28 +164,44 @@ public class PredictorHoltWinters 	extends
 		normTrend=0;
 	}
 	
+	/**
+	 * initializes the trend
+	 */
 	public void setTrend()
 	{
 		TN=EN-SP;
-		
 		TP=TN;
 	}
 	
+	/**
+	 * computes a new series level from an old series level and the recent value
+	 */
 	public void computeSeriesLevel()
 	{
 		SN=alpha*EN+(1-alpha)*(SP+phi*TP);
 	}
 	
+	/**
+	 * computes a trend from the old trend and the recent series level
+	 */
 	public void computeTrend()
 	{
 		TN=gamma*(SN-SP)+(1-gamma)*phi*TP;
 	}
 	
+	/** 
+	 * receive a value to store and process it
+	 * 
+	 * @param value the value to be processed
+	 */
 	public void saveEntry(float value)
 	{
 		EN=value;
 	}
 	
+	/**
+	 * sets all relevant present value to be viewed as past values for the next run
+	 */
 	public void shiftValues()
 	{
 		SP=SN;

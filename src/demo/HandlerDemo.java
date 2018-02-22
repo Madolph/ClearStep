@@ -183,13 +183,13 @@ public class HandlerDemo {
 				data[0] = lHandler.mTimeStepper.mStep/200;
 				Steps = Steps+lHandler.mTimeStepper.mStep+" ";
 				
-				data[1] = lHandler.mPred.prediction;
-				Metric = Metric+lHandler.mPred.prediction+" ";
+				data[1] = lHandler.mPred.value2;
+				Metric = Metric+lHandler.mPred.value2+" ";
 				
-				data[2] = lHandler.mPred.average;
-				Track = Track+lHandler.mPred.average+" ";
+				data[2] = lHandler.mPred.value3;
+				Track = Track+lHandler.mPred.value3+" ";
 				
-				Values = Values+lHandler.mPred.value+" ";
+				Values = Values+lHandler.mPred.value1+" ";
 				Plotter.plotFullDataSetXY(time, data);
 			}
 			

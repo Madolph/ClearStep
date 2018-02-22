@@ -17,7 +17,7 @@ public class PredictorRegression 	extends
 {
 	
 	/**
-	 * An Array that saves the last 10 deviations
+	 * An Array that saves the last 10 deviations and their time points
 	 */
 	public float[][] mDev = new float[10][2];
 	
@@ -149,10 +149,10 @@ public class PredictorRegression 	extends
 	 */
 	public void setPlotValues()
 	{
-		value = mDev[0][0];
-		prediction = mCurrOffset;
+		value1 = mDev[0][0];
+		value2 = mCurrOffset;
 		//average = (float)mRegress.predict((double)mDev[0][1]);
-		average = mSeriesLevel.val;
-		System.out.println("value: "+value+" / prediction: "+prediction+" / average: "+average);
+		value3 = mSeriesLevel.val;
+		System.out.println("value: "+value1+" / prediction: "+value2+" / average: "+value3);
 	}
 }
