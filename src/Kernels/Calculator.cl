@@ -57,11 +57,7 @@ void Sum3D (__read_only image3d_t image,
             int blockWidthX,
             int blockWidthY,
             int blockWidthZ) 
-{
-  const int width   = get_image_width(image);
-  const int height  = get_image_height(image);
-  const int depth   = get_image_depth(image);
-  
+{ 
   const int x       = get_global_id(0);
   const int y       = get_global_id(1);
   const int z       = get_global_id(2);

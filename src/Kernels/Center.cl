@@ -26,19 +26,17 @@ void ScanPlaneX (__read_only image3d_t image,
   const int y       = get_global_id(1);
   const int z       = get_global_id(2);
   
-  const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
-  
   float sum = 0;
   
-  const int4 origin = (int4){x,y,z};
+  const int4 origin = (int4){x,y,z,0};
   
-  for(int ly=0; ly<planeDimX; ly++)
+  for(int ly=0; ly<planeDimY; ly++)
   {
-    for(int lz=0; lz<planeDimY; lz++)
+    for(int lz=0; lz<planeDimZ; lz++)
     {
       const int4 pos = origin + (int4){0,ly,lz,0};
      
-      float value = read_imagef(image, sampler, pos).x;
+      float value = read_imagef(image, pos).x;
 
       sum = sum + value;
       }
@@ -64,7 +62,7 @@ void ScanPlaneY (__read_only image3d_t image,
   
   float sum = 0;
   
-  const int4 origin = (int4){x,y,z};
+  const int4 origin = (int4){x,y,z,0};
   
   for(int lx=0; lx<planeDimX; lx++)
   {
@@ -79,9 +77,9 @@ void ScanPlaneY (__read_only image3d_t image,
     }
   }
   
-  const int index = x;
+  const int index = y;
   
-  arrayX[index] = sum;
+  arrayY[index] = sum;
 }
 
 __kernel
@@ -98,7 +96,7 @@ void ScanPlaneZ (__read_only image3d_t image,
   
   float sum = 0;
   
-  const int4 origin = (int4){x,y,z};
+  const int4 origin = (int4){x,y,z,0};
   
   for(int lx=0; lx<planeDimX; lx++)
   {

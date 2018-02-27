@@ -25,6 +25,8 @@ public class CenterDetector {
 	{
 		mContext = context;
 		mScanPlane = mContext.createProgram(KernelDemo.class, "Center.cl");
+		mScanPlane.buildAndLog();
+		
 		mScanX = mScanPlane.createKernel("ScanPlaneX");
 		mScanY = mScanPlane.createKernel("ScanPlaneY");
 		mScanZ = mScanPlane.createKernel("ScanPlaneZ");

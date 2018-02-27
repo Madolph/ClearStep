@@ -16,11 +16,59 @@ import org.junit.Test;
 
 import clearcl.ClearCLImage;
 import clearcl.enums.ImageChannelDataType;
+import clearcl.viewer.ClearCLImageViewer;
 import framework.Handler;
+import plotting.PlotterXY;
 import simulation.Simulator;
+import toolset.CenterDetector;
 
 public class Demo {
 
+	@Test
+	public void testCenterDetector() throws IOException
+	{
+		ImageChannelDataType Datatype = ImageChannelDataType.Float;
+		
+		Handler lHandler = new Handler(null, Datatype);
+		
+		Simulator lSim = new Simulator(Datatype, lHandler.mContext);
+		
+		CenterDetector lCenterCalc = new CenterDetector(lHandler.mContext);
+		
+		PlotterXY Plotter = new PlotterXY(3);
+		String[] Titles = new String[3];
+		Titles[0] = "centerX";
+		Titles[1] = "centerY";
+		Titles[2] = "centerZ";
+		Plotter.initializePlotter(lHandler.mFxOn, "Flummi-Demo", "Plot", "time", Titles, 1000, 1000);
+		
+		int lSize = 256;
+		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(Datatype, lSize, lSize, lSize);
+		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage, "Flummi");
+
+		float time=0;
+		float[] data = new float[3];
+		float Duration = 120;
+		
+		while (time<(Duration*1000))  
+		{
+			lSim.generatePic(time, lImage, lSize, true);
+			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
+			
+			float[] center = lCenterCalc.detectCenter(lImage);
+			
+			data[0] = center[0];
+				
+			data[1] = center[1];
+				
+			data[2] = center[2];
+				
+			Plotter.plotFullDataSetXY(time, data);
+		}  
+		
+		lViewImage.waitWhileShowing();
+	}
+	
 	@Test
 	public void runtimeTest() throws IOException, InterruptedException
 	{
