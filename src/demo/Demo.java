@@ -14,7 +14,12 @@ import java.util.List;
 
 import org.junit.Test;
 
+import clearcl.ClearCL;
+import clearcl.ClearCLContext;
+import clearcl.ClearCLDevice;
 import clearcl.ClearCLImage;
+import clearcl.backend.ClearCLBackendInterface;
+import clearcl.backend.ClearCLBackends;
 import clearcl.enums.ImageChannelDataType;
 import clearcl.viewer.ClearCLImageViewer;
 import framework.Handler;
@@ -25,25 +30,29 @@ import toolset.CenterDetector;
 public class Demo {
 
 	@Test
-	public void testCenterDetector() throws IOException
+	public void testCenterDetector() throws IOException, InterruptedException
 	{
 		ImageChannelDataType Datatype = ImageChannelDataType.Float;
 		
-		Handler lHandler = new Handler(null, Datatype);
+		//create ClearCL Environment
+		ClearCLBackendInterface mClearCLBackendInterface = ClearCLBackends.getBestBackend();
+		ClearCL mClearCL = new ClearCL(mClearCLBackendInterface);
+		ClearCLDevice mFastestGPUDevice = mClearCL.getFastestGPUDeviceForImages();
+		ClearCLContext mContext = mFastestGPUDevice.createContext();
 		
-		Simulator lSim = new Simulator(Datatype, lHandler.mContext);
+		Simulator lSim = new Simulator(Datatype, mContext);
 		
-		CenterDetector lCenterCalc = new CenterDetector(lHandler.mContext);
+		CenterDetector lCenterCalc = new CenterDetector(mContext);
 		
 		PlotterXY Plotter = new PlotterXY(3);
 		String[] Titles = new String[3];
 		Titles[0] = "centerX";
 		Titles[1] = "centerY";
 		Titles[2] = "centerZ";
-		Plotter.initializePlotter(lHandler.mFxOn, "Flummi-Demo", "Plot", "time", Titles, 1000, 1000);
+		Plotter.initializePlotter(false, "Flummi-Demo", "Plot", "time", Titles, 1000, 1000);
 		
 		int lSize = 256;
-		ClearCLImage lImage = lHandler.mContext.createSingleChannelImage(Datatype, lSize, lSize, lSize);
+		ClearCLImage lImage = mContext.createSingleChannelImage(Datatype, lSize, lSize, lSize);
 		ClearCLImageViewer lViewImage = ClearCLImageViewer.view(lImage, "Flummi");
 
 		float time=0;
@@ -53,21 +62,28 @@ public class Demo {
 		while (time<(Duration*1000))  
 		{
 			lSim.generatePic(time, lImage, lSize, true);
-			lImage.notifyListenersOfChange(lHandler.mContext.getDefaultQueue());
+			lImage.notifyListenersOfChange(mContext.getDefaultQueue());
 			
 			float[] center = lCenterCalc.detectCenter(lImage);
 			
-			data[0] = center[0];
+			data[0] = (float) (center[0]*1.5);
 				
-			data[1] = center[1];
+			data[1] = (float) (center[1]*1);
 				
-			data[2] = center[2];
+			data[2] = (float) (center[2]*0.5);
 				
 			Plotter.plotFullDataSetXY(time, data);
+			
+			time += 1000;
+			
+			Thread.sleep(100);
 		}  
 		
 		lViewImage.waitWhileShowing();
+		
+		mClearCL.close();
 	}
+	
 	
 	@Test
 	public void runtimeTest() throws IOException, InterruptedException

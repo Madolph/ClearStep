@@ -1,20 +1,4 @@
 
-// You can include other resources
-// Path relative to class OCLlib, the package is found automatically (first in class path if several exist)
-#include [OCLlib] "linear/matrix.cl"
-
-// You can also do absolute includes:
-// Note, this is more brittle to refactoring. 
-// Ideally you can move code and if the kernels 
-// stay at the same location relative to the classes 
-// everything is ok.
-#include "clearcl/test/testinclude.cl"
-
-// If you include something that cannot be found, 
-// then it fails silently but the final source code gets annotated. 
-// (check method: myprogram.getSourceCode())
-#include "blu/tada.cl"	
-
 
 __kernel
 void ScanPlaneX (__read_only image3d_t image,
@@ -39,10 +23,8 @@ void ScanPlaneX (__read_only image3d_t image,
       float value = read_imagef(image, pos).x;
 
       sum = sum + value;
-      }
     }
   }
-  
   const int index = x;
   
   arrayX[index] = sum;
@@ -73,10 +55,8 @@ void ScanPlaneY (__read_only image3d_t image,
       float value = read_imagef(image, sampler, pos).x;
 
       sum = sum + value;
-      }
     }
   }
-  
   const int index = y;
   
   arrayY[index] = sum;
@@ -107,10 +87,8 @@ void ScanPlaneZ (__read_only image3d_t image,
       float value = read_imagef(image, sampler, pos).x;
 
       sum = sum + value;
-      }
     }
   }
-  
   const int index = z;
   
   arrayZ[index] = sum;
