@@ -87,7 +87,7 @@ public class CenterDetector {
 		mArrayY = mContext.createBuffer(NativeTypeEnum.Float, imageDim[1]);
 		
 		mScanY.setArgument("image", image);
-		mScanY.setArgument("arrayX", mArrayX);
+		mScanY.setArgument("arrayY", mArrayY);
 		mScanY.setArgument("planeDimX", imageDim[0]);
 		mScanY.setArgument("planeDimZ", imageDim[2]);
 		mScanY.setGlobalSizes(1,imageDim[1],1);
@@ -105,7 +105,7 @@ public class CenterDetector {
 		mArrayZ = mContext.createBuffer(NativeTypeEnum.Float, imageDim[2]);
 		
 		mScanZ.setArgument("image", image);
-		mScanZ.setArgument("arrayX", mArrayX);
+		mScanZ.setArgument("arrayZ", mArrayZ);
 		mScanZ.setArgument("planeDimX", imageDim[0]);
 		mScanZ.setArgument("planeDimY", imageDim[1]);
 		mScanZ.setGlobalSizes(1,1,imageDim[2]);
