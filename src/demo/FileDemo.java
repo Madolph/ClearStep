@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import clearcl.ClearCLImage;
 import clearcl.enums.ImageChannelDataType;
 import clearcontrol.stack.ContiguousOffHeapPlanarStackFactory;
+import clearcontrol.stack.OffHeapPlanarStack;
 import clearcontrol.stack.StackInterface;
 import clearcontrol.stack.StackRequest;
 import clearcontrol.stack.sourcesink.source.RawFileStackSource;
@@ -39,7 +40,7 @@ public class FileDemo {
 		for (int i=0;i<timepoints;i++)
 		{
 			float timestep = 60f;
-			Stepper.processImage((ClearCLImage) lLocalFileStackSource.getStack(0), i*timestep, timestep);
+			OffHeapPlanarStack lStack = lLocalFileStackSource.getStack(0);
 		}
 		
 		lLocalFileStackSource.close();
